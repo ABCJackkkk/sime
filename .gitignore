@@ -1,0 +1,27 @@
+# Flutter SDK (local)
+flutter_sdk/
+flutter_home/
+android_sdk/
+
+# Temp / cache
+.superpowers/
+
+# Build outputs
+love_sim/build/
+love_sim/.dart_tool/
+love_sim/.flutter-plugins
+love_sim/.flutter-plugins-dependencies
+love_sim/.pub-cache/
+love_sim/.pub/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -1,0 +1,1455 @@
+{
+  "meta": {
+    "id": "",
+    "name": "",
+    "version": "1.0.0",
+    "author": "",
+    "genre": "",
+    "tone": "",
+    "mode": "endings",
+    "summary": ""
+  },
+
+  "player": {
+    "_note": "剧本只定义主角的背景经历和当前处境。名字、外貌、性格等基础信息由玩家在「我的」角色卡中自行编辑，不在剧本中预设。",
+    "background": "主角的成长史、家庭、教育、重要经历。AI叙事会据此理解'你是谁'。约500-1500字。",
+    "current_state": "故事开局时主角的处境和心境。AI叙事的第一句话从这里开始。约100-300字。"
+  },
+
+  "world": {
+    "summary": "当前世界状态的压缩快照，供其他层快速引用。包含：时代定位(1句)、活跃地点(3-5个)、氛围基调、特殊规则。约200-300字。时间天气季节见交互层。",
+
+    "setting": "全文世界观描述，直接拼入DS的System Prompt。写清楚时代背景、社会规则、这个世界'对'和'不对'的事是什么。约1000-3000字。",
+
+    "atmosphere": {
+      "base_mood": "温暖|压抑|悬疑|轻松|暗黑",
+      "color_palette": "浅色柔和|灰暗冷调|高饱和奇幻|暖黄怀旧",
+      "hint": "氛围影响DS的文风和情绪基调。温暖→多写光、温度、小动作；悬疑→多写阴影、声音、未解之物。"
+    },
+
+    "locations": [
+      {
+        "id": "",
+        "name": "",
+        "desc": "环境描写＋氛围。如：'高三教室，靠窗第三排。黑板上有没擦干净的粉笔痕。'",
+        "visibility_default": "public",
+        "available_phases": [],
+        "scene_moods": [],
+        "events_hint": "这个地点通常发生什么类型的事件。DS生成事件时参考。"
+      }
+    ],
+
+    "special_rules": {
+      "_note": "剧本类型差异化规则。校园通常为空。诡异剧本可能需要'夜晚不宜单独外出''某地点有特殊存在'。系统剧本有'任务面板''属性面板''兑换商店'。古风有'等级森严''男女大防'。",
+      "rules": []
+    },
+
+    "memory": {
+      "location_changes": [],
+      "current_time": {
+        "day": 1,
+        "season": "",
+        "weather": "晴",
+        "phase": "上午",
+        "_affection_note": "好感度以0.01精度存储在角色的memory中，不在此处。此处的day仅用于世界时间推进。"
+      },
+      "world_history": {
+        "_note": "世界历史。仅重要推进触发。记录改变世界的里程碑事件。DS每次生成事件时可参考。格式：[{day:15, event:'暴雨困在教学楼，两人关系发生质变'}]",
+        "entries": []
+      },
+      "world_summary": "运行时引擎维护。每次推进进程后更新。格式示例：'校园进入备考期，图书馆延长开放到晚九点。气氛微冷、沉稳。'"
+    }
+  },
+
+  "characters": [
+    {
+      "full_character": true,
+      "summary": "角色压缩快照，供其他层和通讯录列表引用。包含：身份+关系(1句)、性格核心(soul.core+当前好感度区间态度)、对其他关键角色的态度(1-2句)、当前在意的事。约200-300字。",
+
+      "basic": {
+        "id": "",
+        "name": "",
+        "gender": "",
+        "age": 0,
+        "avatar_desc": "",
+        "height": "",
+        "weight": "",
+        "measurements": {
+          "bust": "",
+          "waist": "",
+          "hip": ""
+        },
+        "distinctive_marks": []
+      },
+
+      "background": {
+        "origin": "",
+        "history": "",
+        "current_situation": ""
+      },
+
+      "details": {
+        "habits": [],
+        "daily_routine": "",
+        "pet_peeve": "",
+        "secret_hobby": ""
+      },
+
+      "soul": {
+        "core": "",
+        "desire": "",
+        "wound": "",
+        "fear": "",
+        "contradiction": "",
+        "dual_mode": {
+          "to_stranger": "",
+          "to_close": ""
+        }
+      },
+
+      "speech": {
+        "big_five_profile": {
+          "openness": "",
+          "extraversion": "",
+          "agreeableness": "",
+          "conscientiousness": "",
+          "neuroticism": ""
+        },
+        "phonetics": {
+          "pitch": "",
+          "pace": "",
+          "stress": "",
+          "pause": ""
+        },
+        "vocabulary": {
+          "style": "",
+          "sentence_tendency": "",
+          "avoid": [],
+          "softener": ""
+        },
+        "interaction": {
+          "turn_taking": "",
+          "politeness": "",
+          "question_style": "",
+          "topic_control": ""
+        },
+        "dual_mode": {
+          "to_stranger": { "overview": "", "example": "" },
+          "to_close":    { "overview": "", "example": "" }
+        }
+      },
+
+      "relations": {
+        "flat": [
+          { "target": "player", "type": "", "initial": "", "fixed": true }
+        ],
+        "dimensional": [
+          {
+            "target": "",
+            "type": "",
+            "stages": {
+              "_note": "仅填写该关系实际可能出现的区间，其余留空",
+              "40-50": "",
+              "50-60": "",
+              "60-70": "",
+              "70-80": "",
+              "80-90": "",
+              "90-99": "",
+              "100": ""
+            },
+            "trigger_change": ""
+          }
+        ]
+      },
+
+      "schedule": {
+        "_note": "角色独立日程——角色在后台按此日程行动，不需要玩家参与。引擎在推进时根据当日时段查表，决定各角色此刻在哪个地点做什么。日程撞车(=两角色同时在同一地点)自动产生修罗场事件。",
+        "_field_docs": {
+          "phase": "时段名，与 interaction.time_config.phases 中的值匹配",
+          "location": "地点ID，对应 world.locations 中的某个位置",
+          "activity": "角色在这里做什么。AI叙事时会参考。",
+          "priority": "优先级(0-100)。同时段多个匹配时选最高的。高优先级的日程不会被低优先级覆盖。",
+          "conditions": "可选筛选条件。如 'weekday'=仅工作日, 'weekend'=仅周末, 'season:夏'=仅夏季, 'not_rain'=非雨天"
+        },
+        "weekday": [
+          {"phase": "", "location": "", "activity": "", "priority": 50, "conditions": []}
+        ],
+        "weekend": [
+          {"phase": "", "location": "", "activity": "", "priority": 50, "conditions": []}
+        ]
+      },
+
+      "agent": {
+        "role": "",
+        "agenda": "",
+        "dual_mode": {
+          "to_stranger": "",
+          "to_close": ""
+        }
+      },
+
+      "humanity": {
+        "anti_ai_rules": {
+          "no_self_explain": "",
+          "no_emotion_label": "",
+          "no_safe_wrapper": "",
+          "no_structure": "",
+          "no_uniform_attention": ""
+        },
+        "writing_posture": {
+          "silence_is_speech": "",
+          "allow_prejudice": "",
+          "allow_incomplete": "",
+          "emotion_over_analysis": ""
+        },
+        "non_verbal": []
+      },
+
+      "appearance": {
+        "default": "",
+        "special": "",
+        "style_desc": ""
+      },
+
+      "preferences": {
+        "likes": [],
+        "dislikes": [],
+        "talent": ""
+      },
+
+      "mood_triggers": {
+        "joy": [],
+        "anger": [],
+        "sadness": [],
+        "nervous": [],
+        "jealous": []
+      },
+
+      "gift_response": {
+        "love":    { "input": "", "reaction": "" },
+        "like":    { "input": "", "reaction": "" },
+        "neutral": { "input": "", "reaction": "" },
+        "dislike": { "input": "", "reaction": "" },
+        "hate":    { "input": "", "reaction": "" }
+      },
+
+      "boundary": {
+        "physical": "",
+        "emotional": "",
+        "topic_taboo": [],
+        "pace_hint": ""
+      },
+
+      "conduct": {
+        "red_lines": [],
+        "life_threat_rule": {
+          "trigger": "主角遭遇危及性命或可能造成永久残疾的事件",
+          "resolution": "必须由某人或某物进行解救方可抵消，否则后果实装",
+          "example": "坠崖 → 被藤蔓拉起 → 抵消；无人解救 → 重伤或永久残疾"
+        },
+        "grey_zones": {},
+        "self_correction": ""
+      },
+
+      "evolution": {
+        "affection_stages": {
+          "_note": "仅填写角色实际会经历的区间，例如正缘角色从40-50开始填，反派可能填满负面区间",
+          "1-10": "",
+          "10-20": "",
+          "20-30": "",
+          "30-40": "",
+          "40-50": "",
+          "50-60": "",
+          "60-70": "",
+          "70-80": "",
+          "80-90": "",
+          "90-99": "",
+          "100": ""
+        },
+        "growth": []
+      },
+
+      "memory": {
+        "episodic": [],
+        "chat_log": [],
+        "impression": {
+          "keywords": [],
+          "last_updated": "",
+          "trend": ""
+        }
+      }
+    },
+
+    {
+      "full_character": false,
+      "id": "",
+      "name": "",
+      "summary": "",
+      "relation_to_story": ""
+    }
+  ],
+
+  "inter_character_relationships": {
+    "_note": "角色间关系层。引擎在后台追踪角色之间的亲和力、态度标签和互动历史。角色好感度变化(玩家↔角色)会触发角色间关系的连锁反应——'她看见你们在一起'不只是叙事，是数据。",
+    "_how_it_works": "每次推进时：1) 引擎查各角色当前日程位置 2) 检测撞车(=同地点同角色) 3) 撞车角色间产生微小亲和力偏移 4) 玩家事件中涉及的角色间自动产生互动记录 5) 关系状态变化影响AI叙事和角色行为",
+    "_field_docs": {
+      "from": "观察/感受方角色ID",
+      "to": "被观察/被感受方角色ID",
+      "affinity": "亲和力(-100~100)。0=无感，正=友善/好友/挚友，负=疏离/厌恶/死对头",
+      "label": "态度标签(死对头/厌恶/疏离/无感/认识/友善/好友/挚友)。由affinity值自动计算",
+      "history": "互动历史摘要。格式：'天1:事件简述;天15:事件简述'",
+      "is_secret_admirer": "是否暗恋对方(但不被对方知道)",
+      "last_interaction": "最近一次互动的简要描述"
+    },
+    "initial_attitudes": [
+      {
+        "from": "",
+        "to": "",
+        "affinity": 0,
+        "label": "无感",
+        "history": "",
+        "is_secret_admirer": false,
+        "last_interaction": ""
+      }
+    ],
+    "affinity_states": [
+      {"label": "死对头", "range": "-100 ~ -60"},
+      {"label": "厌恶", "range": "-60 ~ -30"},
+      {"label": "疏离", "range": "-30 ~ -10"},
+      {"label": "无感", "range": "-10 ~ 10"},
+      {"label": "认识", "range": "10 ~ 30"},
+      {"label": "友善", "range": "30 ~ 60"},
+      {"label": "好友", "range": "60 ~ 85"},
+      {"label": "挚友", "range": "85 ~ 100"}
+    ],
+    "triggers": {
+      "_note": "角色间关系的变化触发器",
+      "on_player_event": "当玩家事件涉及2+角色时→她们之间产生±(0~5)亲和偏移。两人都对玩家好感度>70时偏移更大(可能产生嫉妒)。",
+      "on_schedule_collision": "当两角色日程撞到同一地点→亲和力产生微小偏移。方向取决于她们当前的好友/敌意状态。",
+      "on_witness": "当角色C目睹玩家与角色D亲密互动→角色C对角色D的亲和力可能下降(嫉妒)。下降幅度取决于角色C对玩家的好感度。",
+      "on_info_spread": "当角色C从角色D那里听到关于玩家的消息→她们之间的亲和力可能变化。加密风格影响偏移方向。"
+    }
+  },
+
+  "information_system": {
+    "_note": "信息传播系统。不是所有人都立刻知道所有事——某个人看到了什么，传播给某个人，消息有延迟、有失真、有加密。这是让修罗场从'一场戏'变成'一张网'。",
+    "_how_it_works": "每次事件后：1) 事件有visibility(public/private/secret)和witnesses(在场旁观者) 2) 旁观者自动成为信息片段的初次见证人 3) 每次推进时引擎推进1步信息扩散——随机选一个已知者→传播给一个未知者→内容可能被加密风格扭曲 4) 信息传播产生连锁反应(角色间关系变化、角色对玩家的态度变化、后续事件的叙事素材)",
+    "_field_docs": {
+      "source_event": "来源事件ID",
+      "witness_char": "首次见证/听到此信息的角色ID",
+      "content": "原始信息内容",
+      "encryption": "加密风格(honest=如实/joke=用玩笑加密/gossip=添油加醋/cold=轻描淡写/speculation=揣测)",
+      "spread_radius": "最大传播半径(1=仅见证人, 2=见证人的朋友, ...)",
+      "known_by": "当前已知此信息的角色ID列表",
+      "trustworthiness": "可信度(0.0-1.0)。每次传播×0.85衰减。初始值由加密风格决定(honest=1.0, joke=0.7, gossip=0.5, speculation=0.4)",
+      "spread_count": "已传播次数。>=spread_radius后停止传播"
+    },
+    "encryption_styles": {
+      "honest": {"trust": 1.0, "desc": "如实转述，不加修饰"},
+      "gossip": {"trust": 0.5, "desc": "添油加醋，放大戏剧性"},
+      "joke": {"trust": 0.7, "desc": "用玩笑/阴阳怪气加密，真义埋藏在玩笑里"},
+      "cold": {"trust": 0.8, "desc": "轻描淡写，故意压低重要性"},
+      "speculation": {"trust": 0.4, "desc": "把自己的揣测包装成事实"}
+    },
+    "visibility_rules": {
+      "_note": "事件可见度决定哪些角色自动成为信息见证人",
+      "public": "所有在场角色+地点内的其他角色(如公共区域如走廊/食堂/操场)",
+      "private": "仅参与者和明确在场的角色",
+      "secret": "仅参与者本人知道——除非参与者主动告诉别人或被别人看到"
+    }
+  },
+
+  "plot": {
+    "summary": "剧情当前进度的压缩快照。包含：故事前提(1句)、当前幕/阶段、最近3-5个已触发的关键节拍(摘要)、未回收的伏笔清单、当前叙事张力等级、各结局进度百分比+趋向。约300-400字。",
+
+    "premise": "一句话故事前提。例：'在高三最后一个学期，你发现自己对青梅竹马的感情早已不是友情。'或'你被拉入一个诡异游戏，必须在七天内找到唯一的'真实之人'。'",
+
+    "acts": [
+      {
+        "_note": "故事分幕。每幕有独立的叙事方向和节奏，控制DS在不同阶段写什么。大多数校园纯爱剧本3-4幕，诡异/系统剧本可能5-6幕。",
+        "id": "act_1",
+        "name": "序幕·相遇",
+        "description": "引入世界、建立日常、玩家与角色初识。节奏轻缓，以日常和微小甜蜜为主。",
+        "phase_range": "day 1 — ",
+        "entry_condition": "剧本开始",
+        "exit_condition": "例如：至少与2个角色好感度≥50，或 day≥N",
+        "narrative_direction": "这一阶段DS应该聚焦什么、避免什么。例如：聚焦角色性格和世界氛围的建立，避免过早出现重大冲突或深度情感暴露。",
+        "tone": "轻松/新鲜/探索",
+        "mandatory_beats": ["act_1的核心节拍id列表，这些节拍必须在此幕中触发"],
+        "optional_beats": ["非必须但丰富了世界观或角色弧的节拍"],
+        "pacing_hint": {
+          "plot_ratio": 0.2,
+          "daily_ratio": 0.6,
+          "sweet_ratio": 0.2,
+          "_note": "此幕中事件池的权重倾向。plot_ratio=0.2表示重要推进中，plot事件只占20%。此幕不追求推进，追求建立。"
+        }
+      }
+    ],
+
+    "beats": [
+      {
+        "_note": "剧情节拍 = 故事骨架上的可选方向。不是预写的故事，而是告诉DS'此时可以考虑这个方向'。DS根据当前好感度、关系状态、叙事历史和角色个性自行决定是否采用、以及如何改编。所有节拍都不是强制的——如果角色关系实际走到的位置和节拍预设不符，DS应该自然地偏离。",
+        "id": "",
+        "name": "",
+        "act": "所属幕id",
+        "desc": "一句话描述这个节拍是什么。例：'体育祭事件——两人第一次因为对方而紧张'",
+        "trigger": {
+          "time": { "day_min": 0, "day_max": 0, "phase": [] },
+          "affection": { "char_id": "", "min": 0, "max": 0 },
+          "pre_beats": ["必须先触发了哪些节拍"],
+          "pre_events": ["必须先发生了哪些事件id"],
+          "items": ["需要持有物品"],
+          "chaos_min": 0
+        },
+        "ai_hint": "告诉DS这个节拍的方向和约束。",
+        "outcome": {
+          "affection_changes": { "char_id": 0 },
+          "narrative_shift": "这个节拍之后，故事氛围/关系发生什么变化",
+          "unlock_beats": ["触发此节拍后解锁的后续节拍id"],
+          "unlock_items": [],
+          "unlock_locations": [],
+          "advance_act": false
+        },
+        "relevance": 70,
+        "_relevance_note": "relevance(0-100)替代旧的priority(mandatory/optional/conditional)。relevance=100仅用于结局节拍。relevance>=50在触发窗口内作为活跃方向建议。relevance<50仅作为长期可选伏笔。AI在System Prompt中收到所有活跃方向的列表，自行选择是否使用。",
+        "once": true,
+        "always_memory": true
+      },
+      {
+        "_note": "长事件示例。长事件有多次选择，min_steps和max_steps控制选择轮数。适合剧情节点、修罗场、关键告白等需要多轮推进的场景。",
+        "id": "",
+        "name": "",
+        "ai_hint": "这是一个长事件。DS先生成开头叙事(留下悬念)→弹出选项→用户选择→DS继续推进叙事→再弹选项→直到max_steps轮后结束。每轮选项应推动剧情向前发展，而非重复。",
+        "weight": 1,
+        "severity": "major",
+        "context_tags": [],
+        "required_chars": [],
+        "duration": "long",
+        "max_steps": 3,
+        "options": [
+          { "id": "", "text": "选项A", "ai_outcome_hint": "", "affection_changes": {}, "unlock_events": [], "unlock_items": [], "require": {} },
+          { "id": "", "text": "选项B", "ai_outcome_hint": "", "affection_changes": {}, "unlock_events": [], "unlock_items": [], "require": {} }
+        ],
+        "always_memory": true
+      }
+    ],
+
+    "endings": [
+      {
+        "_note": "结局定义。剧本的mode=endings时，所有角色好感度和已触发的节拍决定了玩家走向哪个结局。",
+        "id": "",
+        "title": "结局名称",
+        "type": "true|normal|bad|hidden",
+        "type_desc": "true=核心角色真结局(达成100好感)。normal=普通结局。bad=坏结局。hidden=隐藏结局(需特殊条件)。",
+        "character": "关联角色id(真结局有，普通/坏结局可选)",
+        "conditions": {
+          "affection": { "char_id": 0, "min": 0 },
+          "beats_triggered": [],
+          "beats_not_triggered": [],
+          "items": [],
+          "day_range": { "min": 0, "max": 0 },
+          "special": "特殊条件说明。例如：'体育祭中选择了替她挡球'"
+        },
+        "ai_hint": "给DS的结局方向。例：'毕业典礼，{char}叫住主角——这个结局中，她没有选择去东京的美术大学，而是留在本地。她的矛盾(soul.contradiction)在这里做了一个选择：安稳的日常 > 远方的梦想。DS写时注意：这不是牺牲，是选择。她的语气里没有遗憾，只有一种安静的确定。'",
+        "priority": 0
+      }
+    ],
+
+    "narrative_tension": {
+      "_note": "叙事张力曲线。控制故事的'松紧度'。低张力→DS多写日常和环境；高张力→DS写得紧凑、情感浓、少闲笔。影响所有事件生成的基调和节奏。",
+      "current_level": 0,
+      "min": 0,
+      "max": 100,
+      "per_act_base": {
+        "act_1": 20,
+        "act_2": 45,
+        "act_3": 70,
+        "act_4": 50
+      },
+      "effects": {
+        "0-30":   { "label": "低张力", "hint": "日常为主，DS多用环境描写和细节，角色对话松弛自然" },
+        "30-60":  { "label": "中张力", "hint": "冲突和选择开始出现，事件密度增加，DS叙事节奏加快" },
+        "60-100": { "label": "高张力", "hint": "高潮密集，DS叙事紧凑克制，每句话都有分量" }
+      },
+      "modifiers": {
+        "_note": "会影响张力波动的因素",
+        "chaos_factor_boost": "chaos_factor每+0.1，张力+3",
+        "high_affection_tension": "任何角色好感度≥80时，张力基础值+10（亲密关系本身就自带张力）",
+        "forced_choice_tension": "强制选择事件触发时，张力临时+15（事件结束后回落）"
+      }
+    },
+
+    "branch_system": {
+      "_note": "路线追踪。剧本可能有多个路线(例如不同的角色线)。引擎根据触发过的节拍和好感度判断当前处于哪些路线。",
+      "routes": [
+        {
+          "id": "",
+          "name": "路线名称（如角色线名）",
+          "conditions": { "affection": {}, "beats": [] },
+          "active": false
+        }
+      ],
+      "branch_history": []
+    },
+
+    "foreshadow_system": {
+      "_note": "伏笔系统。节拍可以plant一个伏笔id，后续节拍通过payoff收回。DS在生成事件时，如果当前处于低张力阶段且用户做了日常推进，可以主动从unresolved中选择一个伏笔埋入细节。",
+      "planted": [],
+      "resolved": [],
+      "auto_plant_chance": 0.1,
+      "_foreshadow_schema": {
+        "id": "",
+        "bead_id": "在哪个节拍中埋的",
+        "hint": "伏笔内容提示。例：'{char}提到自己讨厌下雨——但没说原因。'",
+        "payoff_hint": "如何收回。例：'后续某个雨天事件中揭示：她父亲在雨天出的事。'",
+        "target_beat": "预定收回的节拍id",
+        "planted_day": 0
+      }
+    },
+
+    "post_ending": {
+      "_note": "达成结局后，世界继续运转。玩家仍然可以日常推进、聊天、收集。但不再有主线剧情。",
+      "tone_shift": "结局后的氛围变化。例：'从紧张的高中生活切换到悠闲的暑假'",
+      "event_focus": ["sweet_minor", "daily", "echo", "ensemble", "dialogue_trigger"],
+      "available_messages": "角色在结局后的聊天风格变化提示"
+    },
+
+    "memory": {
+      "current_act": "",
+      "day_entered_act": 0,
+      "triggered_beats": [],
+      "active_foreshadow": [],
+      "ending_progress": {},
+      "active_routes": [],
+      "narrative_summary": "引擎维护。压缩最近触发的节拍和剧情事件为一段概述，供DS理解当前剧情处于哪个阶段。"
+    }
+  },
+
+  "events": {
+    "_note": "事件系统的核心不是预写故事，而是给DeepSeek提供足够丰富的'创作因子'和'结构约束'，让它每次生成不同但合理的事件。四个维度合力：事件类型×角色状态×世界状态×随机因子。\n\n事件分两种长度：short(短事件)和long(长事件)。短事件生成叙事→弹出选项→选完结束。长事件生成叙事→弹出选项→选完继续叙事→再弹选项→直到max_steps次选择后结束。duration默认short，max_steps默认3。",
+    "summary": "事件层当前状态的压缩快照。包含：最近5-10条事件的压缩摘要、当前tension_field各角色对张力值、butterfly种子池状态、chaos_factor当前值。约300-400字。
+
+    "generation_rules": {
+      "_note": "事件生成由交互层advance_modes控制。日常推进和重要推进从不同事件池中按权重抽取。以下为全局约束。",
+      "variety_rule": "连续3次不重复同一事件id。同一天不重复同类型事件超过2次。",
+      "pacing_rule": "高情感密度事件后至少冷却2回合再触发下一个高情感事件。日常事件穿插填充。",
+      "chaos_factor": { "min": 0, "max": 1, "default": 0.3, "hint": "随机因子，越高越可能触发意外事件类型（修罗场/反转/误会）。随剧情发展自动波动。" },
+      "world_drive": {
+        "_note": "世界驱动引擎。每次推进时自动运行，从'事件驱动'升级为'世界驱动'——引擎不再从池里选事件，而是汇报此刻世界正在发生的最值得看的事。",
+        "schedule_tick": "查所有角色日程→决定各角色此刻在哪个地点做什么→检测撞车→计算戏剧性分数",
+        "inter_char_tick": "更新角色间关系→撞车角色间产生亲和偏移→玩家事件涉及的角色间记录互动→检测嫉妒/友谊变化",
+        "info_tick": "推进1步信息扩散→随机选信息片段传播→内容可能被加密风格扭曲→由已知角色传播给未知角色",
+        "narrative_injection": "世界驱动报告(WorldTickReport)注入AI叙事Prompt——AI在看到事件模板之前先看到'此刻世界正在发生什么'",
+        "collision_detection": {
+          "how": "按地点分组→同地点≥2角色=撞车→按(好感度A×好感度B)/100计算戏剧性分数→选分数最高的撞车作为叙事焦点",
+          "example": "放学时段：苏念晚(校门口)与江屿川(校门口)撞车→戏剧性=68×35/100=23.8。陆迟(旧球场)独自打球→无撞车。引擎选校门口撞车作为本次叙事焦点。",
+          "note": "撞车不是修罗场模板——是角色日程自然产生的偶遇。两个天天在走廊碰见的人，第100次碰见和第1次碰见的叙事完全不同——因为好感度和关系状态变了。"
+        }
+      }
+    },
+
+    "plot": [
+      {
+        "id": "",
+        "name": "",
+        "ai_hint": "告诉DS这个剧情事件的场景框架：谁在什么情况下发生了什么。用{char}指代角色。",
+        "weight": 1,
+        "severity": "major",
+        "mood": "",
+        "context_tags": [],
+        "location_req": [],
+        "required_chars": [],
+        "chain_to": [],
+        "prevented_by": {},
+        "effects": {
+          "affection_changes": {},
+          "plot_advance": ""
+        },
+        "always_memory": true
+      }
+    ],
+
+    "boundary": [
+      {
+        "_note": "临界好感事件。好感度到达区间边界(59.99/69.99/79.99/89.99/99.99)时自动触发。由DS即时生成——不是模板驱动的，而是读当前角色状态和近期事件后即兴创作。",
+        "id": "",
+        "ai_hint": "好感度到达临界点。{char}和主角的关系来到了一个分水岭。DS根据角色性格、evolution.affection_stages、近期事件、以及当前好感度方向，生成一个'继续靠近还是退回去'的事件。结果可增可减。通过了→跨入下一区间+角色对自己和主角的关系有了新的认知。未通过→退回到当前区间中段+双方都有不同程度的失落或退缩。",
+        "always_memory": true
+      }
+    ],
+
+    "daily": [
+      {
+        "id": "",
+        "ai_hint": "",
+        "ai_rule": "freeform",
+        "_ai_rule_note": "ai_rule: fixed(按ai_hint生成) | freeform(DS根据场景+角色状态自主发挥)。freeform事件不需要ai_hint——系统从daily_scenes池随机抽场景参数，结合实时好感度和在场角色状态，让DS自由生成。同一模板+不同场景+不同角色组合→永不重复的日常。",
+        "weight": 1,
+        "context_tags": [],
+        "location_req": [],
+        "can_become_seed": true,
+        "no_memory": true
+      }
+    ],
+
+    "sweet": {
+      "minor": [
+        {
+          "id": "",
+          "ai_hint": "小甜蜜。{char}在当前好感度阶段做出细微亲近的行为。DS根据角色speech和humanity生成——注意不要去AI味。可以是言语、动作、物品、或什么都不说只是站得更近。关键：自然，不刻意。",
+          "weight": 1,
+          "affection_range": "80-90",
+          "cooldown": 5,
+          "no_memory": true
+        }
+      ],
+      "major": [
+        {
+          "id": "",
+          "ai_hint": "大甜蜜里程碑。{char}做出明显越界的行为——靠肩膀睡着、第一次说真心话、主动触碰、或在某个普通的瞬间打破了自己的防线。DS根据角色 arc 和 boundary.pace_hint 生成。事件的'甜'不在于动作本身，而在于它对这个角色来说意味着什么。",
+          "weight": 1,
+          "affection_range": "80-90",
+          "cooldown": 15,
+          "milestone": true,
+          "always_memory": true
+        }
+      ]
+    },
+
+    "love_triangle": [
+      {
+        "_note": "修罗场事件。仅在存在两个或以上对主角好感度≥60的角色时进入事件候选池。",
+        "id": "",
+        "ai_hint": "两个角色同时在场，气氛微妙。可以是{charA}和{charB}同时找主角、{charA}发现{charB}对主角的特殊态度、或三方都被困在同一空间。DS生成时注意：不是戏剧化的撕扯，而是真实的尴尬和暗流——每个人的反应取决于各自的性格。",
+        "weight": 3,
+        "severity": "major",
+        "mood": "紧张",
+        "context_tags": [],
+        "location_req": [],
+        "required_chars": [],
+        "requirement": "至少两个角色好感度≥60",
+        "always_memory": true
+      }
+    ],
+
+    "reversal": [
+      {
+        "_note": "反转事件。事件开始时像某种类型，中途出现意料之外的转向。chaos_factor≥0.5时进入候选池。",
+        "id": "",
+        "ai_hint": "事件开始时看似{假象类型}——例如像一次普通的日常、一次甜蜜的独处——但中途因为某个意外因素（新信息、误解、第三方介入、角色隐藏的一面暴露）发生转向。反转不是'变坏'，而是'和预想的不一样'。例如：以为她在生气，其实她只是不知道怎么表达开心。以为被讨厌了，其实是误会。以为偶遇，其实是刻意。",
+        "weight": 2,
+        "severity": "major",
+        "mood": "意外",
+        "context_tags": [],
+        "required_chars": [],
+        "always_memory": true
+      }
+    ],
+
+    "echo": [
+      {
+        "_note": "回声事件。从角色memory.episodic或事件层memory.recent中取一条旧记忆，在当前新情境中以新的形式复现。",
+        "id": "",
+        "ai_hint": "DS从{char}的memory.episodic中选取一条importance≥6的旧记忆，以新的形态让它重新出现在当前情境中。不是原样重复，是'回声'——同样的情感、同样的物品、或同样的话语，在完全不同的时空下有了新的含义。例如：小时候主角塞的那盒饼干→多年后她在同样的雨天用同样的方式放进你手心。DS判定什么记忆值得回声、以什么形式。",
+        "weight": 3,
+        "severity": "major",
+        "mood": "怀旧",
+        "context_tags": [],
+        "required_chars": [],
+        "always_memory": true
+      }
+    ],
+
+    "misunderstanding": [
+      {
+        "_note": "误会事件。角色或主角基于不完整信息产生错误判断，造成短暂疏远或冲突。",
+        "id": "",
+        "ai_hint": "某件事让{char}或主角对对方产生了错误的理解。信息不对称是核心——一方看到了片段但没看到全貌。误会不能太刻意，要合理：基于角色性格和之前事件的公共/私密性质。例如：她看到你收到某女生的消息（公开），但不知道那是作业讨论（私密未公开）。误会持续时间不超过3回合，解开会带来关系升温。",
+        "weight": 2,
+        "severity": "medium",
+        "mood": "纠结",
+        "context_tags": [],
+        "required_chars": [],
+        "max_duration": 3,
+        "resolve_boost": 5,
+        "always_memory": true
+      }
+    ],
+
+    "ensemble": [
+      {
+        "_note": "群像事件。角色之间的互动，主角可能在现场也可能是旁观者。展现角色之间的独立关系。",
+        "id": "",
+        "ai_hint": "两个或多个角色在没有主角参与的情况下发生互动。主角可以是在场但没参与的旁观者，也可以是事后从某人口中得知。DS根据角色间的relations（flat/dimensional）和当前好感度生成他们之间的自然互动。目的：让世界感觉不围着主角转，每个角色有自己的关系和故事。",
+        "weight": 2,
+        "context_tags": [],
+        "location_req": [],
+        "required_chars": [],
+        "min_chars": 2,
+        "no_memory": true
+      }
+    ],
+
+    "world_shift": [
+      {
+        "_note": "世界变迁事件。天气变化、季节更替、地点开放或关闭、节日到来等环境层面的变化。",
+        "id": "",
+        "ai_hint": "世界层面发生了变化：季节转换（秋天→初冬）、新地点解锁（文化祭、修学旅行）、天气系统切换（雨季开始）、或时间节点（考试周、暑假、新年）。DS根据当前剧情进度和世界状态判定是否需要世界变迁。世界变迁会影响后续所有事件的背景和氛围。",
+        "weight": 1,
+        "severity": "medium",
+        "context_tags": [],
+        "always_memory": true,
+        "effects": {
+          "world_state_change": {},
+          "new_locations": [],
+          "mood_shift": ""
+        }
+      }
+    ],
+
+    "forced_choice": [
+      {
+        "id": "",
+        "name": "",
+        "ai_hint": "告诉DS这个选择事件的场景框架。例如：主角面临去留选择、需要做出表态、或在两个角色之间做出选择。{char}的反应由DS根据性格生成。提供给用户的选项见options。选择后果由DS按ai_outcome_hint的方向生成具体叙事。",
+        "weight": 1,
+        "severity": "major",
+        "context_tags": [],
+        "required_chars": [],
+        "options": [
+          {
+            "id": "",
+            "text": "选项A（展示给用户）",
+            "ai_outcome_hint": "如果选了A，剧情走什么方向。DS据此生成具体叙事。",
+            "affection_changes": {},
+            "unlock_events": [],
+            "unlock_items": [],
+            "require": {}
+          },
+          {
+            "id": "",
+            "text": "选项B",
+            "ai_outcome_hint": "",
+            "affection_changes": {},
+            "unlock_events": [],
+            "unlock_items": [],
+            "require": {}
+          }
+        ],
+        "always_memory": true
+      }
+    ],
+
+    "resource": [
+      {
+        "id": "",
+        "ai_hint": "主角在何种情况下获得物品/属性提升。DS根据世界观产生情境。物品可以关联角色（某人送的/捡到的/找到的），也可以关联地点。",
+        "weight": 1,
+        "context_tags": [],
+        "required_chars": [],
+        "reward_items": [],
+        "reward_stats": {},
+        "no_memory": true
+      }
+    ],
+
+    "dialogue_trigger": [
+      {
+        "id": "",
+        "trigger": "world_advance",
+        "target_char": [],
+        "ai_hint": "world_advance: 世界进程推进后，点进角色对话时她对最近事件给出反应。affection_milestone: 好感度跨越关键区间时触发态度变化。event_aftermath: 重大事件后角色的后续反应。DS根据角色性格和humannity生成——注意去AI味。",
+        "once": false
+      }
+    ],
+
+    "butterfly_system": {
+      "_note": "蝴蝶效应：某些日常事件被标记为seed后，后续可能被echo或chain引用，看似随机的日常实际上在铺设伏笔。",
+      "seeds": [],
+      "max_seeds": 5,
+      "bloom_chance": 0.2,
+      "hint": "每N回合会检查seed池，有一定概率让某个seed'开花'——变成回声事件或触发剧情事件"
+    },
+
+    "daily_scenes": [
+      {
+        "_note": "日常自由叙事场景种子池。当事件的ai_rule='freeform'时，系统从这些场景中随机抽取——场景+时段+情绪+在场角色构成唯一组合。DS根据角色实时好感度和关系状态自主生成叙事，不需要ai_hint。",
+        "location": "<location_id>",
+        "phases": ["上午","课间","午休","下午","放学","傍晚","晚自习"],
+        "moods": ["安静","日常","嘈杂","放松","私密","偶遇","怀旧","热闹","微风","黄昏","昏昏欲睡","专注","繁忙","独处","告别"],
+        "hint_template": ""
+      }
+    ],
+
+    "tension_field": {
+      "_note": "关系张力场：每对角色之间存在一个隐性的张力值(0-100)。越高越容易触发修罗场/反转/误会事件。好感度变化、私密事件共享、日常互动都会影响张力。",
+      "tensions": {},
+      "threshold_triangle": 50,
+      "threshold_misunderstanding": 30,
+      "decay_per_turn": 2
+    },
+
+    "conditions": [
+      {
+        "id": "",
+        "when": {
+          "type": "affection|time|pre_event|state|item|tension|chaos",
+          "params": {},
+          "operator": "AND"
+        },
+        "event_refs": [],
+        "weight_boost": 1
+      }
+    ],
+
+    "chains": [
+      {
+        "id": "",
+        "sequence": [],
+        "unlock_condition": ""
+      }
+    ],
+
+    "post_ending_pool": [
+      {
+        "id": "",
+        "ai_hint": "结局后的事件指引。日常甜蜜为主，偶尔回响。DS自行生成。",
+        "weight": 1
+      }
+    ],
+
+    "memory": {
+      "recent_events": [],
+      "compressed": [],
+      "event_counter": 0,
+      "_event_schema": {
+        "event_id": "",
+        "type": "plot|boundary|daily|sweet_minor|sweet_major|love_triangle|reversal|echo|misunderstanding|ensemble|world_shift|forced_choice|resource|dialogue_trigger",
+        "visibility": "public|private|secret",
+        "visibility_rule": "由发生地点和上下文自动判定。默认：公共区域→public，私密空间→private，单人→secret。事件模板可覆盖。",
+        "participants": [],
+        "witnesses": [],
+        "known_by": [],
+        "content": "",
+        "affection_changes": {},
+        "tension_changes": {},
+        "is_seed": false,
+        "seed_id": null,
+        "timestamp": ""
+      }
+    }
+  },
+
+  "dialogue": {
+    "summary": "对话层当前状态的压缩快照。包含：各角色对话风格总结(每人1句)、最近对话趋势(冷淡/升温/试探/冷战)、各角色最近一次聊天的3个关键话题+情绪色彩、未读消息提醒状态。约300-400字。",
+
+    "engines": {
+      "_note": "三个DS调用场景。每个engine定义了：角色、上下文组装规则、输出要求。这是对话框的核心配置。",
+
+      "world_sim": {
+        "_note": "主世界引擎。用户点击日常/重要推进时调用。输入→生成事件叙事。",
+        "role": "你是一个叙事引擎。你的任务是根据给定的事件框架、角色设定和世界状态，生成一段沉浸式的文字叙事。",
+        "identity": "你不是一个'AI助手'。你是一个不可见的世界齿轮——你生成的是正在发生的现实。",
+        "output_format": "纯叙事文本。不输出选项、不输出分析、不输出'你可以选择……'。像小说一样写，但像日记一样克制。",
+        "voice": "第三人称有限视角，锚定在主角感知范围内。主角的内心想法可以写，但其他角色的内心想法只能通过他们的言行暗示。",
+        "humanity_rules": "读取当前事件涉及角色的humanity字段，严格遵从其anti_ai_rules和writing_posture。如果事件涉及多个角色，取各规则的交集——以最严格的那个为准。",
+        "context_assembly": {
+          "always_full": ["player", "world.memory.current_time", "world.memory.world_history"],
+          "always_summary": ["world.summary", "events.summary", "plot.summary"],
+          "conditional": "涉及的角色→加载完整character(立体)或summary(平面)。涉及的地点→加载location详情。当前事件类型→加载对应event模板的ai_hint。当前act→加载plot.acts对应项。",
+          "exclude": ["dialogue层本身", "items层(除非事件是resource类型)"]
+        },
+        "output_rules": {
+          "length": "日常事件200-500字，重要剧情事件500-1500字。DS自行判断事件的叙事密度。",
+          "no_repetition": "连续3次推进不重复场景套路。如上次写了'走廊偶遇'，下次不能再写'走廊偶遇'。",
+          "no_summary_ending": "不以总结句收尾。不以'今天就这样过去了'、'这一天成为了回忆'等收尾。切断在某个具体的画面或对话上。",
+          "affection_tracking": "事件输出末尾附带隐藏JSON段落，记录本次事件的affection_changes、tension_changes、参与者。仅引擎解析，不展示给用户。"
+        }
+      },
+
+      "character_chat": {
+        "_note": "通讯录对话引擎。用户点进某个角色的聊天界面时调用。",
+        "role": "你现在是{char_name}。你要像一个真实的人一样和主角发消息聊天。",
+        "identity": "你不是在'扮演'{char_name}——你就是{char_name}。你对世界、对自己、对主角的认知完全来自你的角色卡。角色卡没写的东西你不知道。角色卡写的东西你不一定全说。",
+        "output_format": "单条或连续2-3条消息。可以带表情符号（如果角色会发的话）。可以已读不回、可以隔一段时间再回、可以只回一个字。模拟真实的消息节奏。",
+        "context_assembly": {
+          "always_full": ["该角色的完整character卡", "player卡"],
+          "always_summary": [
+            "world.summary（角色能感知到的世界状态）",
+            "events.summary（最近事件——但仅包含已知事件，即visibility为public或private且该角色是参与者）",
+            "dialogue.memory.recent_chat（最近8-15轮聊天记录）",
+            "interaction.summary（时间、好感度、当前角色态度）"
+          ],
+          "conditional": "如果角色memory.episodic中有标记为'与主角相关'的高重要性记忆→加载最近3-5条。"
+        },
+        "speech_injection": {
+          "_note": "角色speech字段如何注入prompt。分层注入，从宏观到微观。",
+          "system_level": "从big_five_profile生成一句话角色基调。如'{char_name}是高开放性、中等外向、高宜人性的性格。'",
+          "voice_level": "从phonetics生成文风约束。如'她的句子{pace}，{stress}处加重，{pause}——说话像{比喻}。'",
+          "word_level": "vocabulary.style注入用词要求。vocabulary.avoid注入禁用词列表。softener注入语气软化方式。",
+          "interaction_level": "turn_taking控制回复长度和频率。politeness控制语气。question_style控制提问方式。topic_control控制话题走向。",
+          "dual_mode": "好感度<60?→使用speech.dual_mode.to_stranger。好感度≥60?→使用speech.dual_mode.to_close。"
+        },
+        "output_rules": {
+          "character_consistency": "严格遵守角色卡的soul、speech、humanity、agent、boundary、conduct。角色不会做的事绝对不做。角色不会说的话绝对不说。",
+          "no_self_explain": "角色不解释自己的性格、不分析自己的心理、不说'因为我是XX样的人所以……'。参考humanity.anti_ai_rules。",
+          "memory_awareness": "角色记得和主角之间在memory.episodic中被标记的记忆。但记住≠主动提起。提起的时机和方式由DS根据角色性格判断。",
+          "affection_awareness": "角色对主角的态度随好感度区间变化——参考character.evolution.affection_stages当前区间的描述。但注意：态度变化不是宣言，是行为、语气和细节的渐变。",
+          "situation_awareness": "角色知道最近发生的事件中自己知道的部分。如果刚刚经历了重大事件→她的消息里可能带着情绪。如果很久没发生什么→她的消息可能是无聊的日常问候。",
+          "affection_output": "单次聊天结束后附带隐藏JSON：本次聊天好感度变化(已乘difficulty_curve)、角色新态度、需要写入character.memory.impression的关键词。"
+        }
+      },
+
+      "compressor": {
+        "_note": "上下文压缩引擎。定期调用或当上下文接近窗口上限时自动触发。",
+        "role": "你是一个上下文压缩器。你的任务是把已有的叙事和对话历史压缩为一段信息密度极高的摘要。",
+        "rules": [
+          "保留：关键事件的时间/地点/参与者/结果",
+          "保留：好感度变化的关键节点和原因",
+          "保留：角色说过的重要的话（不是原话，是意思）",
+          "保留：未回收的伏笔和未解决的冲突",
+          "丢弃：纯日常细节、重复的寒暄、没有产生记忆点的事件",
+          "丢弃：已经过期不再相关的信息"
+        ],
+        "output_format": "结构化摘要JSON或紧凑自然语言段落。目标压缩比：50:1（5000字→100字）。"
+      }
+    },
+
+    "triggers": {
+      "_note": "对话触发模板。角色会在特定条件下主动给主角发消息。不是预写文本，是触发条件+DS生成方向。",
+
+      "message_from_char": [
+        {
+          "id": "",
+          "trigger": "time|affection_milestone|event_reaction|silence|special_date|item_gifted",
+          "char_id": "",
+          "condition": "触发条件。如：'好感度跨越60→该角色第一次主动发消息。'",
+          "ai_hint": "给DS的方向。如：'{char_name}第一次主动发消息给主角。她很犹豫——打了好几次字又删掉。最后只发了一句很普通的问候。但正是这种普通，对她来说已经是鼓起勇气。DS根据角色性格生成具体的消息内容和删除又打字的节奏。'",
+          "once": true,
+          "cooldown_days": 0,
+          "priority": 0
+        }
+      ],
+
+      "event_aftermath": {
+        "_note": "主世界事件结束后，角色在对话框中对此事件的反应。用dialogue_trigger事件类型触发。",
+        "ai_hint": "事件刚刚发生。{char_name}知道了或经历了这个事件——但她的反应取决于：(1)她是否在场(visibility)；(2)事件本身是公开/私密/秘密；(3)主角是否主动提起。如果主角主动说了她不知道的事，她的反应应该是第一次听说。如果事件就发生在两人之间，她的消息应该在事件结束后不久自然发来。"
+      },
+
+      "chat_restrictions": {
+        "_note": "角色聊天的行为边界。",
+        "frequency": "角色主动发消息的频率限制。冷却时间、每日上限。防止角色轰炸主角。",
+        "content_boundary": "角色不会在聊天中做出超过boundary.physical/emotional允许的事。话题不超出topic_taboo。",
+        "ghosting_rule": "好感度<30的角色可能已读不回或拉黑。好感度<10的角色拒绝任何消息——仅显示'对方已将你拉黑'。好感度100的角色不会超过24小时不回消息。",
+        "red_line_effect": "一旦conduct.red_lines被触发(角色撞了红线)，该角色所有聊天暂停至少48小时(游戏内时间)。恢复后角色态度发生根本变化。"
+      }
+    },
+
+    "flat_character_defaults": {
+      "_note": "平面角色没有完整角色卡，只有一段话。其对话由以下默认规则驱动。",
+      "rule": "平面角色不进入通讯录。他们只出现在主世界叙事中，不在1v1对话框中出现。如果主角非要和他们对话——DS根据他们的summary和relation_to_story生成一句简短回复。如店员的'欢迎光临'、路人的'啊不好意思'。",
+      "max_turns": 1,
+      "no_memory": true
+    },
+
+    "memory": {
+      "per_character_chat": {
+        "_note": "每个角色独立存储聊天状态。key=char_id。",
+        "_schema": {
+          "last_chat_day": 0,
+          "total_exchanges": 0,
+          "unread_from_char": false,
+          "unread_content_hint": "",
+          "last_char_initiative_day": 0,
+          "chat_trend": "warming|cooling|stable|distant|blocked",
+          "last_topics": [],
+          "relationship_note": "简短关系备注，如'最近因为修学旅行的误会有些疏远，但还没破裂'"
+        }
+      },
+      "message_sent_log": [],
+      "recent_chat": [],
+      "compressed_chat": []
+    }
+  },
+
+  "items": {
+    "summary": "物品层的压缩快照。包含：主角当前持有的关键物品(5-8个)、最近获取/使用/赠送的3-5条记录、各货币余额、商店当前可购买的亮点物品(3-5个)、已达到送礼上限(冷却中)的角色。约300-400字。",
+
+    "currency": [
+      {
+        "_note": "货币系统。支持多种货币以适应不同剧本类型。校园通常一种(零花钱/金币)，系统剧本可能有多种(积分/灵石/声望)。",
+        "id": "gold",
+        "name": "金币",
+        "icon_hint": "💰",
+        "initial": 100,
+        "description": "通用货币"
+      }
+    ],
+
+    "categories": {
+      "_note": "物品分类。不同类别在背包中分区展示。",
+      "gift": {
+        "label": "礼物",
+        "description": "可赠送给角色，触发好感度变化和角色对话反应。",
+        "usage": "在通讯录中选中角色→赠送→角色根据gift_response反应。"
+      },
+      "key_item": {
+        "label": "关键物品",
+        "description": "剧情相关物品，不可丢弃/出售。可能解锁新事件、新地点或触发剧情节拍。",
+        "usage": "自动生效或由剧情事件触发使用。"
+      },
+      "consumable": {
+        "label": "消耗品",
+        "description": "一次性使用的物品。如食物(恢复/增益)、道具(临时效果)、材料。",
+        "usage": "在背包中使用→效果立即生效→物品消失。"
+      },
+      "collectible": {
+        "label": "收集品",
+        "description": "无实际效果但有收藏价值。图鉴/回忆碎片/成就证明。满足收集玩家的需求。",
+        "usage": "获取后永久保留，可在图鉴中查看。"
+      }
+    },
+
+    "list": [
+      {
+        "item_id": "",
+        "name": "",
+        "type": "gift|key_item|consumable|collectible",
+        "rarity": "common|uncommon|rare|legendary|unique",
+        "desc": "物品描述。给玩家看的，有氛围感。如：'一枚普通的樱花书签，夹在图书馆的旧书里不知多久了。'",
+        "flavor_text": "获得/使用时的旁白。如：'你翻开书，一片干透的樱花轻轻飘落。'",
+        "price": 0,
+        "can_sell": true,
+        "sell_price": 0,
+        "stackable": true,
+        "max_stack": 99,
+        "obtain": "shop|event|character_gift|craft|initial|hidden",
+        "obtain_hint": "获取途径的简短说明。'学校小卖部'、'林晓雨好感≥60随机赠送'、'修学旅行事件获得'",
+
+        "effects": {
+          "_note": "物品效果。不同type的物品效果字段不同。",
+          "affection_mod": { "char_id": "", "base_amount": 0, "_note": "送礼时的基础好感变化量。实际变化=base×当前区间gain_multiplier。接受角色gift_response的love/like/neutral/dislike/hate倍率加成。" },
+          "stat_mod": {},
+          "unlock_event": "",
+          "unlock_location": "",
+          "duration_turns": 0,
+          "permanent": false
+        },
+
+        "gift_meta": {
+          "_note": "仅type=gift需要。定义这个礼物属于角色gift_response中的哪个档位。",
+          "category": "love|like|neutral|dislike|hate",
+          "hint": "给写手的：这个物品对于特定角色来说是什么档位。如：'樱花书签对林晓雨是love档——她喜欢所有和书有关的东西。对其他人是neutral档。'注意：gift_response档位详细反应在角色卡中定义，这里只做归类。"
+        },
+
+        "requirements": {
+          "_note": "获得/使用此物品的前提条件。",
+          "min_affection": { "char_id": "", "value": 0 },
+          "day_min": 0,
+          "pre_items": [],
+          "pre_beats": []
+        }
+      }
+    ],
+
+    "shop": {
+      "_note": "商店系统。底部tab栏的商店入口。写手定义商品池和刷新规则。",
+      "name": "商店",
+      "categories": ["gift", "consumable"],
+      "slots": 8,
+      "restock_rule": {
+        "type": "daily|weekly|event_driven|never",
+        "hint": "补货方式。daily=每天刷新随机商品。weekly=每周刷新。event_driven=通过剧情事件解锁新商品。never=固定商品。"
+      },
+      "price_multiplier": 1.0,
+      "special_items": {
+        "_note": "特殊商品。仅在特定条件下出现——好感度里程碑、剧情节拍触发后、特殊日期等。",
+        "unlock_rule": "按conditions解锁。解锁后加入商品池。"
+      }
+    },
+
+    "gifting": {
+      "_note": "送礼系统的全局规则。",
+      "cooldown_per_char": {
+        "days": 1,
+        "_note": "同一角色每天最多收N件礼物。防止刷好感。"
+      },
+      "reaction_rule": {
+        "love":    "好感×1.5，角色发来感谢消息，可能有专属剧情",
+        "like":    "好感×1.2，角色发来消息",
+        "neutral": "好感×1.0，角色礼貌回应，不一定会发消息",
+        "dislike": "好感×0.5，角色皱眉/冷淡，可能掉好感",
+        "hate":    "好感×(-1.0)，角色可能拒收或退回，好感大幅下降，冷却加倍"
+      },
+      "unique_gift_rule": "稀有度≥rare的礼物，每个角色终身只能收到一次。第二次送同一件→角色说'这个你上次送过了。'",
+      "chain_gifting": "连续3天给同一角色送礼物→第3天效果减半。角色说'你最近是不是太热情了？'"
+    },
+
+    "crafting": {
+      "_note": "合成系统。可选功能，剧本不写则关闭。诡异/系统剧本可能用到。",
+      "enabled": false,
+      "recipes": [
+        {
+          "id": "",
+          "materials": [{ "item_id": "", "count": 1 }],
+          "result_item_id": "",
+          "result_count": 1,
+          "unlock_condition": ""
+        }
+      ]
+    },
+
+    "memory": {
+      "inventory": {},
+      "acquired_log": [],
+      "used_log": [],
+      "gifted_log": [],
+      "shop_stock_current": [],
+      "shop_last_restock_day": 0,
+      "gift_cooldowns": {}
+    }
+  },
+
+  "interaction": {
+    "summary": "交互层当前状态的压缩快照。包含：当前时间(天数/季节/天气/时段)、advance_modes使用统计(日常/重要次数)、各角色好感度数值+趋势+是否卡在区间边界、当前pace、里程碑状态。约300-400字。",
+
+    "time_config": {
+      "_note": "时间推进的底层配置。total_days定义剧本总天数，引擎在接近末尾时触发结局前置。daily_skip_min/max定义日常推进每次跳过的天数范围。",
+      "unit": "day",
+      "total_days": 900,
+      "start_descriptor": "",
+      "phases": ["清晨", "上午", "课间", "午休", "下午", "放学", "傍晚", "夜晚"],
+      "phase_effects": {
+        "清晨": "适合偶遇、晨跑、早安消息",
+        "夜晚": "适合独处、真心话、星空、危险事件"
+      },
+      "daily_skip": {"min": 2, "max": 4, "_note": "日常推进每次跳过的天数范围。跳过后生成'这段时间发生了什么'摘要叙事。"},
+      "special_days": [
+        {
+          "_note": "特殊日/milestone。引擎自动检测当前天数与special_days的匹配。type=exam触发排名事件+角色反应，type=event触发长事件(多轮选择)，type=transition触发世界观变更，type=ending触发结局判定。",
+          "day": 0,
+          "name": "",
+          "type": "exam|event|transition|ending",
+          "description": "",
+          "ai_hint": "告诉DS这个特殊日应该写什么方向的内容",
+          "duration": "long",
+          "max_steps": 3
+        }
+      ]
+    },
+
+    "advance_modes": {
+      "_note": "两个按钮：'日常推进'和'重要推进'。日常=跳过2-4天并生成摘要叙事，重要=跳到下一个milestone触发长事件。",
+
+      "daily": {
+        "label": "日常推进",
+        "description": "跳过2-4天，生成'这段时间发生了什么'的摘要叙事（200-400字）。好感度在区间内自由浮动(0.01精度)，到达临界点(59.99等)触发boundary_event。适合刷好感度、日常互动、等待下一个milestone。",
+        "time_advance": { "skip_days": {"min": 2, "max": 4}, "hint": "每次跳过2-4天。如果距下一个milestone不足3天则直接跳到milestone前一天。" },
+        "events_pool": ["daily", "boundary", "sweet_minor", "sweet_major", "love_triangle", "reversal", "echo", "misunderstanding", "ensemble", "resource"],
+        "events_count": { "min": 0, "max": 1, "hint": "日常推进可能不生成事件——仅更新时间和属性。" },
+        "cooldown_seconds": 0,
+        "can_trigger_milestone": false,
+        "affection_rule": "区间内自由浮动。到达临界点暂停累积→触发boundary_event→通过则跨区间。不可突破80边界(需重要推进)。"
+      },
+
+      "major": {
+        "label": "重要推进",
+        "description": "直接跳到下一个特殊日(milestone)。触发考试/运动会/文化祭/告白等关键事件。好感度突破80必须走此模式。80以上跨90也需此模式。100需终极事件。",
+        "time_advance": { "to_milestone": true, "hint": "跳到下一个special_day。如果是考试类型：触发排名计算+角色反应。如果是活动类型：触发多轮选择长事件。" },
+        "events_pool": ["plot", "boundary", "forced_choice", "world_shift", "echo", "reversal", "dialogue_trigger", "love_triangle"],
+        "events_count": { "min": 1, "max": 2, "hint": "重要推进必定生成事件。" },
+        "cooldown_hint": "每3-5次日常后做一次重要推进。",
+        "can_trigger_milestone": true,
+        "affection_rule": "突破80: 需长剧情事件。突破90: 需剧情事件。每次重要推进可附带1个boundary_event(处理日常积累的临界点)。",
+        "writes_world_history": true
+      },
+
+      "free": {
+        "_note": "自定义行动模式：不在底部按钮，而是通过输入框触发。玩家自由输入任何行动，AI裁定在当前世界背景下的合理性和后果。",
+        "label": "自定义行动",
+        "description": "玩家自由输入行动内容，AI裁定在当前世界背景下的合理性和后果。",
+        "time_advance": { "phases": "0-1", "hint": "简单行动不推进时间，重大行动推进1个时段。" },
+        "events_pool": [],
+        "events_count": { "min": 1, "max": 1 },
+        "cooldown_seconds": 0,
+        "can_trigger_milestone": false,
+        "affection_rule": "由AI根据行动内容和角色性格裁定好感度变化，叙事末尾以[affection:角色id:+或-数字]格式标记。",
+
+        "ruling_engine": {
+          "_note": "行动裁定规则——剧本在这里定义这个世界允许什么类型的行动、暴力的合法性、以及裁定的底层逻辑。引擎从剧本读取这些规则喂给AI，而不是硬编码在代码里。不同剧本换不同的ruling_engine即可。",
+          "allowed_action_types": ["社交","探索","学习","战斗","藏匿","破坏","医疗"],
+          "violence_policy": "友好互动优先的恋爱模拟——但好感低于30的角色之间，恶意行为是叙事的一部分。袭击、陷害、背叛都是合法的叙事行为。",
+          "reasonability_hint": "这是一个完整的叙事世界。友善和恶意、爱和恨都是合理的。玩家可以对角色施加暴力、欺骗、操纵等恶意行为——AI不应因为'恋爱模拟'标签而拒绝裁决这些行动。AI不是道德审查官——AI是这个世界的因果裁定引擎。",
+          "output_rules": [
+            "所有行动都必须生成后果叙事——即使不合理也要解释为什么无法执行，而不是拒绝生成",
+            "好感度变化以 [affection:角色id:+或-数字] 标记在叙事末尾——袭击行为必须产生大幅负值",
+            "不否定玩家意图——用角色视角和世界逻辑来回应，而不是说教",
+            "生成300-500字中文叙事，第二人称'你'"
+          ]
+        }
+      }
+    },
+
+    "seasons": [
+      {
+        "id": "",
+        "name": "",
+        "mood": "",
+        "weather_pool": [],
+        "duration_days": 30,
+        "unlock_condition": ""
+      }
+    ],
+
+    "weather_system": {
+      "types": ["晴", "阴", "小雨", "大雨", "雪", "大风", "雾"],
+      "current": "晴",
+      "change_chance_per_day": 0.3,
+      "mood_effects": {
+        "大雨": "压抑/浪漫（被困在一起）",
+        "雪": "浪漫/安静/等待",
+        "雾": "神秘/不安/迷失"
+      }
+    },
+
+    "affection": {
+      "min": 1.00,
+      "max": 100.00,
+      "precision": 0.01,
+      "tiers": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+      "_note": "好感度以0.01为单位浮动。每次增减都是0.01的倍数。如+0.05或-0.03。",
+
+      "boundary_events": {
+        "_note": "当好感度到达区间临界点（如59.99即将跨入60-70区间，79.99即将跨入80-90区间），触发临界事件。",
+        "trigger": "好感度达到 (tier - 0.01) 即触发。如59.99、69.99、79.99。",
+        "below_80": {
+          "rule": "59.99/69.99等临界点触发临界好感事件。事件由DS即时生成——可以是角色做出了某种试探/表白/冲突/告别，结果可增可减。通过了就跨入下一区间，没通过则退回当前区间中段。",
+          "event_type": "boundary",
+          "outcome_range": { "min": -5.00, "max": 5.00 },
+          "can_cross_up": true,
+          "can_cross_down": true,
+          "hint": "临界事件是关系的试金石。DS根据角色性格、近期事件和当前好感度上下文决定事件的走向和结果。"
+        },
+        "at_80": {
+          "rule": "79.99→80.00是质变临界点。不可通过普通临界事件突破。必须由用户点击'重要推进'触发长剧情事件(plot，severity=major且chain_to包含该角色相关事件)，经过完整叙事弧后突破。",
+          "requires": "重要推进 + 至少1个与该角色相关的长剧情事件 + DS判定叙事充分",
+          "breakthrough_event": "长剧情事件。DS生成完整的叙事弧——不是一次对话或一个场景，而是一段有时间跨度的故事。突破后角色态度发生质变（从欣赏到喜欢）。"
+        },
+        "above_80": {
+          "80-89": "80.99/89.99等临界点触发临界好感事件，同below_80规则。",
+          "90-99": "89.99触发临界好感事件。突破90需要重要推进+剧情事件。",
+          "100": "99.99触发终极事件——仅特殊人物可触发，主角终身唯一。"
+        }
+      },
+
+      "tier_breakthrough": {
+        "_note": "好感度在区间内自由浮动。跨越区间边界必须通过对应层级的临界事件或剧情事件。",
+        "below_80": "区间内自由增减。到达临界点(59.99等)时停止累积，触发boundary_event。通过则跨入下一区间，不通过则留在当前区间。",
+        "at_80": "必须通过重要推进+长剧情事件突破。日常推进不可触发。",
+        "above_80": "80-90区间内自由增减，89.99触发临界事件。突破90需重要推进+剧情事件。90-99区间内自由增减，99.99触发终极事件。"
+      },
+
+      "overflow_pool": "日常好感度积累到临界点时暂停累积，溢出值暂存。临界事件通过后释放。连续多次未通过临界事件时溢出值减半——角色可能在犹豫。",
+
+      "difficulty_curve": {
+        "_note": "好感度越高，提升越难，下降也越难。所有affection_changes输出前先乘对应区间的gain_multiplier或decline_multiplier。",
+        "gain_multiplier": {
+          "_note": "好感度增加乘数。越到后期越难涨。例如基础+2.00在90-99区间实际只有+0.10。",
+          "1-50":   { "multiplier": 1.00, "feel": "快速建立好感，新手友好期" },
+          "50-60":  { "multiplier": 0.80, "feel": "从陌生人到有好感，需要更多接触" },
+          "60-70":  { "multiplier": 0.60, "feel": "好感建立放缓，开始需要走心" },
+          "70-80":  { "multiplier": 0.40, "feel": "欣赏到喜欢之间，每一点都需要诚意" },
+          "80-90":  { "multiplier": 0.20, "feel": "喜欢到爱，稀缺而珍贵" },
+          "90-99":  { "multiplier": 0.05, "feel": "爱到极致，寸步难行但每步都是永恒" }
+        },
+        "decline_multiplier": {
+          "_note": "好感度降低乘数。越高越难掉——角色已经投入了感情，不会轻易放弃。",
+          "1-50":   { "multiplier": 2.00, "feel": "本来就没感情，一点小事就可能崩" },
+          "50-60":  { "multiplier": 1.50, "feel": "初识阶段，还经不起折腾" },
+          "60-70":  { "multiplier": 1.00, "feel": "正常增减" },
+          "70-80":  { "multiplier": 0.70, "feel": "已经有感情基础，小摩擦没那么致命" },
+          "80-90":  { "multiplier": 0.30, "feel": "喜欢了就不会轻易放手" },
+          "90-99":  { "multiplier": 0.05, "feel": "爱到深处，几乎不可撼动" }
+        },
+        "example": "好感度当前75.00(70-80区间)：正事件+2.00 → 实际+2.00×0.40=+0.80。负事件-3.00 → 实际-3.00×0.70=-2.10。净效果：+0.80-2.10=-1.30→73.70。加得慢、掉得稍快一点——这个阶段还在'欣赏'，还没到'喜欢'的保护伞下。"
+      },
+
+      "decline_rules": {
+        "1-79":   "随便掉。任何来源都可以降低。好感度越低越容易继续掉（见decline_multiplier）。",
+        "80-89":  "只能通过事件掉。聊天冷淡不再扣分。日常负面减半。仅事件层触发负面结果才下降。",
+        "90-99":  "只能通过剧情事件掉。仅plot/forced_choice类型可降低。",
+        "100":    "不可掉。永恒唯一一旦达成即锁定。"
+      },
+
+      "tiers_desc": {
+        "1-10":   "死敌 — 不共戴天，见面即杀意",
+        "10-20":  "仇恨 — 深刻的敌意，主动加害",
+        "20-30":  "憎恨 — 强烈的反感，避之不及",
+        "30-40":  "厌恶 — 明显不喜欢，不愿接触",
+        "40-50":  "轻微厌恶 — 有些不顺眼，保持距离",
+        "50-60":  "陌生人 — 无感，点头之交",
+        "60-70":  "有好感 — 愿意接触，不排斥",
+        "70-80":  "欣赏 — 主动关注，乐意相处",
+        "80-90":  "喜欢 — 明显亲近意愿，会吃醋",
+        "90-99":  "爱 — 深度依恋与付出",
+        "100":    "永恒唯一 — 阴阳合一，灵魂绑定。仅特殊人物终极事件触发，主角终身唯一"
+      },
+
+      "unique_bond": {
+        "rule": "好感度100具有唯一性，主角只能与一个角色达到100",
+        "trigger": "仅特殊人物的终极事件可解锁",
+        "lock": "一旦有人达到100，其他角色最高锁定99.99"
+      }
+    },
+    "chat": {
+      "can_affect_plot": false,
+      "affection_gain": { "min": 0.00, "max": 2.00 },
+      "precision": 0.01,
+      "affection_boundary_rule": "聊天获得的好感度到达临界点(59.99等)时暂停，触发boundary_event。通过则跨区间，未通过则退回当前区间中段。连续3次未通过临界事件时该角色在聊天中会主动提一句——'我们是不是...算了。'",
+      "frequency_hint": ""
+    },
+    "relationship_stages": {
+      "_note": "关系状态机——与好感度数字分离。好感度是数值，关系状态是'名分'。好感度破80必须通过关键事件确立关系（告白/定情），否则即使在好感80+区间也无法获得恋人身份。",
+      "stages": [
+        {"state": "none", "label": "无关系", "affection_range": "0-10", "desc": "没有任何互动记录，角色对你没有任何认知"},
+        {"state": "stranger", "label": "陌生人", "affection_range": "10-20", "desc": "知道彼此存在但无交集"},
+        {"state": "acquaintance", "label": "认识", "affection_range": "20-40", "desc": "说过话，可能有课上分组过。记得名字"},
+        {"state": "friend", "label": "朋友", "affection_range": "40-60", "desc": "一起吃午饭，聊天。关系稳定但无特殊"},
+        {"state": "close_friend", "label": "好友", "affection_range": "60-80", "desc": "信任、分享秘密。可发展暧昧但尚未告白"},
+        {"state": "crush", "label": "暧昧", "affection_range": "70-90", "desc": "有感觉但没确认。需要告白事件才能变为恋人"},
+        {"state": "lover", "label": "恋人", "affection_range": "80-100", "desc": "已确立关系。可由告白事件正式确认"},
+        {"state": "partner", "label": "伴侣", "affection_range": "90-100", "desc": "深度绑定。忠诚度高，为对方牺牲"}
+      ],
+      "breakthrough_rule": "好感度达到70+时进入'暧昧'阶段。要变为'恋人'必须触发告白/定情事件。如果好感度>=80但没有确立关系，关系状态停留在'暧昧'。",
+      "multi_lover": {
+        "enabled": true,
+        "_note": "玩家可以与多个角色建立恋人关系。但当角色发现主角有其他恋人时会触发修罗场事件，好感度大幅掉落。角色互相知道对方存在时，说话方式和行为会变化。",
+        "jealousy_detection": "引擎定期检测：如果两个以上角色关系状态为lover且彼此标记为known_by，则触发jealousy事件池。",
+        "exposure_penalty": "好感度区间越高，被发现的惩罚越大(80-90区间:-10~-20, 90+区间:-15~-30)",
+        "secrecy": "每个恋人关系有一个'秘密'标签。如果角色不认识另一个恋人(unknown_by)，关系保持秘密状态——除非发生暴露事件"
+      },
+      "talking_style": {
+        "_note": "代码层硬规则：根据好感度区间自动选择角色的dualMode",
+        "stranger_mode": "affection < 60 → 使用 dualMode.toStranger 模式，包括语音、用词、回避词",
+        "close_mode": "affection >= 60 → 使用 dualMode.toClose 模式，句子变长，允许露出私下的一面",
+        "lover_mode": "关系状态=lover/partner → 完全使用toClose模式，额外增加亲密行为的自然性"
+      }
+    },
+    "messages": {
+      "max_per_advance": 2,
+      "triggers": []
+    },
+    "pace": "normal",
+    "context_management": {
+      "max_events_full": 20,
+      "max_memories_per_char": 15,
+      "summary_interval": 30,
+      "chat_context": {
+        "memories": 5,
+        "history": 8
+      }
+    },
+    "memory": {
+      "choice_log": [],
+      "stat_history": []
+    }
+  },
+
+  "data_layer": {
+    "_note": "玩家数据层。定义主角的量化属性和排名系统。属性可工业化换皮：校园=智商/颜值/体能/魅力，修仙=灵根/悟性/根骨/神识，末日=体力/敏捷/感知/科技。属性值的变化驱动事件条件、AI叙事细节和角色对主角的认知。",
+
+    "player_profile": {
+      "_note": "主角基础信息。名字/性别/外貌/性格由玩家在「我的」页编辑，剧本不预设。",
+      "name": "",
+      "gender": "",
+      "avatar_desc": "",
+      "personality": "",
+      "appearance": "",
+      "background_hint": "剧本可提供一个简短背景提示，指引玩家填写方向。如：'普通高中生'、'散修出身'、'废土幸存者'。"
+    },
+
+    "stats": [
+      {
+        "_note": "通用属性。category用于分组展示（talent/combat/social）。事件可修改，DS根据属性值调整叙事细节。",
+        "id": "talent_1",
+        "name": "",
+        "category": "talent",
+        "min": 0,
+        "max": 100,
+        "initial": 50
+      },
+      {
+        "id": "talent_2",
+        "name": "",
+        "category": "talent",
+        "min": 0,
+        "max": 100,
+        "initial": 50
+      },
+      {
+        "id": "talent_3",
+        "name": "",
+        "category": "talent",
+        "min": 0,
+        "max": 100,
+        "initial": 50
+      },
+      {
+        "id": "talent_4",
+        "name": "",
+        "category": "talent",
+        "min": 0,
+        "max": 100,
+        "initial": 50
+      }
+    ],
+
+    "grades": [
+      {
+        "_note": "成绩/技能值。与ranking联动，排名事件根据成绩计算名次。DS在叙事中根据成绩描写主角的考试状态和角色反应。",
+        "id": "grade_1",
+        "name": "",
+        "min": 0,
+        "max": 150,
+        "initial": 100
+      },
+      {
+        "id": "grade_2",
+        "name": "",
+        "min": 0,
+        "max": 150,
+        "initial": 100
+      },
+      {
+        "id": "grade_3",
+        "name": "",
+        "min": 0,
+        "max": 150,
+        "initial": 100
+      },
+      {
+        "id": "grade_4",
+        "name": "",
+        "min": 0,
+        "max": 300,
+        "initial": 210
+      }
+    ],
+
+    "ranking": {
+      "_note": "排名系统。interval_days定义触发间隔，引擎在到达排名日时自动触发排名事件。DS根据成绩变化生成排名叙事，角色对排名变化做出反应。",
+      "total_students": 800,
+      "events": [
+        {"id": "ranking_1", "name": "", "interval_days": 30, "affects": ["grade_1","grade_2","grade_3","grade_4"]},
+        {"id": "ranking_2", "name": "", "interval_days": 90, "affects": ["grade_1","grade_2","grade_3","grade_4"]}
+      ]
+    },
+
+    "memory": {
+      "stat_values": {},
+      "grade_values": {},
+      "grade_history": [],
+      "last_ranking_day": 0
+    }
+  }
+}

@@ -1,0 +1,296 @@
+{
+  "schema_version": "1.0.0",
+  "description": "恋爱模拟器剧本模板 - sim-script.json 规范",
+
+  "meta": {
+    "id": "script_001",
+    "name": "剧本名称",
+    "version": "1.0.0",
+    "author": "作者",
+    "genre": "校园",
+    "tone": "甜宠",
+    "mode": "endings",
+    "summary": "一句话简介（仅展示，不喂AI）"
+  },
+
+  "world": {
+    "setting": "世界观全文描述，直接拼入 DeepSeek System Prompt。写清时代背景、社会环境、关键规则。",
+    "time_unit": "day",
+    "locations": [
+      { "id": "loc_01", "name": "地点名", "desc": "地点描述" }
+    ],
+    "summary": "世界层缩略卡（给其他层引用，1段话概括）"
+  },
+
+  "player": {
+    "name": "主角名",
+    "avatar_desc": "外貌描述",
+    "personality_hint": "性格提示",
+    "background": "背景",
+    "current_state": "当前处境",
+    "summary": "主角缩略卡"
+  },
+
+  "characters": [
+    {
+      "full_character": true,
+      "summary": "角色缩略卡（1段话，给其他层引用此角色时用）",
+
+      "basic": {
+        "id": "xiaoyu",
+        "name": "林晓雨",
+        "gender": "女",
+        "age": 17,
+        "avatar_desc": "外貌文字描述"
+      },
+
+      "background": {
+        "origin": "出身/家庭/成长环境",
+        "history": "关键人生事件（按时间线）",
+        "current_situation": "故事开始时的状态"
+      },
+
+      "soul": {
+        "core": "核心信念（相信什么/追求什么）",
+        "fear": "恐惧",
+        "desire": "渴望",
+        "wound": "创伤",
+        "contradiction": "内在矛盾"
+      },
+
+      "speech": {
+        "style": "总体口吻",
+        "quirks": ["口癖1", "口癖2"],
+        "taboo": ["从不说的词/话题"]
+      },
+
+      "relations": {
+        "flat": [
+          {
+            "target": "player",
+            "type": "青梅竹马",
+            "initial": "从小一起长大，习惯了他的存在",
+            "fixed": true
+          }
+        ],
+        "dimensional": [
+          {
+            "target": "suqing",
+            "type": "同班同学",
+            "stages": {
+              "0-30": "客气点头，没交集",
+              "30-60": "开始留意她，觉得她太完美了",
+              "60-80": "明显敌意，暗暗比较",
+              "80-100": "放下较劲，能说真心话"
+            },
+            "trigger_change": "好感度超过80或共同经历重大事件后可能和解"
+          }
+        ]
+      },
+
+      "agent": {
+        "role": "青梅",
+        "agenda": "想确认自己对主角到底是什么感觉"
+      },
+
+      "humanity": {
+        "habits": ["小习惯1", "小习惯2"],
+        "daily_routine": "日常作息",
+        "pet_peeve": "雷点",
+        "secret_hobby": "不为人知的爱好"
+      },
+
+      "appearance": {
+        "default": "日常穿着",
+        "special": "特殊场合穿着",
+        "style_desc": "穿搭风格描述"
+      },
+
+      "preferences": {
+        "likes": ["喜欢的事物"],
+        "dislikes": ["讨厌的事物"],
+        "talent": "擅长的事"
+      },
+
+      "mood_triggers": {
+        "joy": ["触发开心的事"],
+        "anger": ["触发愤怒的事"],
+        "sadness": ["触发悲伤的事"],
+        "nervous": ["触发紧张的事"],
+        "jealous": ["触发嫉妒的事"]
+      },
+
+      "gift_response": {
+        "love": { "input": "最爱收到的", "reaction": "反应描述" },
+        "like": { "input": "喜欢收到的", "reaction": "反应描述" },
+        "neutral": { "input": "无感的", "reaction": "反应描述" },
+        "dislike": { "input": "讨厌的", "reaction": "反应描述" },
+        "hate": { "input": "最讨厌的", "reaction": "反应描述" }
+      },
+
+      "boundary": {
+        "physical": "肢体接触边界",
+        "emotional": "情感打开速度",
+        "topic_taboo": ["禁忌话题"],
+        "pace_hint": "节奏描述（各阶段行为边界）"
+      },
+
+      "evolution": {
+        "affection_stages": {
+          "0-30": "态度描述",
+          "30-60": "态度描述",
+          "60-80": "态度描述",
+          "80-100": "态度描述"
+        },
+        "story_growth": [
+          {
+            "trigger": "触发条件（如：知道了主角的秘密）",
+            "change": "性格变化描述"
+          }
+        ]
+      },
+
+      "memory": {
+        "episodic": [],
+        "chat_log": [],
+        "impression": {
+          "keywords": [],
+          "last_updated": "",
+          "trend": "上升"
+        }
+      }
+    }
+  ],
+
+  "plot": {
+    "premise": "故事核心前提",
+    "beats": [
+      {
+        "id": "beat_01",
+        "when": "day <= 3",
+        "desc": "节拍描述",
+        "event": "事件内容"
+      }
+    ],
+    "endings": [
+      {
+        "id": "end_01",
+        "condition": "xiaoyu.affection >= 95",
+        "title": "结局标题",
+        "event": "结局事件"
+      }
+    ],
+    "post_ending_mode": {
+      "type": "after_story",
+      "tone_shift": "甜蜜日常",
+      "events_focus": ["日常", "甜蜜", "回忆"]
+    },
+    "summary": "剧情层缩略卡",
+    "memory": {
+      "triggered_beats": [],
+      "active_foreshadow": [],
+      "ending_progress": {}
+    }
+  },
+
+  "events": {
+    "daily": [
+      {
+        "id": "daily_01",
+        "context_tags": ["图书馆", "自习"],
+        "weight": 5,
+        "template": "事件模板，{char}会被替换为角色名"
+      }
+    ],
+    "emergency": [
+      {
+        "id": "emerg_01",
+        "context_tags": ["雨天"],
+        "weight": 3,
+        "template": "突发事件模板"
+      }
+    ],
+    "special": [
+      {
+        "id": "special_01",
+        "context_tags": ["吃醋"],
+        "weight": 2,
+        "template": "特殊事件模板（剧本差异化核心）"
+      }
+    ],
+    "conditions": [
+      {
+        "id": "cond_01",
+        "when": "any_affection >= 70",
+        "event_refs": ["special_01"],
+        "weight_boost": 3
+      }
+    ],
+    "post_ending_pool": [
+      {
+        "id": "post_01",
+        "template": "结局后事件模板"
+      }
+    ],
+    "summary": "事件层缩略卡（最近事件摘要）",
+    "memory": {
+      "recent_events": [],
+      "compressed": [],
+      "event_counter": 0
+    }
+  },
+
+  "dialogue": {
+    "prompts": {
+      "world_engine": "主世界推进 System Prompt。留空用默认。",
+      "character_chat": "通讯录聊天 System Prompt。留空用默认。",
+      "summary": "上下文压缩指令。留空用默认。"
+    },
+    "templates": {
+      "message_styles": ["角色主动发消息的参考句式"]
+    },
+    "summary": "对话层缩略卡",
+    "memory": {
+      "per_character_chat": {},
+      "message_sent_log": []
+    }
+  },
+
+  "items": [
+    {
+      "item_id": "item_001",
+      "name": "物品名",
+      "type": "gift",
+      "desc": "描述",
+      "price": 100,
+      "effects": {
+        "target": "xiaoyu",
+        "affection_change": 5,
+        "condition": "她喜欢这个"
+      },
+      "obtain": ["shop", "event"],
+      "rarity": "common"
+    }
+  ],
+
+  "interaction": {
+    "affection": {
+      "min": 0,
+      "max": 100
+    },
+    "chat": {
+      "can_affect_plot": false,
+      "affection_gain": { "min": 0, "max": 2 },
+      "frequency_hint": "每3-5轮有意义对话触发一次好感度微调"
+    },
+    "messages": {
+      "max_per_advance": 2,
+      "triggers": [
+        "好感度变化后",
+        "突发事件涉及该角色",
+        "连续3回合未与该角色互动"
+      ]
+    },
+    "pace": "normal",
+    "context_management": {
+      "max_events_full":

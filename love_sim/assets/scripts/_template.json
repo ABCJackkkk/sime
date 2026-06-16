@@ -1,0 +1,145 @@
+{
+  "_comment": "========= LoveSim 剧本模板 =========",
+  "_comment2": "规则：所有数值/公式/映射来自JSON，Dart代码不硬编码任何剧本特定ID",
+
+  "meta": {
+    "id": "my_script_id",
+    "name": "我的剧本",
+    "version": "1.0.0",
+    "author": "",
+    "genre": "",
+    "tone": "",
+    "mode": "endings",
+    "summary": ""
+  },
+
+  "player": {
+    "background": "",
+    "current_state": ""
+  },
+
+  "world": {
+    "summary": "",
+    "setting": "",
+    "atmosphere": {"time_sense": "", "tone": "", "interaction_quality": ""},
+    "locations": [
+      {"id": "location_id", "name": "地点名", "desc": "", "trigger_tags": []}
+    ],
+    "special_rules": {},
+    "memory": {"current_time": {"day": 1, "season": "spring", "weather": "晴", "phase": "上午"}, "location_changes": [], "world_history": {}, "world_summary": ""}
+  },
+
+  "characters": [
+    {
+      "full_character": true,
+      "summary": "",
+      "basic": {"id": "char_id", "name": "角色名", "gender": "女", "age": 16, "height": "", "initial_affection": 5},
+      "background": {"origin": "", "history": "", "current_situation": ""},
+      "details": {"goals": [], "fears": [], "secrets": [], "values": [], "selfPerception": ""},
+      "soul": {"bigFive": {"openness": 0.5, "extraversion": 0.5, "agreeableness": 0.5, "conscientiousness": 0.5, "neuroticism": 0.5}},
+      "speech": {"bigFiveProfile": {}, "phonetics": {}, "vocabulary": {}, "dualMode": {"to_stranger": {"overview": "", "example": ""}, "to_close": {"overview": "", "example": ""}}},
+      "humanity": {"emotionalRange": "", "attachmentStyle": "", "socialStrategy": ""},
+      "agent": {"personalityOverview": "", "chatPersonality": "", "narrativeStyle": "", "emotionalExpression": "", "conflictStrategy": "", "specialBehaviors": []},
+      "appearance": {"body": "", "uniform": "", "expression": "", "details": []},
+      "preferences": {"likes": [], "dislikes": [], "hobbies": [], "idealType": ""},
+      "moodTriggers": {"joy": [], "annoy": [], "shy": [], "sad": [], "angry": []},
+      "giftResponse": {"positive": null, "negative": ""},
+      "boundary": {"touch": "", "privacy": ""},
+      "evolution": {"tiers": []},
+      "relations": {"flat": [], "dimensional": []},
+      "memory": {"episodic_memory": []},
+      "schedule": {"weekday": [], "weekend": []},
+      "stats": [
+        {"id": "stat_1", "name": "属性1", "value": 50, "max": 100}
+      ],
+      "grades": [
+        {"id": "grade_1", "name": "科目1", "value": 100, "max": 150}
+      ]
+    }
+  ],
+
+  "items": {
+    "gifts": [
+      {"id": "gift_id", "name": "礼物名", "description": ""}
+    ],
+    "shopItems": []
+  },
+
+  "interaction": {
+    "totalDays": 365,
+    "startDay": 1,
+    "endDay": 365,
+    "season": "spring",
+    "phases": [],
+    "advanceModes": {},
+    "seasons": [],
+    "weatherSystem": {"probabilities": {}},
+    "affection": {"min": 1, "max": 100, "precision": 0.01, "tiers": []},
+    "chat": {},
+    "messages": {},
+    "pace": "",
+    "contextManagement": {},
+    "memory": {}
+  },
+
+  "events": {
+    "sceneLocations": []
+  },
+
+  "plot": {
+    "acts": [
+      {"id": "act_1", "name": "第一幕", "day_start": 1, "day_end": 90, "tension_start": 0, "tension_end": 40}
+    ]
+  },
+
+  "game_events": {
+    "eventPools": {
+      "daily": [],
+      "social": [],
+      "conflict": [],
+      "romantic": []
+    },
+    "beatMap": []
+  },
+
+  "data_layer": {
+    "player_profile": {
+      "name": "",
+      "gender": "",
+      "avatar_desc": "",
+      "personality": "",
+      "appearance": "",
+      "background_hint": ""
+    },
+    "stats": [
+      {"id": "stat_1", "name": "属性1", "category": "talent", "min": 0, "max": 100, "initial": 50}
+    ],
+    "grades": [
+      {"id": "grade_1", "name": "科目1", "min": 0, "max": 150, "initial": 100}
+    ],
+    "grade_formulas": {
+      "grade_1": {
+        "base_weight": 0.70,
+        "variance": 10,
+        "stat_bonuses": {}
+      }
+    },
+    "natural_growth_rate": 0.02,
+    "ranking": {
+      "total_students": 750,
+      "events": [
+        {"id": "exam_1", "name": "考试", "interval_days": 30, "affects": ["grade_1"]}
+      ]
+    },
+    "memory": {
+      "stat_values": {},
+      "grade_values": {},
+      "grade_history": [],
+      "last_ranking_day": 0
+    }
+  },
+
+  "dialogue": {},
+  "game_items": {},
+  "game_interaction": {}
+}
