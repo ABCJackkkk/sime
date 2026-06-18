@@ -5,6 +5,7 @@ import 'package:love_sim/main.dart';
 import 'package:love_sim/providers/app_provider.dart';
 import 'package:love_sim/screens/character_profile_screen.dart';
 import 'package:love_sim/screens/chat_screen.dart';
+import 'package:love_sim/widgets/reactive_avatar.dart';
 
 class ContactsScreen extends StatelessWidget {
   const ContactsScreen({super.key});
@@ -38,6 +39,8 @@ class ContactsScreen extends StatelessWidget {
                 final unread = app.unreadCount(charId);
                 final hasUnread = app.hasUnread(charId);
                 final charImg = app.getCharImageBytes(charId);
+                final affect = app.affectionStates[charId] ?? 50.0;
+                final recentEvent = app.segmentEventTypes.isNotEmpty ? app.segmentEventTypes.last : null;
 
                 return Container(
                   color: Colors.transparent,
@@ -51,14 +54,20 @@ class ContactsScreen extends StatelessWidget {
                         },
                         child: Stack(
                           children: [
-                            Container(
-                              width: 52, height: 52,
-                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColors.accent.withAlpha(40)),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: charImg != null
-                                    ? Image.memory(charImg, width: 52, height: 52, fit: BoxFit.cover)
-                                    : Center(child: Text(displayName.isNotEmpty ? displayName.characters.first : '?', style: const TextStyle(color: AppColors.accent, fontSize: 22, fontWeight: FontWeight.w700))),
+                            Hero(
+                              tag: 'chat_avatar_$charId',
+                              child: ReactiveAvatar(
+                                size: 52, borderRadius: 12, affection: affect, recentEventType: recentEvent,
+                                child: Container(
+                                  width: 52, height: 52,
+                                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: AppColors.accent.withAlpha(40)),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: charImg != null
+                                        ? Image.memory(charImg, width: 52, height: 52, fit: BoxFit.cover)
+                                        : Center(child: Text(displayName.isNotEmpty ? displayName.characters.first : '?', style: const TextStyle(color: AppColors.accent, fontSize: 22, fontWeight: FontWeight.w700))),
+                                  ),
+                                ),
                               ),
                             ),
                             if (hasUnread)
@@ -78,7 +87,11 @@ class ContactsScreen extends StatelessWidget {
                           behavior: HitTestBehavior.translucent,
                           onTap: () {
                             app.markCharRead(charId);
-                            Navigator.of(context).push(CupertinoPageRoute(builder: (_) => ChatScreen(characterId: charId)));
+                            Navigator.of(context).push(PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => ChatScreen(characterId: charId),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) => FadeTransition(opacity: animation, child: child),
+                              transitionDuration: const Duration(milliseconds: 250),
+                            ));
                           },
                           child: Row(
                             children: [

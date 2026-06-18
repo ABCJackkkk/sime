@@ -1183,6 +1183,8 @@ class GameScript {
   final GameItems? gameItems;
   final GameInteraction? gameInteraction;
   final GameDataLayer? dataLayer;
+  final ActionRules? actionRules;
+  final FallbackNarratives? fallbackNarratives;
 
   GameScript({
     required this.meta,
@@ -1198,6 +1200,8 @@ class GameScript {
     this.gameItems,
     this.gameInteraction,
     this.dataLayer,
+    this.actionRules,
+    this.fallbackNarratives,
   });
 
   factory GameScript.fromJson(Map<String, dynamic> json) {
@@ -1226,6 +1230,8 @@ class GameScript {
       gameItems: _safeParse(json, 'items', (v)=>GameItems.fromJson(v)),
       gameInteraction: _safeParse(json, 'interaction', (v)=>GameInteraction.fromJson(v)),
       dataLayer: _safeParse(json, 'data_layer', (v)=>GameDataLayer.fromJson(v)),
+      actionRules: _safeParseTop(json, 'action_rules', (v) => ActionRules.fromJson(v)),
+      fallbackNarratives: _safeParseTop(json, 'fallback_narratives', (v) => FallbackNarratives.fromJson(v)),
     );
   }
   static T? _safeParse<T>(Map<String,dynamic> json, String key, T? Function(Map<String,dynamic>) parser) {
@@ -2009,4 +2015,69 @@ class InformationFragment {
   InformationFragment({this.id='',this.sourceEventId='',this.witnessCharId='',this.content='',this.encryption='',this.spreadRadius=1,List<String>? knownBy,DateTime? createdAt,this.trustworthiness=1.0,this.active=true,this.spreadCount=0}):knownBy=knownBy??[],createdAt=createdAt??DateTime.now();
   factory InformationFragment.fromJson(Map<String,dynamic> json)=>InformationFragment(id: json['id']??'',sourceEventId: json['source_event']??'',witnessCharId: json['witness_char']??'',content: json['content']??'',encryption: json['encryption']??'',spreadRadius: json['spread_radius']??1,knownBy: List<String>.from(json['known_by']??[]),createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at']) : DateTime.now(),trustworthiness: (json['trustworthiness'] as num?)?.toDouble()??1.0,active: json['active']??true,spreadCount: json['spread_count']??0);
   Map<String,dynamic> toJson()=>{'id':id,'source_event':sourceEventId,'witness_char':witnessCharId,'content':content,'encryption':encryption,'spread_radius':spreadRadius,'known_by':knownBy,'created_at':createdAt.toIso8601String(),'trustworthiness':trustworthiness,'active':active,'spread_count':spreadCount};
+}
+
+class ActionBoundaryRule {
+  final List<String> keywords;
+  final double minAffection;
+  final String rejectionNarrative;
+  final double affectionPenalty;
+
+  ActionBoundaryRule({
+    List<String>? keywords,
+    this.minAffection = 100.0,
+    this.rejectionNarrative = '',
+    this.affectionPenalty = -5.0,
+  }) : keywords = keywords ?? [];
+
+  factory ActionBoundaryRule.fromJson(Map<String, dynamic> json) {
+    return ActionBoundaryRule(
+      keywords: List<String>.from(json['keywords'] ?? []),
+      minAffection: (json['min_affection'] as num?)?.toDouble() ?? 100.0,
+      rejectionNarrative: json['rejection_narrative'] ?? '',
+      affectionPenalty: (json['affection_penalty'] as num?)?.toDouble() ?? -5.0,
+    );
+  }
+}
+
+class ActionRules {
+  final List<ActionBoundaryRule> boundaryChecks;
+  final double topicTabooPenalty;
+  final String topicTabooRejection;
+
+  ActionRules({
+    List<ActionBoundaryRule>? boundaryChecks,
+    this.topicTabooPenalty = -3.0,
+    this.topicTabooRejection = '',
+  }) : boundaryChecks = boundaryChecks ?? [];
+
+  factory ActionRules.fromJson(Map<String, dynamic> json) {
+    return ActionRules(
+      boundaryChecks: (json['boundary_checks'] as List<dynamic>?)
+              ?.map((e) => ActionBoundaryRule.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      topicTabooPenalty: (json['topic_taboo_penalty'] as num?)?.toDouble() ?? -3.0,
+      topicTabooRejection: json['topic_taboo_rejection'] ?? '',
+    );
+  }
+}
+
+class FallbackNarratives {
+  final Map<String, List<String>> templates;
+
+  FallbackNarratives({Map<String, List<String>>? templates})
+      : templates = templates ?? {};
+
+  factory FallbackNarratives.fromJson(Map<String, dynamic> json) {
+    final map = <String, List<String>>{};
+    json.forEach((key, value) {
+      if (value is List) {
+        map[key] = value.map((e) => e.toString()).toList();
+      }
+    });
+    return FallbackNarratives(templates: map);
+  }
+
+  List<String> operator [](String key) => templates[key] ?? [];
 }

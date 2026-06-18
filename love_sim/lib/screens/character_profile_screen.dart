@@ -7,6 +7,7 @@ import 'package:love_sim/models/script.dart';
 import 'package:love_sim/providers/app_provider.dart';
 import 'package:love_sim/screens/chat_screen.dart';
 import 'package:love_sim/widgets/crop_screen.dart';
+import 'package:love_sim/widgets/reactive_avatar.dart';
 
 class CharacterProfileScreen extends StatefulWidget {
   final String characterId;
@@ -83,6 +84,8 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
   }
 
   Widget _buildHeader(AppProvider app, Character char, String displayName, Uint8List? charImg) {
+    final affect = app.affectionStates[widget.characterId] ?? 50.0;
+    final recentEvent = app.segmentEventTypes.isNotEmpty ? app.segmentEventTypes.last : null;
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFF1A1A2E), Color(0xFF0A0A0C)])),
@@ -90,14 +93,17 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
       child: Column(children: [
         GestureDetector(
           onTap: _pickAvatar,
-          child: Container(
-            width: 96, height: 96,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(28), color: AppColors.accent.withAlpha(40), boxShadow: [BoxShadow(color: AppColors.accent.withAlpha(40), blurRadius: 20, offset: const Offset(0, 8))]),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: charImg != null
-                  ? Image.memory(charImg, width: 96, height: 96, fit: BoxFit.cover)
-                  : Center(child: Text(displayName.isNotEmpty ? displayName.characters.first : '?', style: const TextStyle(color: AppColors.accent, fontSize: 40, fontWeight: FontWeight.w700))),
+          child: ReactiveAvatar(
+            size: 96, borderRadius: 28, affection: affect, recentEventType: recentEvent,
+            child: Container(
+              width: 96, height: 96,
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(28), color: AppColors.accent.withAlpha(40), boxShadow: [BoxShadow(color: AppColors.accent.withAlpha(40), blurRadius: 20, offset: const Offset(0, 8))]),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: charImg != null
+                    ? Image.memory(charImg, width: 96, height: 96, fit: BoxFit.cover)
+                    : Center(child: Text(displayName.isNotEmpty ? displayName.characters.first : '?', style: const TextStyle(color: AppColors.accent, fontSize: 40, fontWeight: FontWeight.w700))),
+              ),
             ),
           ),
         ),

@@ -1,9 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:love_sim/main.dart';
 import 'package:love_sim/models/script.dart';
 import 'package:love_sim/providers/app_provider.dart';
 import 'package:love_sim/services/save_service.dart';
+import 'package:love_sim/widgets/typewriter_text.dart';
 
 class ChatScreen extends StatefulWidget {
   final String characterId;
@@ -16,6 +18,8 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  int _latestAiIndex = -1;
+  final Set<int> _animatedMessageIndices = {};
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -56,7 +60,10 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (img != null) ...[
-                  ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.memory(img, width: 28, height: 28, fit: BoxFit.cover)),
+                  Hero(
+                    tag: 'chat_avatar_${widget.characterId}',
+                    child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.memory(img, width: 28, height: 28, fit: BoxFit.cover)),
+                  ),
                   const SizedBox(width: 8),
                 ],
                 Text(char?.basic.name ?? '聊天', style: const TextStyle(color: AppColors.textPrimaryDark)),
@@ -68,11 +75,30 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             );
           },
         ),
+        trailing: GestureDetector(
+          onTap: () {
+            final app = context.read<AppProvider>();
+            _showGiftSheet(context, app);
+          },
+          child: Container(
+            width: 32, height: 32,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.accent.withAlpha(25)),
+            child: const Icon(CupertinoIcons.gift_fill, size: 16, color: AppColors.accent),
+          ),
+        ),
       ),
       child: SafeArea(
         child: Consumer<AppProvider>(
           builder: (context, app, _) {
             final messages = app.getChatHistory(widget.characterId);
+            
+            // Detect new AI messages to animate
+            if (messages.isNotEmpty) {
+              final lastMsg = messages.last;
+              if (lastMsg.senderId != 'player' && lastMsg.senderId == widget.characterId) {
+                _latestAiIndex = messages.length - 1;
+              }
+            }
 
             return Column(
               children: [
@@ -88,7 +114,11 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                               final msg = messages[index];
                               final isPlayer = msg.senderId == 'player';
                               final isRead = isPlayer && app.isPlayerMessageRead(widget.characterId, index);
-                              return _buildBubble(msg, isPlayer, isRead);
+                              final animate = !isPlayer && index == _latestAiIndex && !_animatedMessageIndices.contains(index);
+                              if (animate) {
+                                _animatedMessageIndices.add(index);
+                              }
+                              return _buildBubble(msg, isPlayer, isRead, app, animate: animate);
                             }
                             return _buildTypingIndicator();
                           },
@@ -103,7 +133,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildBubble(ChatMessage msg, bool isPlayer, bool isRead) {
+  Widget _buildBubble(ChatMessage msg, bool isPlayer, bool isRead, AppProvider app, {bool animate = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -116,20 +146,38 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               if (!isPlayer) ...[
                 Container(
                   width: 36, height: 36,
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.accent, Color(0xFF64D2FF)])),
-                  child: Center(child: Text(msg.senderName.isNotEmpty ? msg.senderName.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 14, fontWeight: FontWeight.w600))),
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.accent.withAlpha(40)),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: app.getCharImageBytes(widget.characterId) != null
+                        ? Image.memory(app.getCharImageBytes(widget.characterId)!, width: 36, height: 36, fit: BoxFit.cover)
+                        : Center(child: Text(msg.senderName.isNotEmpty ? msg.senderName.characters.first : '?', style: const TextStyle(color: AppColors.accent, fontSize: 14, fontWeight: FontWeight.w600))),
+                  ),
                 ),
                 const SizedBox(width: 8),
               ],
               Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isPlayer ? AppColors.accent.withAlpha(40) : const Color(0x0FFFFFFF),
-                    borderRadius: BorderRadius.only(topLeft: const Radius.circular(18), topRight: const Radius.circular(18), bottomLeft: isPlayer ? const Radius.circular(18) : const Radius.circular(4), bottomRight: isPlayer ? const Radius.circular(4) : const Radius.circular(18)),
-                    border: Border.all(color: isPlayer ? AppColors.accent.withAlpha(50) : AppColors.border, width: 0.5),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(topLeft: const Radius.circular(18), topRight: const Radius.circular(18), bottomLeft: isPlayer ? const Radius.circular(18) : const Radius.circular(4), bottomRight: isPlayer ? const Radius.circular(4) : const Radius.circular(18)),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: isPlayer ? 4 : 12, sigmaY: isPlayer ? 4 : 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isPlayer ? AppColors.accent.withAlpha(40) : const Color(0x08FFFFFF),
+                        borderRadius: BorderRadius.only(topLeft: const Radius.circular(18), topRight: const Radius.circular(18), bottomLeft: isPlayer ? const Radius.circular(18) : const Radius.circular(4), bottomRight: isPlayer ? const Radius.circular(4) : const Radius.circular(18)),
+                        border: Border.all(color: isPlayer ? AppColors.accent.withAlpha(50) : AppColors.accent.withAlpha(20), width: 0.5),
+                      ),
+                      child: animate
+                          ? TypewriterText(
+                              text: msg.content,
+                              style: TextStyle(fontSize: 15, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.4),
+                              speed: const Duration(milliseconds: 18),
+                              enabled: true,
+                            )
+                          : Text(msg.content, style: TextStyle(fontSize: 15, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.4)),
+                    ),
                   ),
-                  child: Text(msg.content, style: TextStyle(fontSize: 15, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.4)),
                 ),
               ),
               if (isPlayer) ...[
@@ -250,20 +298,20 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          const SizedBox(width: 44),
           Container(
-            width: 36, height: 36,
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.accent, Color(0xFF64D2FF)])),
-            child: const Center(child: Icon(CupertinoIcons.ellipsis, size: 18, color: CupertinoColors.white)),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: const Color(0x0FFFFFFF),
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(18), topRight: Radius.circular(18), bottomRight: Radius.circular(18)),
-              border: Border.all(color: AppColors.border, width: 0.5),
+              border: Border.all(color: AppColors.accent.withAlpha(25), width: 0.5),
             ),
-            child: _TypingDots(),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(18), topRight: Radius.circular(18), bottomRight: Radius.circular(18)),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: _BouncingDots(),
+              ),
+            ),
           ),
         ],
       ),
@@ -271,45 +319,65 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   }
 }
 
-class _TypingDots extends StatefulWidget {
+class _BouncingDots extends StatefulWidget {
+  const _BouncingDots();
+
   @override
-  State<_TypingDots> createState() => _TypingDotsState();
+  State<_BouncingDots> createState() => _BouncingDotsState();
 }
 
-class _TypingDotsState extends State<_TypingDots> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+class _BouncingDotsState extends State<_BouncingDots> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late List<Animation<double>> _animations;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))..repeat();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+    _animations = List.generate(3, (i) {
+      return Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(
+          parent: _ctrl,
+          curve: Interval(i * 0.15, 0.5 + i * 0.2, curve: Curves.easeInOut),
+        ),
+      );
+    });
+    _ctrl.repeat();
   }
 
   @override
-  void dispose() { _controller.dispose(); super.dispose(); }
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final t = _controller.value;
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [0, 1, 2].map((i) {
-            final delay = i * 0.2;
-            final opacity = ((t - delay) % 1.0).clamp(0.0, 1.0) < 0.5 ? 0.3 : 1.0;
-            return Padding(
-              padding: EdgeInsets.only(left: i == 0 ? 0 : 3),
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 300),
-                opacity: opacity,
-                child: Container(width: 7, height: 7, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.textTertiary)),
-              ),
-            );
-          }).toList(),
-        );
-      },
+    return SizedBox(
+      width: 36,
+      height: 8,
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(3, (i) {
+              final y = -6 * _animations[i].value;
+              return Transform.translate(
+                offset: Offset(0, y),
+                child: Container(
+                  width: 6, height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withAlpha(120),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              );
+            }),
+          );
+        },
+      ),
     );
   }
 }

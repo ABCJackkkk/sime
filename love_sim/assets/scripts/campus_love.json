@@ -914,5 +914,73 @@
     },
     "natural_growth_rate":0.02,
     "memory":{"stat_values":{},"grade_values":{},"grade_history":[],"last_ranking_day":0}
+  },
+  "action_rules": {
+    "boundary_checks": [
+      {
+        "keywords": ["抱", "拥抱", "搂", "亲", "吻", "亲吻", "牵手", "摸", "碰", "睡", "床", "做爱", "接吻"],
+        "min_affection": 70.0,
+        "rejection_narrative": "{char_name}往后退了一步，眼神冷了下来。\"……不要这样。\"",
+        "affection_penalty": -5.0
+      },
+      {
+        "keywords": ["表白", "喜欢", "爱", "在一起", "交往", "女朋友", "男朋友", "做我"],
+        "min_affection": 65.0,
+        "rejection_narrative": "{char_name}愣了一下，随即移开了视线。\"……现在说这个，太早了。\"",
+        "affection_penalty": -3.0
+      },
+      {
+        "keywords": ["约会", "单独", "陪", "出去", "吃饭", "看电影"],
+        "min_affection": 55.0,
+        "rejection_narrative": "{char_name}犹豫了一下，摇了摇头。\"……改天吧。\"",
+        "affection_penalty": -1.0
+      }
+    ],
+    "topic_taboo_penalty": -3.0,
+    "topic_taboo_rejection": "{char_name}的表情僵了一下，没有接话。"
+  },
+  "fallback_narratives": {
+    "daily": [
+      "又是{phase}的{location}。{char_name}在做自己的事，{weather}的光线让一切看起来都很平静。",
+      "{location}里的日常一如既往。{char_name}从你身边经过，{weather}的风吹起了她的发梢。",
+      "{weather}的{phase}，{location}里的时间好像变慢了。{char_name}坐在老地方，和往常一样。"
+    ],
+    "sweet_minor": [
+      "{char_name}朝你笑了一下，那笑容很短，但{weather}的光线正好落在她脸上。",
+      "在{location}的{phase}，{char_name}递给你一瓶水。\"顺手拿的。\"她说，但你知道不是。",
+      "{char_name}忽然在{location}停下脚步，回头看了你一眼。{weather}的风吹过来，她很快转回去了。"
+    ],
+    "sweet_major": [
+      "{char_name}在{location}的{phase}里，把一直藏着的话说了出来。{weather}的光线照得一切都很温柔。",
+      "那个{season}的{phase}，{char_name}在{location}里靠近了你。{weather}的风吹过，她没有后退。"
+    ],
+    "plot": [
+      "{weather}的{phase}，{location}里弥漫着一种不寻常的气氛。{char_name}的表情比平时严肃了几分。",
+      "一些事情正在{location}悄悄改变。{char_name}站在窗边，像是在等什么人。{weather}的光线在地板上拉出长长的影子。",
+      "今天{location}里的气氛和往常不同。{char_name}似乎察觉到了什么，{weather}的风里带着一丝不安。"
+    ],
+    "boundary": [
+      "{char_name}在{location}里明确划出了自己的边界。{weather}的光线照在她的侧脸上，她的表情没有商量的余地。",
+      "{phase}的{location}，{char_name}说了一些话。那些话不长，但很坚决。{weather}的风吹过，她没有改口。"
+    ],
+    "reversal": [
+      "意想不到的事情在{location}发生了。{char_name}的反应和所有人预料的不同。{weather}的光线让那一刻更加清晰。",
+      "{phase}的{location}，事情突然转向了另一个方向。{char_name}看着你，眼神里有之前没有的东西。"
+    ],
+    "custom_action": [
+      "你做了该做的事。{char_name}看了你一眼，没说什么。{weather}的风吹过{location}，一切如常。",
+      "你的行动在{location}的{phase}里留下了痕迹。{char_name}似乎注意到了，但她没有直接回应。",
+      "{char_name}站在{location}，{weather}的光线照在她身上。她安静地接受了发生的一切，没有多说什么。"
+    ],
+    "scene_event": [
+      "{location}里，{char_name}在做自己的事。{weather}的光线透过窗户洒进来。",
+      "你走进了{location}。{char_name}抬头看了看你，然后继续做自己的事。",
+      "{location}一如既往。{char_name}在{phase}的{weather}里，看起来比平时放松了一些。"
+    ],
+    "chat_reply": [
+      "\"嗯。\"{char_name}简单地应了一声，低头看了看手机。",
+      "\"……好吧。\"{char_name}说，语气听不出情绪。",
+      "{char_name}看了你一眼，没有马上回答。{weather}的光线照进房间，她的表情藏在阴影里。"
+    ]
   }
 }

@@ -60,6 +60,7 @@ class SaveData {
   final String currentPhase;
   final String narrativeHistory;
   final List<String> narrativeSegments;
+  final List<String> segmentEventTypes;
   final Map<String, double> affectionStates;
   final Map<String, List<ChatMessage>> chatHistories;
   final List<String> inventoryItemIds;
@@ -91,6 +92,7 @@ class SaveData {
     required this.currentDay, required this.currentSeason,
     required this.currentWeather, required this.currentPhase,
     required this.narrativeHistory, required this.narrativeSegments,
+    required this.segmentEventTypes,
     required this.affectionStates, required this.chatHistories,
     required this.inventoryItemIds, required this.currencies,
     required this.currentAct, required this.triggeredBeats,
@@ -113,6 +115,7 @@ class SaveData {
         'currentDay': currentDay, 'currentSeason': currentSeason,
         'currentWeather': currentWeather, 'currentPhase': currentPhase,
         'narrativeHistory': narrativeHistory, 'narrativeSegments': narrativeSegments,
+        'segmentEventTypes': segmentEventTypes,
         'affectionStates': affectionStates.map((k, v) => MapEntry(k, v)),
         'chatHistories': Map<String, dynamic>.fromEntries(chatHistories.entries.map((e) => MapEntry(e.key, e.value.map((m) => m.toJson()).toList()))),
         'inventoryItemIds': inventoryItemIds, 'currencies': currencies,
@@ -141,6 +144,7 @@ class SaveData {
         currentPhase: json['currentPhase'] ?? '上午',
         narrativeHistory: json['narrativeHistory'] ?? '',
         narrativeSegments: List<String>.from(json['narrativeSegments'] ?? []),
+        segmentEventTypes: List<String>.from(json['segmentEventTypes'] ?? []),
         affectionStates: (json['affectionStates'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, (v as num).toDouble())) ?? {},
         chatHistories: (json['chatHistories'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, (v as List<dynamic>).map((m) => ChatMessage.fromSaved(m as Map<String, dynamic>)).toList())) ?? {},
         inventoryItemIds: List<String>.from(json['inventoryItemIds'] ?? []),

@@ -141,5 +141,58 @@
 
   "dialogue": {},
   "game_items": {},
-  "game_interaction": {}
+  "game_interaction": {},
+  "action_rules": {
+    "_comment": "玩家自定义行动的合法性校验规则",
+    "boundary_checks": [
+      {
+        "_comment": "物理亲密行为需要好感度 >= min_affection",
+        "keywords": ["抱", "亲", "吻", "牵手", "摸", "碰", "睡"],
+        "min_affection": 70.0,
+        "rejection_narrative": "{char_name}往后退了一步，眼神冷了下来。\"……不要这样。\"",
+        "affection_penalty": -5.0
+      },
+      {
+        "_comment": "表白相关需要好感度 >= min_affection",
+        "keywords": ["表白", "喜欢", "爱", "在一起", "交往"],
+        "min_affection": 65.0,
+        "rejection_narrative": "{char_name}愣了一下，随即移开了视线。\"……现在说这个，太早了。\"",
+        "affection_penalty": -3.0
+      },
+      {
+        "_comment": "约请需要好感度 >= min_affection",
+        "keywords": ["约会", "单独", "陪", "出去"],
+        "min_affection": 55.0,
+        "rejection_narrative": "{char_name}犹豫了一下，摇了摇头。\"……改天吧。\"",
+        "affection_penalty": -1.0
+      }
+    ],
+    "topic_taboo_penalty": -3.0,
+    "topic_taboo_rejection": "{char_name}的表情僵了一下，没有接话。"
+  },
+  "fallback_narratives": {
+    "_comment": "AI生成失败时的兜底叙事模板，支持 {char_name}/{location}/{weather}/{phase}/{season} 占位符",
+    "_pool_names": "daily/sweet_minor/sweet_major/plot/boundary/reversal/custom_action/scene_event/chat_reply",
+    "daily": [
+      "又是{phase}的{location}。{char_name}在做自己的事，{weather}的光线让一切看起来都很平静。",
+      "{location}里的日常一如既往。{char_name}从你身边经过，{weather}的风吹起了她的发梢。"
+    ],
+    "sweet_minor": [
+      "{char_name}朝你笑了一下，那笑容很短，但{weather}的光线正好落在她脸上。",
+      "在{location}的{phase}，{char_name}递给你一瓶水。\"顺手拿的。\"她说，但你知道不是。"
+    ],
+    "plot": [
+      "{weather}的{phase}，{location}里弥漫着一种不寻常的气氛。{char_name}的表情比平时严肃了几分。",
+      "一些事情正在{location}悄悄改变。{char_name}站在窗边，像是在等什么人。"
+    ],
+    "custom_action": [
+      "你做了该做的事。{char_name}看了你一眼，没说什么。{weather}的风吹过{location}，一切如常。"
+    ],
+    "scene_event": [
+      "{location}里，{char_name}在做自己的事。{weather}的光线透过窗户洒进来。"
+    ],
+    "chat_reply": [
+      "\"嗯。\"{char_name}简单地应了一声，低头看了看手机。"
+    ]
+  }
 }

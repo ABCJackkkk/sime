@@ -109,6 +109,7 @@ class AppProvider extends ChangeNotifier {
       scriptId: s.script!.meta.id, scriptName: s.script!.meta.name,
       currentDay: s.currentDay, currentSeason: s.currentSeason, currentWeather: s.currentWeather, currentPhase: s.currentPhase,
       narrativeHistory: s.narrativeHistory, narrativeSegments: s.narrativeSegments,
+      segmentEventTypes: s.segmentEventTypes,
       affectionStates: s.affectionStates,
       chatHistories: s.chatHistories,
       inventoryItemIds: s.inventoryItemIds, currencies: s.currencies,
@@ -172,6 +173,7 @@ class AppProvider extends ChangeNotifier {
     _session!.setPhase(data.currentPhase);
     _session!.setNarrativeHistory(data.narrativeHistory);
     _session!.setNarrativeSegments(data.narrativeSegments);
+    _session!.setSegmentEventTypes(data.segmentEventTypes);
     _session!.setAffectionStates(data.affectionStates);
     _session!.setChatHistories(data.chatHistories);
     _session!.setInventoryItemIds(data.inventoryItemIds);
@@ -370,6 +372,7 @@ class AppProvider extends ChangeNotifier {
 
   String get narrativeHistory => _session?.narrativeHistory ?? '';
   List<String> get narrativeSegments => _session?.narrativeSegments ?? [];
+  List<String> get segmentEventTypes => _session?.segmentEventTypes ?? [];
   List<Map<String, dynamic>> get pendingChoices => _session?.pendingChoices ?? [];
   bool get isLoading => _session?.isLoading ?? false;
   String get lastNarrativeSegment => _session?.lastNarrativeSegment ?? '';

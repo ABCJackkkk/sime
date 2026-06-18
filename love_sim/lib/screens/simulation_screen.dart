@@ -17,7 +17,10 @@ class SimulationScreen extends StatelessWidget {
     return Consumer<AppProvider>(
       builder: (context, app, _) {
         if (!app.hasScript) { app.exitSim(); return const SizedBox.shrink(); }
-        return SafeArea(top: false, bottom: false, child: app.simInWorldView ? _buildWorldView(app, context) : _buildToolsView(app, context));
+        return SafeArea(top: false, bottom: false, child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: app.simInWorldView ? _buildWorldView(app, context) : _buildToolsView(app, context),
+        ));
       },
     );
   }
@@ -25,6 +28,7 @@ class SimulationScreen extends StatelessWidget {
   Widget _buildWorldView(AppProvider app, BuildContext context) {
     final simBg = app.simBgImageBytes;
     return Container(
+      key: const ValueKey('world'),
       decoration: simBg != null
           ? BoxDecoration(image: DecorationImage(image: MemoryImage(simBg), fit: BoxFit.cover))
           : BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [app.simBgStartColor, app.simBgEndColor])),
@@ -38,6 +42,7 @@ class SimulationScreen extends StatelessWidget {
   Widget _buildToolsView(AppProvider app, BuildContext context) {
     final simBg = app.simBgImageBytes;
     return Container(
+      key: const ValueKey('tools'),
       decoration: simBg != null
           ? BoxDecoration(image: DecorationImage(image: MemoryImage(simBg), fit: BoxFit.cover))
           : BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [app.simBgStartColor, app.simBgEndColor])),

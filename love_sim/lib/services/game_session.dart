@@ -9,6 +9,8 @@ import 'package:love_sim/services/narrative_compressor.dart';
 import 'package:love_sim/services/character_memory_service.dart';
 import 'package:love_sim/services/ranking_service.dart';
 import 'package:love_sim/services/save_service.dart';
+import 'package:love_sim/services/narrative_validator.dart';
+import 'package:love_sim/services/action_validator.dart';
 
 class GameSession {
   void Function()? onChanged;
@@ -45,12 +47,16 @@ class GameSession {
   List<String> _narrativeSegments = [];
   List<String> get narrativeSegments => _narrativeSegments;
 
+  List<String> _segmentEventTypes = [];
+  List<String> get segmentEventTypes => _segmentEventTypes;
+
   List<Map<String, dynamic>> _pendingChoices = [];
   List<Map<String, dynamic>> get pendingChoices => _pendingChoices;
 
   int _longEventStepsRemaining = 0;
   bool _inLongEvent = false;
   String _lastNarrativeSegment = '';
+  String _lastEventType = 'daily';
   bool _isLoading = false;
 
   bool get isLoading => _isLoading;
@@ -168,6 +174,7 @@ class GameSession {
       final result = _narrativeCompressor!.compressSegments(_narrativeSegments);
       _narrativeHistory = result.history;
       _narrativeSegments = result.segments;
+      _segmentEventTypes = List.generate(result.segments.length, (i) => i < _segmentEventTypes.length ? _segmentEventTypes[i] : '');
       if (result.replacedCount > 0) {
         onChanged?.call();
       }
@@ -203,6 +210,7 @@ class GameSession {
     charMemory = CharacterMemoryService();
     _narrativeHistory = s.world.memory.worldSummary;
     _narrativeSegments = _narrativeHistory.isNotEmpty ? [_narrativeHistory] : [];
+    _segmentEventTypes = _narrativeSegments.map((_) => '').toList();
     _pendingChoices = [];
     _lastNarrativeSegment = _narrativeHistory;
     _currencies['gold'] = 50;
@@ -397,6 +405,7 @@ class GameSession {
   void setPhase(String v) => _currentPhase = v;
   void setNarrativeHistory(String v) { _narrativeHistory = v; }
   void setNarrativeSegments(List<String> v) { _narrativeSegments = List.from(v); }
+  void setSegmentEventTypes(List<String> v) { _segmentEventTypes = List.from(v); }
   void setAffectionStates(Map<String, double> v) { _affectionStates = Map<String, double>.from(v); }
   void setChatHistories(Map<String, List<ChatMessage>> v) { _chatHistories = Map<String, List<ChatMessage>>.from(v); }
   void setInventoryItemIds(List<String> v) { _inventoryItemIds = List.from(v); }
@@ -501,6 +510,8 @@ class GameSession {
 
       _appendToNarrative('\n\n$narrative');
       _narrativeSegments.add(narrative);
+      _segmentEventTypes.add(eventTemplate?.severity ?? 'daily');
+      _lastEventType = eventTemplate?.severity ?? 'daily';
       _lastNarrativeSegment = narrative;
       _currentDay = result.dayAfter.toString();
       _currentPhase = worldEngine!.currentPhase;
@@ -516,9 +527,17 @@ class GameSession {
         }
       }
     } catch (e) {
-      final err = '[剧情推进失败: ${e.toString().length > 60 ? e.toString().substring(0, 60) : e.toString()}]';
+      final fallbackChar = script!.characters.firstWhere((c) => c.fullCharacter, orElse: () => script!.characters.first);
+      final err = NarrativeValidator.fallbackNarrative('daily', script!.fallbackNarratives, {
+        'char_name': fallbackChar.basic.name,
+        'location': '这里',
+        'weather': _currentWeather,
+        'phase': _currentPhase,
+        'season': _currentSeason,
+      });
       _appendToNarrative('\n\n$err');
       _narrativeSegments.add(err);
+      _segmentEventTypes.add(_lastEventType);
       _lastNarrativeSegment = err;
     }
     _isLoading = false; _notify();
@@ -531,27 +550,72 @@ class GameSession {
   Future<void> customAction(String action, {required String userName, required String userGender, required String userHeight, required String userBirthday, required String userAppearance, required String userPersonality, required String userBio}) async {
     if (_isLoading || deepSeekClient == null || script == null) return;
     _isLoading = true; _pendingChoices = []; _notify();
+
+    final validator = ActionValidator(
+      rules: script!.actionRules,
+      affectionStates: _affectionStates,
+      characters: script!.characters,
+    );
+    final validation = validator.validate(action);
+    if (!validation.valid) {
+      final rejection = validation.rejectionNarrative ?? '角色没有回应你的行动。';
+      _appendToNarrative('\n\n$rejection');
+      _narrativeSegments.add(rejection);
+      _segmentEventTypes.add('boundary');
+      _lastNarrativeSegment = rejection;
+      if (validation.targetCharId != null && validation.affectionPenalty != 0) {
+        modifyAffectionByEvent(validation.targetCharId!, validation.affectionPenalty);
+      }
+      _isLoading = false; _notify();
+      _generateChoices();
+      return;
+    }
+
+    String narrative;
     try {
       final playerCard = buildPlayerCardForAi(userName, userGender, userHeight, userBirthday, userAppearance, userPersonality, userBio);
-      final narrative = await deepSeekClient!.generateCustomActionConsequence(
+      narrative = await deepSeekClient!.generateCustomActionConsequence(
         action: action, script: script!,
         narrativeHistory: _narrativeHistory, playerCard: playerCard,
         timeContext: worldEngine?.getTimeContext() ?? {},
         characters: script!.characters, affectionStates: _affectionStates,
       );
-      _appendToNarrative('\n\n$narrative');
-      _narrativeSegments.add(narrative);
-      _lastNarrativeSegment = narrative;
-      final affectionDeltas = _parseCustomActionAffection(narrative);
-      for (final e in affectionDeltas.entries) {
-        if (affectionEngine != null) affectionEngine!.modifyAffectionByEvent(e.key, e.value);
-        _affectionStates[e.key] = (_affectionStates[e.key] ?? 50.0) + e.value;
+      if (!NarrativeValidator.isValidNarrative(narrative)) {
+        try {
+          narrative = await deepSeekClient!.generateCustomActionConsequence(
+            action: action, script: script!,
+            narrativeHistory: _narrativeHistory, playerCard: playerCard,
+            timeContext: worldEngine?.getTimeContext() ?? {},
+            characters: script!.characters, affectionStates: _affectionStates,
+          );
+        } catch (_) {}
+        if (!NarrativeValidator.isValidNarrative(narrative)) {
+          narrative = NarrativeValidator.fallbackNarrative('custom_action', script!.fallbackNarratives, {
+            'char_name': script!.characters.firstWhere((c) => c.fullCharacter, orElse: () => script!.characters.first).basic.name,
+            'location': '这里',
+            'weather': _currentWeather,
+            'phase': _currentPhase,
+            'season': _currentSeason,
+          });
+        }
       }
     } catch (e) {
-      final err = '[行动失败: ${e.toString().length > 60 ? e.toString().substring(0, 60) : e.toString()}]';
-      _appendToNarrative('\n\n$err');
-      _narrativeSegments.add(err);
-      _lastNarrativeSegment = err;
+      narrative = NarrativeValidator.fallbackNarrative('custom_action', script!.fallbackNarratives, {
+        'char_name': script!.characters.firstWhere((c) => c.fullCharacter, orElse: () => script!.characters.first).basic.name,
+        'location': '这里',
+        'weather': _currentWeather,
+        'phase': _currentPhase,
+        'season': _currentSeason,
+      });
+    }
+    _appendToNarrative('\n\n$narrative');
+    _narrativeSegments.add(narrative);
+    _segmentEventTypes.add('custom_action');
+    _lastNarrativeSegment = narrative;
+    final affectionDeltas = _parseCustomActionAffection(narrative);
+    for (final e in affectionDeltas.entries) {
+      if (affectionEngine != null) affectionEngine!.modifyAffectionByEvent(e.key, e.value);
+      _affectionStates[e.key] = (_affectionStates[e.key] ?? 50.0) + e.value;
     }
     _isLoading = false; _notify();
     _generateChoices();
@@ -574,6 +638,7 @@ class GameSession {
       );
       _appendToNarrative('\n\n你选择了：$text\n\n$narrative');
       _narrativeSegments.add('你选择了：$text\n\n$narrative');
+      _segmentEventTypes.add('choice');
       _lastNarrativeSegment = narrative;
       if (target != null && target.isNotEmpty) {
         modifyAffectionByEvent(target, delta);
@@ -676,8 +741,14 @@ class GameSession {
       _notify();
     } catch (e) {
       _loadingChatIds.remove(charId);
-      final errorMsg = e.toString().length > 80 ? e.toString().substring(0, 80) : e.toString();
-      final charMsg = ChatMessage(senderId: charId, senderName: senderName, content: '(回复失败: $errorMsg)');
+      final reply = NarrativeValidator.fallbackNarrative('chat_reply', script!.fallbackNarratives, {
+        'char_name': char.basic.name,
+        'location': '这里',
+        'weather': _currentWeather,
+        'phase': _currentPhase,
+        'season': _currentSeason,
+      });
+      final charMsg = ChatMessage(senderId: charId, senderName: senderName, content: reply);
       _chatHistories[charId]!.add(charMsg);
       modifyAffectionByChat(charId, -0.01);
       _notify();
@@ -728,6 +799,7 @@ class GameSession {
       if (narrative.isNotEmpty && !narrative.startsWith('(')) {
         _appendToNarrative('\n\n[场景·${loc.name}] $narrative');
         _narrativeSegments.add('[场景·${loc.name}] $narrative');
+        _segmentEventTypes.add('scene_event');
         _lastNarrativeSegment = narrative;
         final deltas = _parseCustomActionAffection(narrative);
         double totalDelta = 0;
