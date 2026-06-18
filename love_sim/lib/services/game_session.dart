@@ -59,9 +59,20 @@ class GameSession {
   String _lastEventType = 'daily';
   bool _isLoading = false;
 
+  set isLoading(bool v) { _isLoading = v; }
   bool get isLoading => _isLoading;
   bool get inLongEvent => _inLongEvent;
   String get lastNarrativeSegment => _lastNarrativeSegment;
+
+  Map<String, dynamic> get tensionVectorData => {};
+  void restoreTension(Map<String, dynamic> d) {}
+
+  void appendNarrative(String text) {
+    _appendToNarrative(text);
+    _narrativeSegments.add(text);
+    _segmentEventTypes.add('phase');
+    _lastNarrativeSegment = text;
+  }
 
   Map<String, double> _playerStats = {};
   Map<String, double> get playerStats => _playerStats;

@@ -1,7 +1,6 @@
 {
   "_comment": "========= LoveSim 剧本模板 =========",
   "_comment2": "规则：所有数值/公式/映射来自JSON，Dart代码不硬编码任何剧本特定ID",
-
   "meta": {
     "id": "my_script_id",
     "name": "我的剧本",
@@ -12,59 +11,179 @@
     "mode": "endings",
     "summary": ""
   },
-
   "player": {
     "background": "",
     "current_state": ""
   },
-
   "world": {
     "summary": "",
     "setting": "",
-    "atmosphere": {"time_sense": "", "tone": "", "interaction_quality": ""},
+    "atmosphere": {
+      "time_sense": "",
+      "tone": "",
+      "interaction_quality": ""
+    },
     "locations": [
-      {"id": "location_id", "name": "地点名", "desc": "", "trigger_tags": []}
+      {
+        "id": "location_id",
+        "name": "地点名",
+        "desc": "",
+        "trigger_tags": []
+      }
     ],
     "special_rules": {},
-    "memory": {"current_time": {"day": 1, "season": "spring", "weather": "晴", "phase": "上午"}, "location_changes": [], "world_history": {}, "world_summary": ""}
+    "memory": {
+      "current_time": {
+        "day": 1,
+        "season": "spring",
+        "weather": "晴",
+        "phase": "上午"
+      },
+      "location_changes": [],
+      "world_history": {},
+      "world_summary": ""
+    }
   },
-
   "characters": [
     {
       "full_character": true,
       "summary": "",
-      "basic": {"id": "char_id", "name": "角色名", "gender": "女", "age": 16, "height": "", "initial_affection": 5},
-      "background": {"origin": "", "history": "", "current_situation": ""},
-      "details": {"goals": [], "fears": [], "secrets": [], "values": [], "selfPerception": ""},
-      "soul": {"bigFive": {"openness": 0.5, "extraversion": 0.5, "agreeableness": 0.5, "conscientiousness": 0.5, "neuroticism": 0.5}},
-      "speech": {"bigFiveProfile": {}, "phonetics": {}, "vocabulary": {}, "dualMode": {"to_stranger": {"overview": "", "example": ""}, "to_close": {"overview": "", "example": ""}}},
-      "humanity": {"emotionalRange": "", "attachmentStyle": "", "socialStrategy": ""},
-      "agent": {"personalityOverview": "", "chatPersonality": "", "narrativeStyle": "", "emotionalExpression": "", "conflictStrategy": "", "specialBehaviors": []},
-      "appearance": {"body": "", "uniform": "", "expression": "", "details": []},
-      "preferences": {"likes": [], "dislikes": [], "hobbies": [], "idealType": ""},
-      "moodTriggers": {"joy": [], "annoy": [], "shy": [], "sad": [], "angry": []},
-      "giftResponse": {"positive": null, "negative": ""},
-      "boundary": {"touch": "", "privacy": ""},
-      "evolution": {"tiers": []},
-      "relations": {"flat": [], "dimensional": []},
-      "memory": {"episodic_memory": []},
-      "schedule": {"weekday": [], "weekend": []},
+      "basic": {
+        "id": "char_id",
+        "name": "角色名",
+        "gender": "女",
+        "age": 16,
+        "height": "",
+        "initial_affection": 5
+      },
+      "background": {
+        "origin": "",
+        "history": "",
+        "current_situation": ""
+      },
+      "details": {
+        "goals": [],
+        "fears": [],
+        "secrets": [],
+        "values": [],
+        "selfPerception": ""
+      },
+      "soul": {
+        "bigFive": {
+          "openness": 0.5,
+          "extraversion": 0.5,
+          "agreeableness": 0.5,
+          "conscientiousness": 0.5,
+          "neuroticism": 0.5
+        }
+      },
+      "speech": {
+        "bigFiveProfile": {},
+        "phonetics": {},
+        "vocabulary": {},
+        "dualMode": {
+          "to_stranger": {
+            "overview": "",
+            "example": ""
+          },
+          "to_close": {
+            "overview": "",
+            "example": ""
+          }
+        }
+      },
+      "humanity": {
+        "emotionalRange": "",
+        "attachmentStyle": "",
+        "socialStrategy": ""
+      },
+      "agent": {
+        "personalityOverview": "",
+        "chatPersonality": "",
+        "narrativeStyle": "",
+        "emotionalExpression": "",
+        "conflictStrategy": "",
+        "specialBehaviors": []
+      },
+      "appearance": {
+        "body": "",
+        "uniform": "",
+        "expression": "",
+        "details": []
+      },
+      "preferences": {
+        "likes": [],
+        "dislikes": [],
+        "hobbies": [],
+        "idealType": ""
+      },
+      "moodTriggers": {
+        "joy": [],
+        "annoy": [],
+        "shy": [],
+        "sad": [],
+        "angry": []
+      },
+      "giftResponse": {
+        "positive": null,
+        "negative": ""
+      },
+      "boundary": {
+        "touch": "",
+        "privacy": ""
+      },
+      "evolution": {
+        "tiers": []
+      },
+      "relations": {
+        "flat": [],
+        "dimensional": []
+      },
+      "memory": {
+        "episodic_memory": []
+      },
+      "schedule": {
+        "weekday": [],
+        "weekend": []
+      },
       "stats": [
-        {"id": "stat_1", "name": "属性1", "value": 50, "max": 100}
+        {
+          "id": "stat_1",
+          "name": "属性1",
+          "value": 50,
+          "max": 100
+        }
       ],
       "grades": [
-        {"id": "grade_1", "name": "科目1", "value": 100, "max": 150}
-      ]
+        {
+          "id": "grade_1",
+          "name": "科目1",
+          "value": 100,
+          "max": 150
+        }
+      ],
+      "discovery_condition": "",
+      "coop": {
+        "arcana": "",
+        "starts_locked": false,
+        "rank_thresholds": {},
+        "rank_up_conditions": {},
+        "abilities": [],
+        "available_phases": [],
+        "available_locations": []
+      }
     }
   ],
-
   "items": {
     "gifts": [
-      {"id": "gift_id", "name": "礼物名", "description": ""}
+      {
+        "id": "gift_id",
+        "name": "礼物名",
+        "description": ""
+      }
     ],
     "shopItems": []
   },
-
   "interaction": {
     "totalDays": 365,
     "startDay": 1,
@@ -73,25 +192,130 @@
     "phases": [],
     "advanceModes": {},
     "seasons": [],
-    "weatherSystem": {"probabilities": {}},
-    "affection": {"min": 1, "max": 100, "precision": 0.01, "tiers": []},
+    "weatherSystem": {
+      "probabilities": {}
+    },
+    "affection": {
+      "min": 1,
+      "max": 100,
+      "precision": 0.01,
+      "tiers": [],
+      "natural_drift": {
+        "per_day": 0.02,
+        "max_drift": 5,
+        "direction": "toward_middle",
+        "middle": 50
+      }
+    },
     "chat": {},
     "messages": {},
     "pace": "",
     "contextManagement": {},
-    "memory": {}
+    "memory": {},
+    "time_config": {
+      "phases": [
+        {
+          "id": "zi",
+          "name": "子时",
+          "hour": "23-01",
+          "mood": "夜深人静",
+          "skippable": true
+        },
+        {
+          "id": "chou",
+          "name": "丑时",
+          "hour": "01-03",
+          "mood": "万籁俱寂",
+          "skippable": true
+        },
+        {
+          "id": "yin",
+          "name": "寅时",
+          "hour": "03-05",
+          "mood": "黎明之前",
+          "skippable": true
+        },
+        {
+          "id": "mao",
+          "name": "卯时",
+          "hour": "05-07",
+          "mood": "日出晨起",
+          "skippable": false
+        },
+        {
+          "id": "chen",
+          "name": "辰时",
+          "hour": "07-09",
+          "mood": "朝食上学",
+          "skippable": false
+        },
+        {
+          "id": "si",
+          "name": "巳时",
+          "hour": "09-11",
+          "mood": "上午课程",
+          "skippable": false
+        },
+        {
+          "id": "wu",
+          "name": "午时",
+          "hour": "11-13",
+          "mood": "午休午餐",
+          "skippable": false
+        },
+        {
+          "id": "wei",
+          "name": "未时",
+          "hour": "13-15",
+          "mood": "下午课程",
+          "skippable": false
+        },
+        {
+          "id": "shen",
+          "name": "申时",
+          "hour": "15-17",
+          "mood": "放学社团",
+          "skippable": false
+        },
+        {
+          "id": "you",
+          "name": "酉时",
+          "hour": "17-19",
+          "mood": "黄昏归家",
+          "skippable": false
+        },
+        {
+          "id": "xu",
+          "name": "戌时",
+          "hour": "19-21",
+          "mood": "晚间自由",
+          "skippable": false
+        },
+        {
+          "id": "hai",
+          "name": "亥时",
+          "hour": "21-23",
+          "mood": "就寝之前",
+          "skippable": false
+        }
+      ]
+    }
   },
-
   "events": {
     "sceneLocations": []
   },
-
   "plot": {
     "acts": [
-      {"id": "act_1", "name": "第一幕", "day_start": 1, "day_end": 90, "tension_start": 0, "tension_end": 40}
+      {
+        "id": "act_1",
+        "name": "第一幕",
+        "day_start": 1,
+        "day_end": 90,
+        "tension_start": 0,
+        "tension_end": 40
+      }
     ]
   },
-
   "game_events": {
     "eventPools": {
       "daily": [],
@@ -101,7 +325,6 @@
     },
     "beatMap": []
   },
-
   "data_layer": {
     "player_profile": {
       "name": "",
@@ -112,14 +335,27 @@
       "background_hint": ""
     },
     "stats": [
-      {"id": "stat_1", "name": "属性1", "category": "talent", "min": 0, "max": 100, "initial": 50}
+      {
+        "id": "stat_1",
+        "name": "属性1",
+        "category": "talent",
+        "min": 0,
+        "max": 100,
+        "initial": 50
+      }
     ],
     "grades": [
-      {"id": "grade_1", "name": "科目1", "min": 0, "max": 150, "initial": 100}
+      {
+        "id": "grade_1",
+        "name": "科目1",
+        "min": 0,
+        "max": 150,
+        "initial": 100
+      }
     ],
     "grade_formulas": {
       "grade_1": {
-        "base_weight": 0.70,
+        "base_weight": 0.7,
         "variance": 10,
         "stat_bonuses": {}
       }
@@ -128,7 +364,14 @@
     "ranking": {
       "total_students": 750,
       "events": [
-        {"id": "exam_1", "name": "考试", "interval_days": 30, "affects": ["grade_1"]}
+        {
+          "id": "exam_1",
+          "name": "考试",
+          "interval_days": 30,
+          "affects": [
+            "grade_1"
+          ]
+        }
       ]
     },
     "memory": {
@@ -136,9 +379,83 @@
       "grade_values": {},
       "grade_history": [],
       "last_ranking_day": 0
+    },
+    "social_stats": [
+      {
+        "id": "knowledge",
+        "name": "知识",
+        "min": 0,
+        "max": 100,
+        "initial": 0
+      },
+      {
+        "id": "courage",
+        "name": "勇气",
+        "min": 0,
+        "max": 100,
+        "initial": 0
+      },
+      {
+        "id": "charm",
+        "name": "魅力",
+        "min": 0,
+        "max": 100,
+        "initial": 20
+      },
+      {
+        "id": "kindness",
+        "name": "体贴",
+        "min": 0,
+        "max": 100,
+        "initial": 10
+      },
+      {
+        "id": "proficiency",
+        "name": "灵巧",
+        "min": 0,
+        "max": 100,
+        "initial": 0
+      }
+    ],
+    "training_actions": [
+      {
+        "id": "study",
+        "name": "读书学习",
+        "stat_gains": {
+          "knowledge": 6
+        },
+        "phases": [
+          "放学后",
+          "夜晚"
+        ],
+        "location": "图书馆",
+        "icon": "📖",
+        "description": "安静地读书学习"
+      }
+    ],
+    "action_points": {
+      "points_per_phase": {
+        "放学后": 1,
+        "夜晚": 1
+      },
+      "action_types": [
+        "推进Coop",
+        "锻炼属性",
+        "打工",
+        "购物",
+        "自由行动",
+        "休息"
+      ]
+    },
+    "ranking_narrative": {
+      "review_period_days": 14,
+      "review_trigger_day": 8,
+      "release_reactions": true
+    },
+    "training": {
+      "actions": []
     }
   },
-
   "dialogue": {},
   "game_items": {},
   "game_interaction": {},
@@ -147,27 +464,46 @@
     "boundary_checks": [
       {
         "_comment": "物理亲密行为需要好感度 >= min_affection",
-        "keywords": ["抱", "亲", "吻", "牵手", "摸", "碰", "睡"],
-        "min_affection": 70.0,
+        "keywords": [
+          "抱",
+          "亲",
+          "吻",
+          "牵手",
+          "摸",
+          "碰",
+          "睡"
+        ],
+        "min_affection": 70,
         "rejection_narrative": "{char_name}往后退了一步，眼神冷了下来。\"……不要这样。\"",
-        "affection_penalty": -5.0
+        "affection_penalty": -5
       },
       {
         "_comment": "表白相关需要好感度 >= min_affection",
-        "keywords": ["表白", "喜欢", "爱", "在一起", "交往"],
-        "min_affection": 65.0,
+        "keywords": [
+          "表白",
+          "喜欢",
+          "爱",
+          "在一起",
+          "交往"
+        ],
+        "min_affection": 65,
         "rejection_narrative": "{char_name}愣了一下，随即移开了视线。\"……现在说这个，太早了。\"",
-        "affection_penalty": -3.0
+        "affection_penalty": -3
       },
       {
         "_comment": "约请需要好感度 >= min_affection",
-        "keywords": ["约会", "单独", "陪", "出去"],
-        "min_affection": 55.0,
+        "keywords": [
+          "约会",
+          "单独",
+          "陪",
+          "出去"
+        ],
+        "min_affection": 55,
         "rejection_narrative": "{char_name}犹豫了一下，摇了摇头。\"……改天吧。\"",
-        "affection_penalty": -1.0
+        "affection_penalty": -1
       }
     ],
-    "topic_taboo_penalty": -3.0,
+    "topic_taboo_penalty": -3,
     "topic_taboo_rejection": "{char_name}的表情僵了一下，没有接话。"
   },
   "fallback_narratives": {

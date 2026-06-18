@@ -81,16 +81,24 @@ class SimulationScreen extends StatelessWidget {
   }
 
   Widget _buildWorldTopBar(AppProvider app, BuildContext context) {
+    final we = app.worldEngine;
+    final weekday = we?.weekdayName ?? '';
+    final day = int.tryParse(app.currentDay) ?? 1;
+    final weekNum = ((day - 1) ~/ 7) + 1;
+    final isWeekend = we?.isWeekend ?? false;
+    final special = we?.currentSpecialDay;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       color: const Color(0x08FFFFFF),
       child: Row(children: [
         const SizedBox(width: 4),
-        Container(width: 10, height: 10, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF32D74B))),
-        const SizedBox(width: 8),
-        Text('第${app.currentDay}天', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.w600)),
+        Text('第${weekNum}周', style: const TextStyle(color: AppColors.accent, fontSize: 12, fontWeight: FontWeight.w600)),
+        const SizedBox(width: 6),
+        Text('第${day}天', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.w600)),
         const SizedBox(width: 4),
-        Text(app.currentPhase.replaceAll('上午', '☀️').replaceAll('下午', '🌤').replaceAll('晚上', '🌙').replaceAll('深夜', '🌃'), style: const TextStyle(fontSize: 13)),
+        Text(weekday, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
+        if (isWeekend) ...[const SizedBox(width: 4), Text('休', style: const TextStyle(color: Color(0xFFFFD60A), fontSize: 11, fontWeight: FontWeight.w600))],
+        if (special != null) ...[const SizedBox(width: 6), Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: const Color(0xFFFFD60A).withAlpha(25)), child: Text(special['name'] ?? '', style: const TextStyle(color: Color(0xFFFFD60A), fontSize: 10, fontWeight: FontWeight.w600)))],
         const Spacer(),
         CupertinoButton(
           onPressed: () => app.toggleSimView(),

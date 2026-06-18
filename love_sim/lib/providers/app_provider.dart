@@ -19,6 +19,8 @@ import 'package:love_sim/services/ranking_service.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:love_sim/services/phase_action_service.dart';
+
 class AppProvider extends ChangeNotifier {
   DeepSeekClient? _deepSeekClient;
   WorldEngine? _worldEngine;
@@ -33,6 +35,9 @@ class AppProvider extends ChangeNotifier {
   UserSettings get userSettings => _userSettings;
   CharacterDisplayState get charDisplay => _charDisplay;
   GameSession? get session => _session;
+
+  bool isDiscovered(String charId) => true; // TODO: wire to GameSession
+  List<Character> get discoveredCharacters => _session?.script?.characters.where((c) => c.fullCharacter).toList() ?? [];
 
   int _currentTabIndex = 0;
   int _simTabIndex = 0;
@@ -123,6 +128,7 @@ class AppProvider extends ChangeNotifier {
       rankingData: s.rankingService?.toJson(),
       userSettingsData: _userSettings.toJson(),
       charDisplayData: _charDisplay.toJson(),
+      tensionVectorData: s.tensionVectorData,
     );
     try {
       final result = await _saveService!.save(data, s.script!, slotIndex: slotIndex);
@@ -180,7 +186,11 @@ class AppProvider extends ChangeNotifier {
     _session!.setCurrencies(data.currencies);
     _session!.setCurrentAct(data.currentAct);
     _session!.setTriggeredBeats(data.triggeredBeats);
-    _session!.setTensionLevel(data.tensionLevel);
+    if (data.tensionVectorData != null) {
+      _session!.restoreTension(data.tensionVectorData!);
+    } else {
+      _session!.setTensionLevel(data.tensionLevel);
+    }
     _session!.setEndingProgress(data.endingProgress);
     _session!.setEventCounter(data.eventCounter);
     _session!.setRecentEvents(data.recentEvents);
@@ -365,7 +375,50 @@ class AppProvider extends ChangeNotifier {
 
   GameScript? get script => _session?.script;
   DeepSeekClient? get deepSeekClient => _deepSeekClient;
-  WorldEngine? get worldEngine => _worldEngine;
+  WorldEngine? get worldEngine => _session?.worldEngine;
+  PhaseActionService? get phaseActions => _session != null ? PhaseActionService(_session!) : null;
+
+  /// 预览场景
+  Future<Map<String, dynamic>> previewLocation(String id) async {
+    final r = await phaseActions?.previewLocation(id);
+    notifyListeners(); return r ?? {};
+  }
+
+  /// 场景中行动
+  Future<void> actAtLocation(String id, String action) async {
+    final n = await phaseActions?.actAtLocation(id, action) ?? '';
+    if (n.isNotEmpty) _session?.appendNarrative(n);
+    notifyListeners();
+  }
+
+  /// 与角色互动
+  Future<void> interactWithChar(String id, String action) async {
+    final n = await phaseActions?.interactWithChar(id, action) ?? '';
+    if (n.isNotEmpty) _session?.appendNarrative(n);
+    notifyListeners();
+  }
+
+  /// 跳过 N 天
+  Future<void> skipDays(int days) async {
+    final n = await phaseActions?.skipDays(days) ?? '';
+    notifyListeners();
+  }
+
+  /// 执行训练
+  Future<void> doTraining(String id) async {
+    await phaseActions?.doTraining(id);
+    notifyListeners();
+  }
+
+  /// 获取当前可用的训练
+  List<Map<String, dynamic>> getAvailableTraining() => phaseActions?.getAvailableTraining() ?? [];
+
+  /// 度过当前时段
+  Future<void> passPhase() async {
+    final n = await phaseActions?.passPhase() ?? '';
+    if (n.isNotEmpty) _session?.appendNarrative(n);
+    notifyListeners();
+  }
 
   int get currentTabIndex => _currentTabIndex;
   int get simTabIndex => _simTabIndex;

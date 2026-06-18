@@ -21,7 +21,7 @@ class ContactsScreen extends StatelessWidget {
             if (script == null) {
               return Center(child: Text('请先加载剧本', style: TextStyle(color: AppColors.textTertiary.withAlpha(180), fontSize: 15)));
             }
-            final fullChars = script.characters.where((c) => c.fullCharacter).toList();
+            final fullChars = script.characters.where((c) => c.fullCharacter && app.isDiscovered(c.basic.id)).toList();
             if (fullChars.isEmpty) {
               return Center(child: Text('暂无角色数据', style: TextStyle(color: AppColors.textTertiary.withAlpha(180), fontSize: 15)));
             }

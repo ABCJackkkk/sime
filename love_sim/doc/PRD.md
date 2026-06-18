@@ -99,6 +99,7 @@
 - [ ] 定义 `data_layer.grade_formulas`（每科公式）
 - [ ] 定义 `data_layer.natural_growth_rate`
 - [ ] 定义 `data_layer.ranking`（总人数 + 考试事件）
+- [ ] 定义 `rhythm_config`（节奏层：weight/focus指引 + beat/boundary映射 + 剧本类型修正）
 - [ ] 为每个 full_character 填写 `stats` 和 `grades`（可选——不填则自动回退）
 - [ ] 确保所有 ID 在 stat/grades/formula 三层之间一致引用
 - [ ] **不要修改任何 .dart 文件**

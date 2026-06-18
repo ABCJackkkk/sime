@@ -15,6 +15,34 @@ class DeepSeekClient {
 
   final Random _rng = Random();
 
+  static const _focusWeights = {
+    'characterMoment':   {'speech': 35, 'relationship': 15, 'characterArc': 30, 'plot': 5,  'world': 15},
+    'relationshipBeat':  {'speech': 15, 'relationship': 40, 'characterArc': 10, 'plot': 15, 'world': 20},
+    'plotAdvancement':   {'speech': 5,  'relationship': 10, 'characterArc': 10, 'plot': 60, 'world': 15},
+    'worldTexture':      {'speech': 10, 'relationship': 5,  'characterArc': 5,  'plot': 5,  'world': 75},
+    'tensionEscalation': {'speech': 15, 'relationship': 20, 'characterArc': 15, 'plot': 35, 'world': 15},
+    'ensembleScene':     {'speech': 25, 'relationship': 25, 'characterArc': 5,  'plot': 20, 'world': 25},
+  };
+
+  String _trimForFocus(String segment, String section, String? focus) {
+    if (focus == null || segment.length < 100) return segment;
+    final w = _focusWeights[focus] ?? _focusWeights['worldTexture']!;
+    final sectionWeight = w[section] ?? 25;
+    final scale = sectionWeight / 25.0;
+    if (scale >= 1.0) return segment;
+    final targetLen = (segment.length * scale).round();
+    if (targetLen >= segment.length) return segment;
+    final sentences = segment.split(RegExp(r'(?<=[。！？\n])'));
+    final buf = StringBuffer();
+    int cur = 0;
+    for (final s in sentences) {
+      if (cur + s.length > targetLen && cur > targetLen * 0.5) break;
+      buf.write(s);
+      cur += s.length;
+    }
+    return buf.toString();
+  }
+
   DeepSeekClient({required this.apiKey, this.corsProxy});
 
   String _resolveUrl() {
@@ -30,7 +58,9 @@ class DeepSeekClient {
     int maxTokens = 1024,
     double temperature = 0.8,
     List<Map<String, String>>? history,
+    bool isWorldNarrative = false,
   }) async {
+    final effectiveMaxTokens = isWorldNarrative ? 1200 : maxTokens;
     final messages = <Map<String, String>>[];
     messages.add({'role': 'system', 'content': systemPrompt});
     if (history != null) messages.addAll(history);
@@ -39,7 +69,7 @@ class DeepSeekClient {
     final body = json.encode({
       'model': _model,
       'messages': messages,
-      'max_tokens': maxTokens,
+      'max_tokens': effectiveMaxTokens,
       'temperature': temperature,
     });
 
@@ -161,9 +191,11 @@ class DeepSeekClient {
     required String narrativeHistory,
   }) async {
     final systemPrompt = _buildWorldSystemPrompt(script, context, narrativeHistory);
+    final modePrompt = _buildWorldUserPrompt(mode, context);
+    final userPrompt = prompt.isNotEmpty ? '$prompt\n\n$modePrompt' : modePrompt;
     return _callApi(
       systemPrompt: systemPrompt,
-      userPrompt: _buildWorldUserPrompt(mode, context),
+      userPrompt: userPrompt,
       maxTokens: 1024,
       temperature: 0.9,
     );
@@ -292,7 +324,7 @@ class DeepSeekClient {
     return buf.toString().trim();
   }
 
-  void _writeCharProfile(StringBuffer buf, Character c) {
+  static void _writeCharProfile(StringBuffer buf, Character c) {
     buf.writeln('--- ${c.basic.name} ---');
     buf.writeln('基础: ${c.basic.age}岁 ${c.basic.gender} ${c.basic.height} ${c.basic.weight}');
     buf.writeln('外貌: ${c.basic.avatarDesc}');
@@ -378,15 +410,45 @@ class DeepSeekClient {
     }
   }
 
+  String buildCharProfile(Character c) {
+    final buf = StringBuffer();
+    _writeCharProfile(buf, c);
+    return buf.toString();
+  }
+
   String _buildWorldUserPrompt(String mode, Map<String, dynamic> context) {
     final day = context['day'] ?? '1';
     final season = context['season'] ?? '春';
     final weather = context['weather'] ?? '晴';
     final phase = context['phase'] ?? '上午';
+    final weekday = context['weekday'] ?? '';
+    final isWeekend = context['is_weekend'] ?? false;
     if (mode == 'major') {
-      return '请推进一整天的剧情。第${day}天${season}季${phase}，天气${weather}。今天发生了什么重要的事？';
+      return '请推进一整天的剧情。${weekday}第${day}天${season}季，天气${weather}。今天发生了什么重要的事？';
     }
-    return '请推进一个时段的剧情。第${day}天${season}季${phase}，天气${weather}。现在发生了什么？';
+    if (mode == 'scene') {
+      return '玩家来到了新场景。${weekday}第${day}天${season}季${phase}，天气${weather}。描述这个场景和在场的人物。';
+    }
+    if (mode == 'interact') {
+      return '玩家与角色互动。${weekday}第${day}天${season}季${phase}，天气${weather}。描述互动细节。';
+    }
+    if (mode == 'skip_days') {
+      return '玩家跳过了多天时间。请根据当前时间（第${day}天${season}季${weekday}，天气${weather}），简述这段时间发生的主要变化：季节更替、与角色的关系变化、重要事件。200-300字，第二人称"你"。不需要逐日描述，用"这几周来""这段时间"概括。';
+    }
+    // phase_pass / daily
+    final phaseHints = {
+      '清晨': '天刚亮。角色应该在起床、晨练、上学路上。',
+      '上午': '上午的课程/工作刚开始。',
+      '课间': '下课时分，走廊热闹。',
+      '午休': '午餐时间。食堂、天台、树下。',
+      '下午': '下午的课程/活动。',
+      '放学': '放学了。社团活动、回家路上、操场。',
+      '傍晚': '天色渐暗。晚饭前后。${isWeekend ? "周末的傍晚" : ""}',
+      '夜晚': '夜晚了。在学校的话该离开了。${isWeekend ? "周末的夜晚" : "该回家了，或者在家看书休息。"}',
+    };
+    final hint = phaseHints[phase] ?? '';
+    final weekendNote = isWeekend ? '今天是周末，不用上学。' : '';
+    return '${weekendNote}${weekday}第${day}天${season}季${phase}，天气${weather}。$hint\n请延续前面的叙事，写这个时段发生了什么。注意：地点和角色行为必须符合当前时段。如果是在学校，夜晚时段角色应该已经离开学校了。';
   }
 
   Future<List<Map<String, dynamic>>> generateChoices({
@@ -607,9 +669,10 @@ class DeepSeekClient {
     GameScript? script,
     String narrativeHistory = '',
     String memoryContext = '',
+    String rankingContext = '',
   }) async {
     return _callApi(
-      systemPrompt: _buildChatSystemPrompt(character, affection, playerName, worldContext, script: script, narrativeHistory: narrativeHistory, memoryContext: memoryContext),
+      systemPrompt: _buildChatSystemPrompt(character, affection, playerName, worldContext, script: script, narrativeHistory: narrativeHistory, memoryContext: memoryContext, rankingContext: rankingContext),
       userPrompt: userMessage,
       maxTokens: 512,
       temperature: 0.9,
@@ -627,9 +690,10 @@ class DeepSeekClient {
     GameScript? script,
     String narrativeHistory = '',
     String memoryContext = '',
+    String rankingContext = '',
   }) {
     return _callApiStreaming(
-      systemPrompt: _buildChatSystemPrompt(character, affection, playerName, worldContext, script: script, narrativeHistory: narrativeHistory, memoryContext: memoryContext),
+      systemPrompt: _buildChatSystemPrompt(character, affection, playerName, worldContext, script: script, narrativeHistory: narrativeHistory, memoryContext: memoryContext, rankingContext: rankingContext),
       userPrompt: userMessage,
       maxTokens: 512,
       temperature: 0.9,
@@ -637,9 +701,10 @@ class DeepSeekClient {
     );
   }
 
-  String _buildChatSystemPrompt(Character character, double affection, String playerName, String worldContext, {GameScript? script, String narrativeHistory = '', String memoryContext = ''}) {
+  String _buildChatSystemPrompt(Character character, double affection, String playerName, String worldContext, {GameScript? script, String narrativeHistory = '', String memoryContext = '', String rankingContext = '', String focus = ''}) {
     final buf = StringBuffer();
     final isClose = affection >= 60;
+    final f = focus.isNotEmpty ? focus : null;
     final bool hostile = affection < 10;
     final bool hatred = affection >= 10 && affection < 20;
     final bool detest = affection >= 20 && affection < 30;
@@ -773,6 +838,10 @@ class DeepSeekClient {
     buf.writeln('你在和$playerName聊天。$worldContext');
     if (memoryContext.isNotEmpty) {
       buf.writeln(memoryContext);
+      buf.writeln();
+    }
+    if (rankingContext.isNotEmpty) {
+      buf.writeln(rankingContext);
       buf.writeln();
     }
     if (narrativeHistory.isNotEmpty) {
@@ -954,6 +1023,104 @@ class DeepSeekClient {
       userPrompt: prompt,
       maxTokens: 1024,
       temperature: 1.0,
+    );
+  }
+
+  Future<String> generateWorldNarrative({
+    required String mode,
+    required dynamic directive,
+    required int currentDay,
+    required int totalDays,
+    required String season,
+    required String weather,
+    required String phase,
+    required String fullNarrativeHistory,
+    required String playerCard,
+    required String rankingContext,
+    required List<String> charProfiles,
+    required List<String> collisionLines,
+    required List<String> infoGapLines,
+    required String locationName,
+    required String locationDesc,
+    required String participantDetails,
+    String? focus,
+  }) async {
+    final buf = StringBuffer();
+    final w = directive.wordCount as int;
+    final weightLabel = directive.weight.toString().split('.').last;
+    final focusLabel = directive.focusLabel as String;
+    final hint = directive.narrativeHint as String?;
+    final effectiveFocus = focus ?? 'worldTexture';
+
+    buf.writeln('【叙事权重】$weightLabel（写${w}字左右）');
+    buf.writeln('【叙事焦点】$focusLabel');
+    if (hint != null && hint.isNotEmpty) {
+      buf.writeln('【特殊指引】$hint');
+    }
+    buf.writeln();
+
+    buf.writeln('【世界此刻】');
+    buf.writeln('第${currentDay}天/$totalDays天 · $season · $weather · $phase');
+
+    if (locationName.isNotEmpty) {
+      buf.writeln('地点: $locationName');
+      if (locationDesc.isNotEmpty) buf.writeln('$locationDesc');
+    }
+
+    if (participantDetails.isNotEmpty) {
+      buf.writeln('\n【在场角色】');
+      buf.writeln(participantDetails);
+    }
+
+    if (collisionLines.isNotEmpty) {
+      buf.writeln('\n【日程动态】');
+      for (final line in collisionLines) {
+        buf.writeln(line);
+      }
+    }
+
+    if (infoGapLines.isNotEmpty) {
+      buf.writeln('\n【信息传播】');
+      for (final line in infoGapLines) {
+        buf.writeln(line);
+      }
+    }
+
+    buf.writeln('\n【玩家角色卡】');
+    buf.writeln(playerCard);
+
+    if (rankingContext.isNotEmpty) {
+      buf.writeln('\n【排名数据 - 请严格使用此数据，不要编造】');
+      buf.writeln(rankingContext);
+    }
+
+    buf.writeln('\n---');
+    buf.writeln('【所有角色档案】');
+    for (final profile in charProfiles) {
+      buf.writeln(_trimForFocus(profile, 'speech', effectiveFocus));
+    }
+
+    buf.writeln('\n---');
+    buf.writeln('【叙事历史（最近）】');
+    final history = fullNarrativeHistory.length > 800
+        ? fullNarrativeHistory.substring(fullNarrativeHistory.length - 800)
+        : fullNarrativeHistory;
+    buf.writeln(history);
+
+    buf.writeln('\n---');
+    buf.writeln('请根据以上信息写一段叙事。');
+    buf.writeln('规则：');
+    buf.writeln('1. 不要把上面的数据逐条罗列，而是展开一个具体的、可感的瞬间');
+    buf.writeln('2. 重点描写角色的感受、互动和环境细节');
+    buf.writeln('3. ${w}字左右，纯叙事不含选项');
+    buf.writeln('4. 如果叙事焦点是"世界质感"，重点写氛围、环境、时间流逝');
+    buf.writeln('5. 如果叙事焦点是"关系节拍"，重点写角色间的情绪变化和关系进展');
+
+    return _callApi(
+      systemPrompt: '你是一个恋爱模拟游戏的世界叙事引擎。根据设定生成生动、有画面感的世界叙事。',
+      userPrompt: buf.toString(),
+      temperature: 0.9,
+      isWorldNarrative: true,
     );
   }
 }

@@ -1,5 +1,7 @@
 # Love Sim — 工业化剧本模拟器 项目策划文档
 
+> **当前版本：v2.5** — 四层深化（记忆层次化 + 地点叙事属性 + 三维张力 + Prompt动态权重） · 编译通过 ✅ · 2026-06-18
+
 ## 一、项目定位
 
 这是一个**剧本驱动的恋爱模拟引擎**。核心思路：
@@ -212,12 +214,16 @@ love_sim/lib
 │   └── script.dart              — 所有 Dart 数据模型（约1700行）
 ├── services/
 │   ├── script_loader.dart       — JSON→GameScript 解析
-│   ├── deepseek_client.dart     — DeepSeek API 调用+所有 System Prompt 构建
-│   ├── world_engine.dart        — 世界时间/天气/季节推进+叙事生成+世界驱动
-│   ├── character_schedule.dart   — ★角色独立日程（查表/撞车/戏剧性评分）
+│   ├── deepseek_client.dart     — DeepSeek API 调用+System Prompt（generateWorldNarrative + 动态权重）
+│   ├── world_engine.dart        — 世界时间/天气/季节推进+世界驱动（getNextMilestone/getNextMilestone）
+│   ├── rhythm_scheduler.dart     — ★节奏调度器（五路触发源→RhythmDirective + 反节奏检测）
+│   ├── tension_vector.dart       — ★三维张力向量（relational/narrative/emotional）
+│   ├── character_schedule.dart   — ★角色独立日程（查表/撞车/戏剧性评分+地点加成）
+│   ├── character_memory_service.dart — ★角色记忆（core/episodic/decay 三层化）
 │   ├── inter_character_relationship.dart — ★角色间关系（亲和力/态度/嫉妒）
 │   ├── information_propagation.dart — ★信息传播（碎片/加密/扩散）
 │   ├── affection_engine.dart     — 好感度计算引擎（破阶/衰减/难度曲线）
+│   ├── event_scheduler.dart     — 事件调度（useRhythmLayer=false 时使用）
 ├── providers/
 │   └── app_provider.dart        — 状态中枢（约800行，协调所有引擎+UI状态）
 ├── screens/
@@ -383,12 +389,13 @@ modifyAffectionByEvent() — 事件变化（可破阶）
 | [sim-script.json](file:///d:/AR/sim-script.json) | 工业模板——所有字段定义和注释 |
 | [script.dart](file:///d:/AR/love_sim/lib/models/script.dart) | Dart 数据模型（~1000行） |
 | [app_provider.dart](file:///d:/AR/love_sim/lib/providers/app_provider.dart) | 状态中枢（~1200行） |
-| [deepseek_client.dart](file:///d:/AR/love_sim/lib/services/deepseek_client.dart) | AI 调用 + Prompt 构建（~720行） — generateEventNarrative 支持 freeform 参数 |
-| [world_engine.dart](file:///d:/AR/love_sim/lib/services/world_engine.dart) | 世界时间/天气/推进（~300行） |
+| [deepseek_client.dart](file:///d:/AR/love_sim/lib/services/deepseek_client.dart) | AI 调用 + Prompt 构建（~780行） — generateWorldNarrative + 动态权重 |
+| [world_engine.dart](file:///d:/AR/love_sim/lib/services/world_engine.dart) | 世界时间/天气/推进（~340行） — 含 getNextMilestone/isNearMilestone |
+| [rhythm_scheduler.dart](file:///d:/AR/love_sim/lib/services/rhythm_scheduler.dart) | ★节奏调度器（~360行） — 五路触发源 + 反节奏检测 |
+| [tension_vector.dart](file:///d:/AR/love_sim/lib/services/tension_vector.dart) | ★三维张力向量（~60行） — relational/narrative/emotional |
 | [affection_engine.dart](file:///d:/AR/love_sim/lib/services/affection_engine.dart) | 好感度系统（~370行） |
-| [relationship_engine.dart](file:///d:/AR/love_sim/lib/services/relationship_engine.dart) | 关系状态机（~210行） |
-| [event_scheduler.dart](file:///d:/AR/love_sim/lib/services/event_scheduler.dart) | 事件调度引擎（~310行） — 含 pickFreeformContext |
-| [character_schedule.dart](file:///d:/AR/love_sim/lib/services/character_schedule.dart) | ★角色日程服务 — 日程查表/撞车检测/戏剧性评分（~140行） |
+| [character_memory_service.dart](file:///d:/AR/love_sim/lib/services/character_memory_service.dart) | ★角色记忆（~150行） — core/episodic/decay 三层 |
+| [character_schedule.dart](file:///d:/AR/love_sim/lib/services/character_schedule.dart) | ★角色日程服务（~170行） — 撞车检测含地点叙事加成 |
 | [inter_character_relationship.dart](file:///d:/AR/love_sim/lib/services/inter_character_relationship.dart) | ★角色间关系服务 — 亲和力追踪/态度标签/嫉妒触发（~180行） |
 | [information_propagation.dart](file:///d:/AR/love_sim/lib/services/information_propagation.dart) | ★信息传播服务 — 信息碎片/5种加密风格/传播扩散（~170行） |
 | [script_loader.dart](file:///d:/AR/love_sim/lib/services/script_loader.dart) | JSON 解析入口（含逐层诊断） |
@@ -834,3 +841,235 @@ data_layer
 2. 产生微小好感度变化（±0.1~0.5）
 3. 成为聊天话题素材（AI 聊天时注入最近场景记忆）
 4. 新增"邀请角色到场景"功能：玩家选场景 → 选角色 → 触发双人场景事件
+
+---
+
+## 十四、v2.5 四层深化（2026-06-18）
+
+### 14.1 角色层：记忆三层化
+
+`character_memory_service.dart` 全面重构，从扁平日志 → 三层结构：
+
+| 层 | 上限 | 衰减规则 | Prompt标签 |
+|---|---|---|---|
+| core（核心）| 8条 | 永不清洗，溢出淘汰最旧 | 【她的记忆锚点】 |
+| episodic（情景）| 10条 | 溢出→降级到decay | 【你们之间的重要时刻】 |
+| decay（衰减）| 20条 | 溢出→自动丢弃 | 【最近的日常】 |
+
+分层规则：`critical`/`heavy` → core，`medium` → episodic，`light` → decay。
+好感度≥60的聊天 → episodic，否则 → decay。
+
+### 14.2 世界层：地点叙事属性
+
+`SceneLocation` 新增 `LocationNarrativeProfile`：
+- `eventAffinity`：对 characterMoment/relationshipBeat/tensionEscalation/ensembleScene 的加成系数
+- `narrativeKeywords`：AI prompt 中注入的地点专属关键词
+
+撞车检测 `pickDramaticCollision` 改造：`dramaScore *= (1.0 + 地点平均加成系数)`。
+天台 × relationshipBeat=0.9，走廊 × tensionEscalation=0.7，食堂 × ensembleScene=0.9。
+
+剧本 JSON 中所有 `scene_locations` 添加 `narrative_profile`——天台的秘密、走廊的偶遇、食堂的群像，不再是同一个背景板。
+
+### 14.3 节奏层：三维张力拆解
+
+`tension_vector.dart` — TensionVector 三轴：
+- `relational`：好感临界/三角关系/信任动摇
+- `narrative`：主线推进/信息揭露/截止日
+- `emotional`：角色内在情绪累积
+
+反节奏检测：`emotional > 0.6 && relational < 0.4` → 爆发（被冷落太久终于爆发）
+双维临界：`relational > 0.7 && narrative > 0.7` → 高潮时刻
+
+存档支持完整持久化。AI prompt 注入张力快照："此刻关系紧绷82%，情节蓄势45%，她内心不安61%"
+
+### 14.4 生成层：Prompt 动态权重
+
+`DeepSeekClient` 新增 `_focusWeights` 配置表 + `_trimForFocus` 按焦点裁剪：
+
+| focus | speech | relationship | characterArc | plot | world |
+|---|---|---|---|---|---|
+| worldTexture | 10% | 5% | 5% | 5% | **75%** |
+| relationshipBeat | 15% | **40%** | 10% | 15% | 20% |
+| plotAdvancement | 5% | 10% | 10% | **60%** | 15% |
+
+日常推进 → worldTexture → 世界描述权重 75%，角色档案按比例缩减。告别"全量塞入"的信息噪声。
+
+### 14.5 产出文件（v2.5）
+
+| 文件 | 变更 | 说明 |
+|---|---|---|
+| `character_memory_service.dart` | 重写 | 三层数据结构 + EpisodicEntry.layer + 分层回收 |
+| `script.dart` | 新增 | LocationNarrativeProfile 类 |
+| `character_schedule.dart` | 修改 | pickDramaticCollision 接受 sceneLocations + 地点加成 |
+| `world_engine.dart` | 修改 | tickWorld 传 sceneLocations 给撞车检测 |
+| `tension_vector.dart` | 新建 | TensionVector 三轴类 |
+| `rhythm_scheduler.dart` | 重构 | 集成 TensionVector + _detectReversal + 反节奏检测 |
+| `deepseek_client.dart` | 修改 | _focusWeights + _trimForFocus + generateWorldNarrative 接受 focus |
+| `game_session.dart` | 重构 | 集成 TensionVector + RhythmScheduler + rhythmNarrative 路径 |
+| `save_service.dart` | 修改 | SaveData.tensionVectorData |
+| `app_provider.dart` | 修改 | 存档/读档 tension vector |
+| `campus_love.json` | 修改 | 11个地点添加 narrative_profile |
+| `PRD.md` | 修改 | v2.5 版本标记 + 架构图更新 + 文件索引更新 + 本章节 |
+
+---
+
+## 十六、v2.6 —— 时段行动系统
+
+### 16.1 设计动机
+
+旧系统：玩家点「日常推进」→ AI 自动跳过 2-4 天生成摘要叙事。时间只是计数器，不参与玩法。
+
+新系统：时间是玩家手中的资源。每天 8 个时段（8 行动点），每次行动消耗时段，时段用完进入下一天。
+
+### 16.2 时段循环
+
+```
+工作日：清晨 → 上午 → 课间 → 午休 → 下午 → 放学 → 傍晚 → 夜晚 → (下一天清晨)
+周末：  清晨 → 上午 → 中午 → 下午 → 傍晚 → 夜晚 → (下一天清晨)
+```
+
+每时段 = 1 行动点。玩家可选：
+- **去别处**：前往某个地点，看场景描述 + 在场角色
+- **互动**：与角色对话/互动，消耗 1 时段
+- **度过**：跳过当前时段，AI 生成过渡叙事
+- **自定义**：手动输入行动
+
+### 16.3 日历系统
+
+| 数据 | 来源 |
+|---|---|
+| 周几 | 公式 (day-1)%7，0=周一 |
+| 周末 | 周六日时段缩短为 6 个 |
+| 特殊日 | 剧本 `special_days` 配置，检测到自动高亮 + 图标 |
+| 考前复习期 | 考试前 14 天自动检测，可触发复习复合叙事 |
+
+配置全部在剧本 JSON 中：
+- `time_config.phases`：时段列表
+- `time_config.special_days`：特殊日定义
+- `time_config.total_days`：总天数
+- `ranking.events`：考试间隔（自动计算考前复习期）
+
+### 16.4 渐进式角色发现
+
+剧本 JSON 中 `characters[i].discovery_condition` 定义发现条件：
+- 空字符串 → 初始可见
+- `day>=N` → 第 N 天自动发现
+- `location==loc_id` → 到达指定地点发现
+- `affection>=N:char_id` → 其他角色好感度达标后引荐
+
+未发现角色：
+- 通讯录中不可见
+- 世界照常运行（有日程、有位置）
+- 场景中可作"???"路人出现
+- 发现后解锁通讯录 + 日程可见
+
+### 16.5 场景互动
+
+- 每个地点有 `narrative_profile`（氛围/光照/声景/气味/温度），AI 据此生成场景描述
+- 角色日程决定当前谁在此地
+- 玩家进入场景 → 场景描述 + 在场角色列表 → 可选互动动作
+- 每个互动消耗 1 时段
+
+### 16.6 代码/剧本分离
+
+| 剧本 JSON 定义 | Dart 引擎处理 |
+|---|---|
+| `time_config.phases` | `WorldEngine._phases` 读取 |
+| `time_config.special_days` | `CalendarService` 读取 |
+| `time_config.total_days` | `WorldEngine.totalDays` 读取 |
+| `characters[i].discovery_condition` | `GameSession.checkDiscoveryConditions()` 解析 |
+| `characters[i].schedule` | `CharacterScheduleService` 查询 |
+| `world.locations[i].narrative_profile` | `DeepSeekClient` 注入场景 Prompt |
+
+引擎不硬编码任何剧本特定 ID、名称或数值。
+
+### 16.7 文件变更
+
+| 文件 | 操作 | 说明 |
+|---|---|---|
+| `lib/services/calendar_service.dart` | 新增 | 日历服务：周几/周末/特殊日/考前复习期 |
+| `lib/services/world_engine.dart` | 重写 | 时段循环 + 日历集成 + 角色位置查询 |
+| `lib/services/game_session.dart` | 修改 | +时段行动方法 + 角色发现追踪 |
+| `lib/providers/app_provider.dart` | 修改 | +passPhase/goToLocation/interactWithChar |
+| `lib/screens/world_screen.dart` | 重写 | 旧[日常/推进]按钮 → 新[去别处/互动/度过]面板 + 地点/角色选择器 |
+| `lib/screens/simulation_screen.dart` | 修改 | 顶部栏显示周几+特殊日 |
+| `lib/screens/contacts_screen.dart` | 修改 | 通讯录过滤未发现角色 |
+| `lib/models/script.dart` | 修改 | Character 新增 discoveryCondition |
+| `campus_love.json` | 修改 | +discovery_condition +ranking_narrative |
+
+---
+
+## 十七、v2.7 —— 十二时辰 + 养成系统 + 跳过天数
+
+### 17.1 十二时辰
+
+时段列表完全由剧本 `time_config.phases` 定义，引擎不硬编码：
+
+```json
+// 剧本 JSON 示例
+"time_config": {
+  "phases": [
+    {"id":"zi","name":"子时","hour":"23-01","mood":"夜深人静","skippable":true},
+    {"id":"chou","name":"丑时","hour":"01-03","mood":"万籁俱寂","skippable":true},
+    ...
+    {"id":"hai","name":"亥时","hour":"21-23","mood":"就寝之前","skippable":false}
+  ]
+}
+```
+
+- 每个时辰 = 1 行动点
+- `skippable` 标记可跳过的睡眠时段
+- 换修仙剧本只需改 JSON：卯时→练功、酉时→炼丹
+
+### 17.2 养成训练系统
+
+`data_layer.training.actions` 定义训练动作：
+
+```json
+"training": {
+  "actions": [
+    {"id":"study_lib","name":"图书馆自习","target_stat":"intelligence","gain":3,
+     "target_grade":"chinese","grade_gain":1,
+     "phases":["辰时","巳时","未时","申时","戌时"],
+     "locations":["library_3f"]}
+  ]
+}
+```
+
+- 玩家点击「锻炼」→ 列出当前时辰可做的训练 → 选择 → 消耗 1 时段 → 属性/成绩增加
+- 每个训练可提升 1-2 项属性 + 0-1 项成绩
+- AI 简述训练效果
+
+### 17.3 跳过天数
+
+- 时间栏右侧「跳过」按钮 → 输入 N 天
+- 引擎逐天推进（天气轮转、季节更替、特殊日检测、考试触发）
+- AI 生成摘要叙事：季节变化、考试排名、角色关系变化
+- 好感度自然漂移（向中间值靠拢，可配置 `natural_drift`）
+
+### 17.4 代码/剧本分离（更新）
+
+| 剧本 JSON 定义 | Dart 引擎处理 |
+|---|---|
+| `time_config.phases[].name/hour/mood/skippable` | `CalendarService.getPhaseNames()` |
+| `data_layer.training.actions[]` | `PhaseActionService.getAvailableTraining()` |
+| `interaction.affection.natural_drift` | `PhaseActionService.skipDays()` 漂移计算 |
+| `data_layer.ranking.events[].interval_days` | `RankingService.shouldTriggerExam()` |
+
+无硬编码时段名、训练动作名、漂移参数。
+
+### 17.5 文件变更
+
+| 文件 | 操作 | 说明 |
+|---|---|---|
+| `lib/services/phase_action_service.dart` | 新增 | 时段行动服务：场景预览/行动/互动/训练/跳过天数 |
+| `lib/services/calendar_service.dart` | 修改 | +`getPhaseNames()`/`isPhaseSkippable()` 从剧本读取 |
+| `lib/models/script.dart` | 修改 | GameDataLayer 新增 `training` 字段 |
+| `lib/providers/app_provider.dart` | 修改 | +skipDays/doTraining/getAvailableTraining |
+| `lib/screens/world_screen.dart` | 修改 | +锻炼按钮 + 训练选择器 + 跳过天数弹窗 |
+| `lib/screens/simulation_screen.dart` | 修改 | 顶部栏显示周几/十二时辰 |
+| `lib/services/deepseek_client.dart` | 修改 | +skip_days prompt 模式 |
+| `lib/services/game_session.dart` | 修改 | +appendNarrative/isLoading setter/tensionVector |
+| `campus_love.json` | 修改 | +phases(十二时辰) +training +natural_drift |
+| `_template.json` | 修改 | +phases +training +natural_drift |
+| `PRD.md` | 修改 | +本章节 |

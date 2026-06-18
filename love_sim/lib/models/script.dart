@@ -860,6 +860,7 @@ class Character {
   final CharacterSchedule? schedule;
   final List<CharacterStat>? stats;
   final List<CharacterGrade>? grades;
+  final String discoveryCondition;
 
   Character({
     required this.fullCharacter,
@@ -883,6 +884,7 @@ class Character {
     this.schedule,
     this.stats,
     this.grades,
+    this.discoveryCondition = '',
   });
 
   factory Character.fromJson(Map<String, dynamic> json) {
@@ -915,7 +917,7 @@ class Character {
       humanity: _h, agent: _a, appearance: _ap, preferences: _p,
       moodTriggers: _mt, giftResponse: _gr, boundary: _bo,
       evolution: _ev, memory: _m, relations: _r, schedule: _sc,
-      stats: stats, grades: grades,
+      stats: stats, grades: grades, discoveryCondition: json['discovery_condition'] ?? '',
     );
   }
 }
@@ -1026,6 +1028,25 @@ class InteractionConfig {
   }
 }
 
+class LocationNarrativeProfile {
+  final Map<String, double> eventAffinity;
+  final List<String> narrativeKeywords;
+
+  LocationNarrativeProfile({
+    Map<String, double>? eventAffinity,
+    List<String>? narrativeKeywords,
+  })  : eventAffinity = eventAffinity ?? {},
+       narrativeKeywords = narrativeKeywords ?? [];
+
+  factory LocationNarrativeProfile.fromJson(Map<String, dynamic> json) {
+    final rawAffinity = json['event_affinity'] as Map<String, dynamic>?;
+    return LocationNarrativeProfile(
+      eventAffinity: rawAffinity?.map((k, v) => MapEntry(k, (v as num).toDouble())) ?? {},
+      narrativeKeywords: List<String>.from(json['keywords'] ?? []),
+    );
+  }
+}
+
 class SceneLocation {
   final String id;
   final String name;
@@ -1034,6 +1055,7 @@ class SceneLocation {
   final String eventsHint;
   final List<String> availablePhases;
   final List<String> sceneMoods;
+  final LocationNarrativeProfile? narrativeProfile;
 
   SceneLocation({
     this.id = '',
@@ -1043,6 +1065,7 @@ class SceneLocation {
     this.eventsHint = '',
     List<String>? availablePhases,
     List<String>? sceneMoods,
+    this.narrativeProfile,
   })  : availablePhases = availablePhases ?? [],
         sceneMoods = sceneMoods ?? [];
 
@@ -1056,6 +1079,9 @@ class SceneLocation {
       availablePhases:
           List<String>.from(json['available_phases'] ?? []),
       sceneMoods: List<String>.from(json['scene_moods'] ?? []),
+      narrativeProfile: json['narrative_profile'] != null
+          ? LocationNarrativeProfile.fromJson(json['narrative_profile'] as Map<String, dynamic>)
+          : null,
     );
   }
 }
@@ -1913,7 +1939,8 @@ class GameDataLayer {
   final DataLayerMemory memory;
   final Map<String, GradeFormula> gradeFormulas;
   final double naturalGrowthRate;
-  GameDataLayer({Map<String,dynamic>? playerProfile,List<PlayerStatDefinition>? stats,List<PlayerGradeDefinition>? grades,RankingSystemDef? ranking,DataLayerMemory? memory,Map<String, GradeFormula>? gradeFormulas,this.naturalGrowthRate=0.02}):playerProfile=playerProfile??{},stats=stats??[],grades=grades??[],ranking=ranking??RankingSystemDef(),memory=memory??DataLayerMemory(),gradeFormulas=gradeFormulas??{};
+  final Map<String, dynamic>? training;
+  GameDataLayer({Map<String,dynamic>? playerProfile,List<PlayerStatDefinition>? stats,List<PlayerGradeDefinition>? grades,RankingSystemDef? ranking,DataLayerMemory? memory,Map<String, GradeFormula>? gradeFormulas,this.naturalGrowthRate=0.02,this.training}):playerProfile=playerProfile??{},stats=stats??[],grades=grades??[],ranking=ranking??RankingSystemDef(),memory=memory??DataLayerMemory(),gradeFormulas=gradeFormulas??{};
   factory GameDataLayer.fromJson(Map<String,dynamic> json) {
     final gfs = <String, GradeFormula>{};
     (json['grade_formulas'] as Map<String,dynamic>?)?.forEach((k, v) {
@@ -1927,6 +1954,7 @@ class GameDataLayer {
       memory: DataLayerMemory.fromJson(json['memory']??{}),
       gradeFormulas: gfs,
       naturalGrowthRate: (json['natural_growth_rate'] as num?)?.toDouble() ?? 0.02,
+      training: json['training'] as Map<String, dynamic>?,
     );
   }
 }

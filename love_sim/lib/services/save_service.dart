@@ -86,6 +86,7 @@ class SaveData {
   final Map<String, dynamic>? rankingData;
   final Map<String, dynamic>? userSettingsData;
   final Map<String, dynamic>? charDisplayData;
+  final Map<String, dynamic>? tensionVectorData;
 
   SaveData({
     required this.scriptId, required this.scriptName,
@@ -108,6 +109,7 @@ class SaveData {
     this.rankingData,
     this.userSettingsData,
     this.charDisplayData,
+    this.tensionVectorData,
   });
 
   Map<String, dynamic> toJson() => {
@@ -133,6 +135,7 @@ class SaveData {
         'rankingData': rankingData,
         'userSettingsData': userSettingsData,
         'charDisplayData': charDisplayData,
+        'tensionVectorData': tensionVectorData,
       };
 
   factory SaveData.fromJson(Map<String, dynamic> json) => SaveData(
@@ -170,6 +173,7 @@ class SaveData {
         rankingData: json['rankingData'] as Map<String, dynamic>?,
         userSettingsData: json['userSettingsData'] as Map<String, dynamic>?,
         charDisplayData: json['charDisplayData'] as Map<String, dynamic>?,
+        tensionVectorData: json['tensionVectorData'] as Map<String, dynamic>?,
       );
 }
 

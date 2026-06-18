@@ -96,11 +96,20 @@ class CharacterScheduleService {
     return null;
   }
 
-  Map<String, dynamic>? pickDramaticCollision(List<Character> characters, int day, String phase, String season, String weather, Map<String, double> affections) {
+  Map<String, dynamic>? pickDramaticCollision(List<Character> characters, int day, String phase, String season, String weather, Map<String, double> affections, {List<SceneLocation>? sceneLocations}) {
     final states = getAllLocations(characters, day, phase, season, weather);
     final byLocation = <String, List<ScheduleState>>{};
     for (final s in states) {
       byLocation.putIfAbsent(s.locationId, () => []).add(s);
+    }
+
+    final locProfiles = <String, LocationNarrativeProfile>{};
+    if (sceneLocations != null) {
+      for (final loc in sceneLocations) {
+        if (loc.narrativeProfile != null) {
+          locProfiles[loc.id] = loc.narrativeProfile!;
+        }
+      }
     }
 
     ScheduleCollision? best;
@@ -117,6 +126,13 @@ class CharacterScheduleService {
           score += (a1 * a2) / 100.0;
         }
       }
+      final profile = locProfiles[entry.key];
+      if (profile != null) {
+        final avgAffinity = profile.eventAffinity.isEmpty
+            ? 0.0
+            : profile.eventAffinity.values.reduce((a, b) => a + b) / profile.eventAffinity.length;
+        score *= (1.0 + avgAffinity);
+      }
       if (score > bestScore) {
         bestScore = score;
         best = ScheduleCollision(locationId: entry.key, charIds: ids, phase: phase);
@@ -124,11 +140,14 @@ class CharacterScheduleService {
     }
 
     if (best == null) return null;
+    final profile = locProfiles[best.locationId];
     return {
       'location_id': best.locationId,
       'char_ids': best.charIds,
       'phase': phase,
       'drama_score': bestScore,
+      if (profile != null)
+        'narrative_keywords': profile.narrativeKeywords,
     };
   }
 }

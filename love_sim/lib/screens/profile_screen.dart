@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:love_sim/main.dart';
 import 'package:love_sim/providers/app_provider.dart';
-import 'package:love_sim/widgets/crop_screen.dart';
+import 'package:love_sim/screens/crop_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
