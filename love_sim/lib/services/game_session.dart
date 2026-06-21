@@ -11,6 +11,8 @@ import 'package:love_sim/services/ranking_service.dart';
 import 'package:love_sim/services/save_service.dart';
 import 'package:love_sim/services/narrative_validator.dart';
 import 'package:love_sim/services/action_validator.dart';
+import 'package:love_sim/services/rhythm_scheduler.dart';
+import 'package:love_sim/services/tension_vector.dart';
 
 class GameSession {
   void Function()? onChanged;
@@ -22,6 +24,7 @@ class GameSession {
   RelationshipEngine? relationshipEngine;
   EventScheduler? eventScheduler;
   CharacterMemoryService? charMemory;
+  RhythmScheduler? rhythmScheduler;
   RankingService? rankingService;
   NarrativeCompressor? _narrativeCompressor;
   final Random _rng = Random();
@@ -81,7 +84,8 @@ class GameSession {
   Map<String, double> get playerGrades => _playerGrades;
 
   Map<String, double> _affectionStates = {};
-  Map<String, double> get affectionStates => _affectionStates;
+  Map<String, double> get affectionStates => Map.unmodifiable(_affectionStates);
+  final Set<String> discoveredChars = {};
 
   Map<String, List<ChatMessage>> _chatHistories = {};
   Map<String, List<ChatMessage>> get chatHistories => _chatHistories;
@@ -219,6 +223,8 @@ class GameSession {
       worldEngine!.initWorldServices();
     }
     charMemory = CharacterMemoryService();
+    rhythmScheduler = RhythmScheduler();
+    discoveredChars.addAll(s.characters.where((c) => c.fullCharacter).map((c) => c.basic.id));
     _narrativeHistory = s.world.memory.worldSummary;
     _narrativeSegments = _narrativeHistory.isNotEmpty ? [_narrativeHistory] : [];
     _segmentEventTypes = _narrativeSegments.map((_) => '').toList();
@@ -425,6 +431,7 @@ class GameSession {
   void setTriggeredBeats(Map<String, bool> v) { _triggeredBeats = Map<String, bool>.from(v); }
   void setTensionLevel(double v) => _tensionLevel = v;
   void setEndingProgress(Map<String, double> v) { _endingProgress = Map<String, double>.from(v); }
+  void discoverChar(String id) { if (discoveredChars.add(id)) _notify(); }
   void setEventCounter(int v) => _eventCounter = v;
   void setRecentEvents(List<Map<String, dynamic>> v) { _recentEvents = List<Map<String, dynamic>>.from(v); }
   void setPlayerStats(Map<String, double> v) { _playerStats = Map<String, double>.from(v); }
@@ -436,7 +443,7 @@ class GameSession {
     if (_isLoading || worldEngine == null) return;
     _isLoading = true; _pendingChoices = []; _notify();
 
-    _tickTension();
+    _rhythmTick();
     if (script?.plot != null) _checkBeatTriggers();
     _checkCharacterInitiative(userName, charRemarkNames);
 
@@ -499,12 +506,65 @@ class GameSession {
         }
 
         final playerCard = buildPlayerCardForAi(userName, userGender, userHeight, userBirthday, userAppearance, userPersonality, userBio);
-        narrative = await deepSeekClient!.generateEventNarrative(
-          eventType: eventTemplate.id.isNotEmpty ? eventTemplate.name : eventTemplate.id,
-          aiHint: enrichedHint, script: script!,
-          narrativeHistory: _narrativeHistory, timeContext: worldEngine!.getTimeContext(),
-          playerCard: playerCard, freeformContext: freeformContext, worldReport: worldReport,
-        );
+
+        if (rhythmScheduler != null) {
+          final directive = rhythmScheduler!.resolve(
+            mode: mode,
+            currentDay: day,
+            totalDays: script!.interaction.totalDays,
+            worldReport: worldTick,
+            affection: affectionEngine!,
+            allCharIds: script!.characters.where((c) => c.fullCharacter).map((c) => c.basic.id).toList(),
+            nearMilestone: false,
+            milestoneDay: null,
+            milestoneName: null,
+            script: script!,
+            currentPhase: _currentPhase,
+            currentWeather: _currentWeather,
+          );
+          final allParticipantIds = {...?participants, ...directive.participantIds}.toList();
+          final participantStr = StringBuffer();
+          for (final pid in allParticipantIds) {
+            final char = getCharacter(pid);
+            if (char != null) {
+              participantStr.writeln('${char.basic.name}(${pid}): 好感${getAffection(pid).toStringAsFixed(1)} ${relationshipEngine?.getRelationshipType(pid) ?? ""}');
+            }
+          }
+          final charProfiles = script!.characters.where((c) => c.fullCharacter).map((c) => deepSeekClient!.buildCharProfile(c)).toList();
+          final collisionLines = worldEngine!.buildCollisionInfo(worldTick);
+          final infoGapLines = worldEngine!.buildInfoKnowledgeLines(worldTick);
+          final rankingCtx = rankingService?.buildRankingContext(day) ?? '';
+          final tensionCtx = rhythmScheduler!.tension.snapshot();
+          narrative = await deepSeekClient!.generateWorldNarrative(
+            mode: mode,
+            directive: directive,
+            currentDay: day,
+            totalDays: script!.interaction.totalDays,
+            season: _currentSeason,
+            weather: _currentWeather,
+            phase: _currentPhase,
+            fullNarrativeHistory: _narrativeHistory,
+            playerCard: playerCard,
+            rankingContext: rankingCtx,
+            charProfiles: charProfiles,
+            collisionLines: collisionLines,
+            infoGapLines: infoGapLines,
+            locationName: _currentSceneLocationName(participants, worldTick),
+            locationDesc: '',
+            participantDetails: participantStr.toString(),
+            focus: directive.primaryFocus.toString().split('.').last,
+          );
+          if (allParticipantIds.length > (participants?.length ?? 0)) {
+            participants = allParticipantIds;
+          }
+        } else {
+          narrative = await deepSeekClient!.generateEventNarrative(
+            eventType: eventTemplate.id.isNotEmpty ? eventTemplate.name : eventTemplate.id,
+            aiHint: enrichedHint, script: script!,
+            narrativeHistory: _narrativeHistory, timeContext: worldEngine!.getTimeContext(),
+            playerCard: playerCard, freeformContext: freeformContext, worldReport: worldReport,
+          );
+        }
         _eventCounter++;
         _recentEvents.add({'event_id': eventTemplate.id, 'name': eventTemplate.name, 'day': _currentDay, 'severity': eventTemplate.severity});
         _tickTensionAfterEvent(eventTemplate.severity);
@@ -535,6 +595,7 @@ class GameSession {
         final eventName = eventTemplate?.name ?? '日常事件';
         for (final pid in participants) {
           charMemory?.recordEvent(pid, dayNum, eventName, getAffection(pid));
+          discoverChar(pid);
         }
       }
     } catch (e) {
@@ -625,8 +686,7 @@ class GameSession {
     _lastNarrativeSegment = narrative;
     final affectionDeltas = _parseCustomActionAffection(narrative);
     for (final e in affectionDeltas.entries) {
-      if (affectionEngine != null) affectionEngine!.modifyAffectionByEvent(e.key, e.value);
-      _affectionStates[e.key] = (_affectionStates[e.key] ?? 50.0) + e.value;
+      modifyAffectionByEvent(e.key, e.value);
     }
     _isLoading = false; _notify();
     _generateChoices();
@@ -653,6 +713,7 @@ class GameSession {
       _lastNarrativeSegment = narrative;
       if (target != null && target.isNotEmpty) {
         modifyAffectionByEvent(target, delta);
+        charMemory?.recordCore(target, int.tryParse(_currentDay) ?? 0, text, affection: getAffection(target));
       } else {
         for (final char in script!.characters.where((c) => c.fullCharacter)) {
           modifyAffectionByEvent(char.basic.id, delta * 0.5);
@@ -725,6 +786,7 @@ class GameSession {
         worldContext: worldContext, script: script,
         narrativeHistory: _narrativeHistory,
         memoryContext: charMemory?.buildMemoryContext(charId) ?? '',
+        rankingContext: rankingService?.buildRankingContext(int.tryParse(_currentDay) ?? 0) ?? '',
       );
 
       await for (final token in stream) {
@@ -837,21 +899,52 @@ class GameSession {
 
   // ─── Tension ───
 
-  void _tickTension() {
-    final inc = (_rng.nextInt(30)) / 10.0;
-    _tensionLevel = (_tensionLevel + inc).clamp(0.0, 100.0);
+  void _rhythmTick() {
+    if (rhythmScheduler == null) {
+      final inc = (_rng.nextInt(30)) / 10.0;
+      _tensionLevel = (_tensionLevel + inc).clamp(0.0, 100.0);
+      _syncTensionToScript();
+      return;
+    }
+    final t = rhythmScheduler!.tension;
+    t.decayRelational(0.5);
+    t.decayNarrative(0.5);
+    t.decayEmotional(0.5);
+    _tensionLevel = (t.relational * 0.34 + t.narrative * 0.33 + t.emotional * 0.33);
     _syncTensionToScript();
   }
 
+  void _tickTension() {
+    _rhythmTick();
+  }
+
   void _tickTensionAfterEvent(String eventSeverity) {
-    final inc = eventSeverity == 'high' ? 5.0 : (eventSeverity == 'medium' ? 3.0 : 1.0);
-    _tensionLevel = (_tensionLevel + inc).clamp(0.0, 100.0);
+    if (rhythmScheduler == null) {
+      final inc = eventSeverity == 'high' ? 5.0 : (eventSeverity == 'medium' ? 3.0 : 1.0);
+      _tensionLevel = (_tensionLevel + inc).clamp(0.0, 100.0);
+      _syncTensionToScript();
+      return;
+    }
+    final t = rhythmScheduler!.tension;
+    final nd = eventSeverity == 'high' ? 15.0 : (eventSeverity == 'medium' ? 8.0 : 3.0);
+    t.tickNarrative(nd);
+    _tensionLevel = (t.relational * 0.34 + t.narrative * 0.33 + t.emotional * 0.33);
     _syncTensionToScript();
   }
 
   void _syncTensionToScript() {
     final nt = script?.plot?.narrativeTension;
     nt?.setLevel(_tensionLevel);
+  }
+
+  String _currentSceneLocationName(List<String>? participants, WorldTickReport tick) {
+    final dc = tick.dramaticCollision;
+    if (dc != null) return dc['location']?.toString() ?? '';
+    if (participants != null && participants.isNotEmpty) {
+      final char = getCharacter(participants.first);
+      if (char != null) return char.basic.name + '附近';
+    }
+    return '';
   }
 
   // ─── Beat triggers ───
@@ -943,6 +1036,8 @@ class GameSession {
         character: char, affection: getAffection(charId),
         chatHistory: [], playerName: userName, worldContext: worldContext,
         script: script, narrativeHistory: _narrativeHistory,
+        memoryContext: charMemory?.buildMemoryContext(charId) ?? '',
+        rankingContext: rankingService?.buildRankingContext(int.tryParse(_currentDay) ?? 0) ?? '',
       );
       _chatHistories.putIfAbsent(charId, () => []);
       final displayName = _resolveDisplayName(charId, char.basic.name, charRemarkNames);

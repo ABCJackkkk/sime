@@ -63,6 +63,7 @@ class RelationshipEngine {
   Relationship? get(String charId) => _relationships[charId];
 
   RelationshipState? getState(String charId) => _relationships[charId]?.state;
+  String getRelationshipType(String charId) => _relationships[charId]?.state.label ?? '无';
 
   bool isLoverOrPartner(String charId) {
     final s = _relationships[charId]?.state;

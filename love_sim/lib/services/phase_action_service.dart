@@ -47,8 +47,7 @@ class PhaseActionService {
   }
 
   bool isDiscovered(String charId) {
-    final disc = (session as dynamic).discoveredChars;
-    return disc == null || disc.contains(charId);
+    return session.discoveredChars.contains(charId);
   }
 
   /// 预览场景（不消耗时段）

@@ -390,4 +390,31 @@ class WorldEngine {
     }
     return buf.toString();
   }
+
+  List<String> buildCollisionInfo(WorldTickReport report) {
+    final lines = <String>[];
+    for (final c in report.collisions) {
+      final ids = c.charIds.join('、');
+      lines.add('${c.locationId}: $ids 在此相遇');
+    }
+    if (report.dramaticCollision != null) {
+      final dc = report.dramaticCollision!;
+      lines.add('修罗场: ${dc['char_a']}与${dc['char_b']}在${dc['location_id']}（${dc['type']}）');
+    }
+    if (report.interCharDrama.isNotEmpty) {
+      lines.add(report.interCharDrama);
+    }
+    return lines;
+  }
+
+  List<String> buildInfoKnowledgeLines(WorldTickReport report) {
+    final lines = <String>[];
+    for (final spread in report.infoSpreads) {
+      lines.add('${spread.fromCharId}→${spread.toCharId}: ${spread.distortedContent} [${spread.encryptionStyle}]');
+    }
+    if (report.knowledgeSummary.isNotEmpty) {
+      lines.add(report.knowledgeSummary);
+    }
+    return lines;
+  }
 }

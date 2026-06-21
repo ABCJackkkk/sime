@@ -861,6 +861,7 @@ class Character {
   final List<CharacterStat>? stats;
   final List<CharacterGrade>? grades;
   final String discoveryCondition;
+  final String? coopArcana;
 
   Character({
     required this.fullCharacter,
@@ -885,6 +886,7 @@ class Character {
     this.stats,
     this.grades,
     this.discoveryCondition = '',
+    this.coopArcana,
   });
 
   factory Character.fromJson(Map<String, dynamic> json) {
@@ -917,7 +919,7 @@ class Character {
       humanity: _h, agent: _a, appearance: _ap, preferences: _p,
       moodTriggers: _mt, giftResponse: _gr, boundary: _bo,
       evolution: _ev, memory: _m, relations: _r, schedule: _sc,
-      stats: stats, grades: grades, discoveryCondition: json['discovery_condition'] ?? '',
+      stats: stats, grades: grades, discoveryCondition: json['discovery_condition'] ?? '', coopArcana: json['coop']?['arcana']?.toString(),
     );
   }
 }

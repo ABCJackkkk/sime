@@ -220,6 +220,36 @@ class RankingService {
     }
     return {charId: grades};
   }
+
+  String buildRankingContext(int currentDay) {
+    if (_rankHistory.isEmpty) return '';
+    final last = _rankHistory.last;
+    final prevRank = _rankHistory.length > 1 ? _rankHistory[_rankHistory.length - 2] : null;
+    final buf = StringBuffer();
+    buf.writeln('最近排名：第${last.day}天${last.eventName}，玩家排名第${last.playerRank}/${last.totalStudents}');
+    if (prevRank != null) {
+      final diff = prevRank.playerRank - last.playerRank;
+      if (diff > 0) buf.writeln('（比上次进步${diff}名）');
+      else if (diff < 0) buf.writeln('（比上次退步${-diff}名）');
+      else buf.writeln('（与上次排名相同）');
+    }
+    buf.writeln('角色成绩排名：');
+    for (final cr in last.charRanks) {
+      buf.writeln('  ${cr.charName}: 排名${cr.rank}/${last.totalStudents} 总分${cr.totalScore.toStringAsFixed(0)}');
+    }
+    if (prevRank != null) {
+      buf.writeln('角色成绩变化：');
+      for (final cr in last.charRanks) {
+        final prev = prevRank.charRanks.where((p) => p.charId == cr.charId).firstOrNull;
+        if (prev != null) {
+          final d = prev.rank - cr.rank;
+          final arrow = d > 0 ? '↑$d' : (d < 0 ? '↓${-d}' : '→');
+          buf.writeln('  ${cr.charName}: $arrow');
+        }
+      }
+    }
+    return buf.toString();
+  }
 }
 
 class _StudentScore {

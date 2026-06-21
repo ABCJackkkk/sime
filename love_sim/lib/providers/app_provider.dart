@@ -36,7 +36,7 @@ class AppProvider extends ChangeNotifier {
   CharacterDisplayState get charDisplay => _charDisplay;
   GameSession? get session => _session;
 
-  bool isDiscovered(String charId) => true; // TODO: wire to GameSession
+  bool isDiscovered(String charId) => _session?.discoveredChars.contains(charId) ?? true;
   List<Character> get discoveredCharacters => _session?.script?.characters.where((c) => c.fullCharacter).toList() ?? [];
 
   int _currentTabIndex = 0;
