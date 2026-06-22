@@ -575,6 +575,12 @@
           }
         ]
       },
+      "memory_tags": {
+        "default": ["日常"],
+        "affection_breakthrough": ["暧昧"],
+        "conflict": ["冲突"],
+        "triangular": ["吃醋", "第三方提及"]
+      },
       "relations": {
         "flat": [],
         "dimensional": []
@@ -889,6 +895,12 @@
           }
         ]
       },
+      "memory_tags": {
+        "default": ["日常"],
+        "affection_breakthrough": ["暧昧"],
+        "conflict": ["冲突"],
+        "triangular": ["吃醋", "第三方提及"]
+      },
       "relations": {
         "flat": [],
         "dimensional": []
@@ -1202,6 +1214,12 @@
           }
         ]
       },
+      "memory_tags": {
+        "default": ["日常"],
+        "affection_breakthrough": ["暧昧"],
+        "conflict": ["冲突"],
+        "triangular": ["吃醋", "第三方提及"]
+      },
       "relations": {
         "flat": [],
         "dimensional": []
@@ -1514,6 +1532,12 @@
           }
         ]
       },
+      "memory_tags": {
+        "default": ["日常"],
+        "affection_breakthrough": ["暧昧"],
+        "conflict": ["冲突"],
+        "triangular": ["吃醋", "第三方提及"]
+      },
       "relations": {
         "flat": [],
         "dimensional": []
@@ -1576,6 +1600,53 @@
       "discovery_condition": "day>=2"
     }
   ],
+  "inter_character_relationships": {
+    "_comment": "角色间初始态度。只定义有特殊初始关系的角色对——未列出的组合默认为「无感·亲和力 0」。",
+    "initial_attitudes": [
+      {
+        "from": "wen_ci",
+        "to": "lu_chi",
+        "affinity": 18,
+        "label": "认识",
+        "history": "同一天转入高一(2)班。温辞注意到最后一排靠窗的位置有个一直低着头的男生，陆迟在前排靠门的地方瞥见了那个抱着一本翻了一半小说的女生。他们还没说过话。",
+        "is_secret_admirer": false
+      },
+      {
+        "from": "wen_ci",
+        "to": "su_nian_wan",
+        "affinity": 25,
+        "label": "认识",
+        "history": "温辞在图书馆三楼借书时见过苏念晚——她是那里的图书管理员。苏念晚用食指把书脊推整齐的动作，温辞默默记住了。温辞觉得她有某种安静的秩序感。",
+        "is_secret_admirer": false
+      },
+      {
+        "from": "lu_chi",
+        "to": "jiang_yu_chuan",
+        "affinity": 15,
+        "label": "认识",
+        "history": "在后门旧球场见过。陆迟在篮筐下一声不吭地投篮，江屿川跑过来说'借个球'，投了三不沾又跑走了。陆迟没说什么，捡起球继续投。江屿川隔两天又来了。",
+        "is_secret_admirer": false
+      },
+      {
+        "from": "su_nian_wan",
+        "to": "jiang_yu_chuan",
+        "affinity": 30,
+        "label": "认识",
+        "history": "从初中开始就是前后桌——以主角为圆心。苏念晚觉得江屿川太吵，每次下课都在走廊上打闹。江屿川觉得苏念晚太一本正经——'念晚姐，活着不累吗'。但他们彼此知道对方的习惯：苏念晚知道他什么时候会饿，江屿川知道她在意的那些小事。一种微妙的熟人关系——不是朋友，但比普通同学多了太多。",
+        "is_secret_admirer": false
+      }
+    ]
+  },
+  "information_system": {
+    "_comment": "校园信息传播配置。默认加密风格以 gossip 和 speculation 为主，如实转述在高中极少发生。",
+    "encryption_styles": {
+      "honest": { "trust": 1.0, "desc": "如实转述，不加修饰——在高中，这几乎是传说的品质" },
+      "gossip": { "trust": 0.5, "desc": "添油加醋，放大戏剧性——课间走廊的主要信息传播方式" },
+      "joke": { "trust": 0.7, "desc": "用玩笑或阴阳怪气加密——男生之间最常见" },
+      "cold": { "trust": 0.8, "desc": "轻描淡写，故意压低重要性——苏念晚这种冷静型角色的加密方式" },
+      "speculation": { "trust": 0.4, "desc": "把自己的揣测包装成事实——食堂午饭时间的高发事件" }
+    }
+  },
   "plot": {
     "summary": "两年半的故事线。四个角色——温辞和陆迟是转来的新坐标系，苏念晚和江屿川是你在这个坐标上已经存在的参考点。从高一下到高考结束的1065天，你在这四个人的引力场中认识了自己、他们、和那些没有被说出来的事。",
     "premise": "高一下学期转来两个转校生——温辞和陆迟。同时有两个和你一起长大的人——苏念晚和江屿川——一直在你身边。你以为他们只是你的背景，但未来两年半会证明——你也是他们的背景，而所有背景在前景移动的时候都会跟着动。",
@@ -2593,6 +2664,87 @@
   },
   "events": {
     "summary": "事件层。plot=剧情事件，daily=日常种子，boundary=临界事件，sweet=甜蜜事件，love_triangle=修罗场/多角，ensemble=群像。",
+    "scene_locations": [
+      {
+        "id": "classroom_2b",
+        "name": "高二B班教室",
+        "desc": "靠窗第三排。午后的阳光会斜斜地切进来，在课桌上画出明确的光影界限。窗外能看到操场一角。",
+        "visibility_default": "public",
+        "events_hint": "班级日常。课间闲聊、午休趴桌、放学收书包——这四个人的交集多半从这里开始。",
+        "available_phases": ["辰时", "巳时", "午时", "申时"],
+        "scene_moods": ["日常", "阳光", "安静"],
+        "narrative_profile": {
+          "event_affinity": {"worldTexture": 0.5, "relationshipBeat": 0.3},
+          "keywords": ["课桌", "阳光", "窗外", "走廊"]
+        }
+      },
+      {
+        "id": "piano_room",
+        "name": "琴房",
+        "desc": "走廊尽头的排练室。白天阳光从高窗照进来，琴上的灰尘会在光里慢慢浮。很少有人来。",
+        "visibility_default": "private",
+        "events_hint": "温辞常来的地方。适合独处、靠近、安静地一起待着。私密场合的亲密活动在这里自然发生。",
+        "available_phases": ["午时", "酉时", "戌时"],
+        "scene_moods": ["私密", "安静", "温柔"],
+        "narrative_profile": {
+          "event_affinity": {"relationshipBeat": 0.9, "tensionEscalation": 0.5},
+          "keywords": ["钢琴", "阳光", "灰尘", "安静", "指尖"]
+        }
+      },
+      {
+        "id": "playground",
+        "name": "旧球场",
+        "desc": "操场边上那个水泥地面的篮球场，篮网只剩一半。放学后总有人在这里打球，球砸在地上的声音隔着整条走廊都能听见。",
+        "visibility_default": "public",
+        "events_hint": "陆迟几乎每天都在。汗水、奔跑、偶尔看过来一眼。适合远远地看、走过去、一起坐台阶。",
+        "available_phases": ["辰时", "申时", "酉时"],
+        "scene_moods": ["汗水", "奔跑", "哨声"],
+        "narrative_profile": {
+          "event_affinity": {"ensembleScene": 0.6, "worldTexture": 0.5},
+          "keywords": ["篮球", "汗水", "跑道", "台阶", "哨声"]
+        }
+      },
+      {
+        "id": "rooftop",
+        "name": "天台",
+        "desc": "教学楼最高处。风很大，只有几根晾衣绳和生锈的栏杆。可以看到很远的山。",
+        "visibility_default": "private",
+        "events_hint": "极少有人来。适合情绪爆发、摊牌、或者什么也不说就一起看远处。江屿川偶尔逃课躲在这里。",
+        "available_phases": ["午时", "戌时"],
+        "scene_moods": ["自由", "空旷", "风吹", "远处"],
+        "narrative_profile": {
+          "event_affinity": {"tensionEscalation": 0.9, "relationshipBeat": 0.8},
+          "keywords": ["天空", "风", "远处", "安静", "山"]
+        }
+      },
+      {
+        "id": "library",
+        "name": "图书馆",
+        "desc": "老旧的红砖小楼。书架之间很窄，两个人错身的时候几乎要侧着。苏念晚是图书馆管理员，每周二四在这里。",
+        "visibility_default": "public",
+        "events_hint": "安静的知识堡垒。苏念晚的据点。闻得到旧书和新复印纸混在一起的味道。",
+        "available_phases": ["辰时", "巳时", "未时", "申时"],
+        "scene_moods": ["静谧", "专注", "旧书"],
+        "narrative_profile": {
+          "event_affinity": {"relationshipBeat": 0.7, "worldTexture": 0.6},
+          "keywords": ["书架", "旧书", "阳光", "管理员", "安静"]
+        }
+      },
+      {
+        "id": "canteen",
+        "name": "食堂",
+        "desc": "午间的喧闹高峰过了之后，食堂空下来，只剩几个阿姨在拖地。阳光从大窗户照在塑料桌面上。",
+        "visibility_default": "public",
+        "events_hint": "午间社交中心。热闹、拥挤、大家一起吃饭。适合群像场景。",
+        "available_phases": ["午时", "申时"],
+        "scene_moods": ["热闹", "烟火气", "午间"],
+        "narrative_profile": {
+          "event_affinity": {"ensembleScene": 0.8, "worldTexture": 0.7},
+          "keywords": ["饭菜", "喧闹", "午间", "阿姨", "阳光"]
+        }
+      }
+    ],
+    "scene_events": [],
     "generation_rules": {
       "default_duration": "short",
       "max_steps_default": 1,
@@ -4059,7 +4211,7 @@
             "所有行动都必须生成后果叙事——即使不合理也要解释为什么无法执行，而不是拒绝生成",
             "好感度变化以 [affection:角色id:+或-数字] 标记在叙事末尾——袭击行为必须产生大幅负值",
             "不否定玩家意图——用角色视角和世界逻辑来回应，而不是说教",
-            "生成300-500字中文叙事，第二人称'你'"
+            "篇幅由情境决定。场景描写放在（）里，对话单独成行。可以描写玩家动作的后果，但不替玩家做决定。宁短不凑"
           ]
         }
       }
@@ -4664,6 +4816,27 @@
       ]
     }
   },
+  "rhythm_config": {
+    "_comment": "v2.8 节奏调度配置",
+    "narrative_shape_weights": {
+      "dialogue_heavy": 0.3,
+      "montage": 0.2,
+      "reveal": 0.15,
+      "tension_escalation": 0.2,
+      "quiet": 0.1,
+      "action_reaction": 0.05
+    },
+    "info_spread_trigger": {
+      "min_depth": 3,
+      "sensitive_keywords": ["分数", "排名", "好感", "绯闻", "秘密"],
+      "high_affection_threshold": 60
+    }
+  },
+  "memory_config": {
+    "_comment": "v2.8 记忆系统配置",
+    "tags": ["考试", "暧昧", "吃醋", "共同经历", "第三方提及", "冲突", "日常", "核心记忆"],
+    "tag_match_boost": 2.0
+  },
   "action_rules": {
     "boundary_checks": [
       {
@@ -4719,47 +4892,48 @@
     "topic_taboo_rejection": "{char_name}的表情僵了一下，没有接话。"
   },
   "fallback_narratives": {
+    "_comment": "v2.8格式：场景描写在（）里，对话单独成行",
     "daily": [
-      "又是{phase}的{location}。{char_name}在做自己的事，{weather}的光线让一切看起来都很平静。",
-      "{location}里的日常一如既往。{char_name}从你身边经过，{weather}的风吹起了她的发梢。",
-      "{weather}的{phase}，{location}里的时间好像变慢了。{char_name}坐在老地方，和往常一样。"
+      "（{weather}的{phase}，{location}里一切如常。）\n\n{char_name}在做自己的事。",
+      "（{location}里的{phase}。）\n\n{char_name}从你身边经过，{weather}的风吹起了她的发梢。",
+      "（{weather}的{phase}，{location}里时间好像变慢了。）\n\n{char_name}坐在老地方，和往常一样。"
     ],
     "sweet_minor": [
-      "{char_name}朝你笑了一下，那笑容很短，但{weather}的光线正好落在她脸上。",
-      "在{location}的{phase}，{char_name}递给你一瓶水。\"顺手拿的。\"她说，但你知道不是。",
-      "{char_name}忽然在{location}停下脚步，回头看了你一眼。{weather}的风吹过来，她很快转回去了。"
+      "（{weather}的光线落下来。）\n\n{char_name}朝你笑了一下。\n\n那笑容很短。",
+      "（{location}的{phase}。）\n\n{char_name}递给你一瓶水。\n\n\"顺手拿的。\"\n\n但你知道不是。",
+      "（{location}。）\n\n{char_name}忽然停下脚步，回头看了你一眼。\n\n{weather}的风吹过来，她很快转回去了。"
     ],
     "sweet_major": [
-      "{char_name}在{location}的{phase}里，把一直藏着的话说了出来。{weather}的光线照得一切都很温柔。",
-      "那个{season}的{phase}，{char_name}在{location}里靠近了你。{weather}的风吹过，她没有后退。"
+      "（{location}的{phase}。）\n\n{char_name}把一直藏着的话说了出来。\n\n{weather}的光线照得一切都很温柔。",
+      "（那个{season}的{phase}，{location}里。）\n\n{char_name}靠近了你。\n\n{weather}的风吹过，她没有后退。"
     ],
     "plot": [
-      "{weather}的{phase}，{location}里弥漫着一种不寻常的气氛。{char_name}的表情比平时严肃了几分。",
-      "一些事情正在{location}悄悄改变。{char_name}站在窗边，像是在等什么人。{weather}的光线在地板上拉出长长的影子。",
-      "今天{location}里的气氛和往常不同。{char_name}似乎察觉到了什么，{weather}的风里带着一丝不安。"
+      "（{weather}的{phase}，{location}里气氛不太寻常。）\n\n{char_name}的表情比平时严肃了几分。",
+      "（{location}，窗边。）\n\n{char_name}站在那里，像是在等什么人。\n\n{weather}的光线在地板上拉出长长的影子。",
+      "（今天{location}里的气氛和往常不同。）\n\n{char_name}似乎察觉到了什么。\n\n{weather}的风里带着一丝不安。"
     ],
     "boundary": [
-      "{char_name}在{location}里明确划出了自己的边界。{weather}的光线照在她的侧脸上，她的表情没有商量的余地。",
-      "{phase}的{location}，{char_name}说了一些话。那些话不长，但很坚决。{weather}的风吹过，她没有改口。"
+      "（{location}里。）\n\n{char_name}明确划出了自己的边界。\n\n{weather}的光线照在她的侧脸上，她的表情没有商量的余地。",
+      "（{phase}的{location}。）\n\n{char_name}说了一些话。\n\n那些话不长，但很坚决。\n\n{weather}的风吹过，她没有改口。"
     ],
     "reversal": [
-      "意想不到的事情在{location}发生了。{char_name}的反应和所有人预料的不同。{weather}的光线让那一刻更加清晰。",
-      "{phase}的{location}，事情突然转向了另一个方向。{char_name}看着你，眼神里有之前没有的东西。"
+      "（{location}里，意想不到的事情发生了。）\n\n{char_name}的反应和所有人预料的不同。",
+      "（{phase}的{location}，事情突然转向了另一个方向。）\n\n{char_name}看着你，眼神里有之前没有的东西。"
     ],
     "custom_action": [
-      "你做了该做的事。{char_name}看了你一眼，没说什么。{weather}的风吹过{location}，一切如常。",
-      "你的行动在{location}的{phase}里留下了痕迹。{char_name}似乎注意到了，但她没有直接回应。",
-      "{char_name}站在{location}，{weather}的光线照在她身上。她安静地接受了发生的一切，没有多说什么。"
+      "（{location}里，{weather}的光线照进来。）\n\n{char_name}看了你一眼，没说什么。",
+      "（{location}的{phase}。）\n\n{char_name}似乎注意到了你的行动，但没有直接回应。",
+      "（{location}。）\n\n{char_name}站在{weather}的光线里。\n\n她安静地接受了发生的一切，没有多说什么。"
     ],
     "scene_event": [
-      "{location}里，{char_name}在做自己的事。{weather}的光线透过窗户洒进来。",
-      "你走进了{location}。{char_name}抬头看了看你，然后继续做自己的事。",
-      "{location}一如既往。{char_name}在{phase}的{weather}里，看起来比平时放松了一些。"
+      "（{location}。）\n\n{char_name}在做自己的事。\n\n{weather}的光线透过窗户洒进来。",
+      "（你走进了{location}。）\n\n{char_name}抬头看了看你，然后继续做自己的事。",
+      "（{location}一如既往。）\n\n{char_name}在{phase}的{weather}里，看起来比平时放松了一些。"
     ],
     "chat_reply": [
-      "\"嗯。\"{char_name}简单地应了一声，低头看了看手机。",
-      "\"……好吧。\"{char_name}说，语气听不出情绪。",
-      "{char_name}看了你一眼，没有马上回答。{weather}的光线照进房间，她的表情藏在阴影里。"
+      "\"嗯。\"\n\n{char_name}简单地应了一声，低头看了看手机。",
+      "\"……好吧。\"\n\n{char_name}说。\n\n语气听不出情绪。",
+      "（{char_name}看了你一眼，没有马上回答。）\n\n{weather}的光线照进房间，她的表情藏在阴影里。"
     ]
   }
 }

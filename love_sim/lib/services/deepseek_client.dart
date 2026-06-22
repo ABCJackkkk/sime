@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:love_sim/models/script.dart';
+import 'package:love_sim/services/character_memory_service.dart';
 
 class DeepSeekClient {
   final String apiKey;
@@ -196,7 +197,7 @@ class DeepSeekClient {
     return _callApi(
       systemPrompt: systemPrompt,
       userPrompt: userPrompt,
-      maxTokens: 1024,
+      maxTokens: 1200,
       temperature: 0.9,
     );
   }
@@ -260,13 +261,16 @@ class DeepSeekClient {
     }
     buf.writeln();
     buf.writeln(playerCard);
-    buf.writeln('【叙事规则】');
-    buf.writeln('1. 用中文，第二人称"你"，300-500字一段');
-    buf.writeln('2. 动作和细节优先于台词和解释');
-    buf.writeln('3. 写"她把脸转开了"别写"她感到难为情"');
-    buf.writeln('4. 角色行为严格遵守其soul/agent/speech/evolution设定');
-    buf.writeln('5. 日常推进=当前时段片段，重要推进=整天发展');
-    buf.writeln('6. 参考之前剧情保持连贯');
+    buf.writeln('【叙事格式规则】');
+    buf.writeln('1. 用中文。可以描写世界/角色的行为与对话——只写世界/NPC的动作、神态、对话');
+    buf.writeln('2. 不要替玩家描写玩家的意图与决定——玩家的选择已在剧情记录中，不要重复也不要擅自描写玩家在想什么');
+    buf.writeln('3. 可以描写"你的"动作的后果（如"你的脚步声在走廊里回响"），但不要写"你决定走过去"这种替玩家做决定的句子');
+    buf.writeln('4. 场景描写放在（）里，对话单独成行，动作与对话分行呈现，不要混成大段散文');
+    buf.writeln('5. 动作与细节优先于台词和解释——写"她把脸转开了"别写"她感到难为情"');
+    buf.writeln('6. 篇幅由情境决定。简短反应可以只有2-3行，复杂冲突/情绪转折可以写较长。宁短不凑，不强行写字数');
+    buf.writeln('7. 角色行为严格遵守其soul/agent/speech/evolution设定');
+    buf.writeln('8. 日常推进=当前时段片段，重要推进=整天发展');
+    buf.writeln('9. 参考之前剧情保持连贯');
     if (narrativeHistory.isNotEmpty) {
       final recent = narrativeHistory.length > 800 ? narrativeHistory.substring(narrativeHistory.length - 800) : narrativeHistory;
       buf.writeln();
@@ -433,7 +437,7 @@ class DeepSeekClient {
       return '玩家与角色互动。${weekday}第${day}天${season}季${phase}，天气${weather}。描述互动细节。';
     }
     if (mode == 'skip_days') {
-      return '玩家跳过了多天时间。请根据当前时间（第${day}天${season}季${weekday}，天气${weather}），简述这段时间发生的主要变化：季节更替、与角色的关系变化、重要事件。200-300字，第二人称"你"。不需要逐日描述，用"这几周来""这段时间"概括。';
+      return '玩家跳过了多天时间。请根据当前时间（第${day}天${season}季${weekday}，天气${weather}），概括这段时间发生的主要变化：季节更替、与角色的关系变化、重要事件。不必逐日描述，用"这几周来""这段时间"概括。';
     }
     // phase_pass / daily
     final phaseHints = {
@@ -462,7 +466,7 @@ class DeepSeekClient {
 
     final buf = StringBuffer();
     buf.writeln('你是一个恋爱模拟游戏的选项生成器。');
-    buf.writeln('根据当前剧情为玩家生成3个行动选项。');
+    buf.writeln('根据当前剧情为玩家生成2个建议行动方向。玩家也可以通过自由输入做任何行动。');
     buf.writeln();
     final names = script.characters.where((c) => c.fullCharacter).map((c) => c.basic.name).join('、');
     final ids = script.characters.where((c) => c.fullCharacter).map((c) => c.basic.id).join('、');
@@ -470,9 +474,9 @@ class DeepSeekClient {
     buf.writeln('角色ID: $ids');
     buf.writeln();
     buf.writeln('要求：');
-    buf.writeln('1. 每个选项是玩家可以执行的行动，用简短中文描述（不超过15字）');
-    buf.writeln('2. 选项应基于当前剧情的上下文自然延伸');
-    buf.writeln('3. 三个选项给出不同方向（如：主动/被动/冒险）');
+    buf.writeln('1. 每个建议是玩家可以执行的行动方向，用简短中文描述（不超过15字）');
+    buf.writeln('2. 建议应基于当前剧情的上下文自然延伸');
+    buf.writeln('3. 两个建议给出不同方向（如：主动回应/安静陪伴）');
     if (isLongEvent) {
       buf.writeln('4. 这是长事件的中间步骤，选项应推动事件向前发展');
     }
@@ -482,7 +486,7 @@ class DeepSeekClient {
 
     final result = await _callApi(
       systemPrompt: buf.toString(),
-      userPrompt: '【当前剧情】\n$recentNarrative\n\n生成3个行动选项。',
+      userPrompt: '【当前剧情】\n$recentNarrative\n\n生成2个建议行动方向。',
       maxTokens: 512,
       temperature: 0.9,
     );
@@ -521,19 +525,21 @@ class DeepSeekClient {
     if (isContinuation) {
       task = '以下是最新的剧情记录。玩家在这个长事件中选择了「$choice」。'
           '你需要继续推进同一个事件的叙事，保持情节和角色的连贯。'
-          '300-500字，第二人称"你"。事件还有后续步骤，请在末尾留下悬念或为下一步选择埋下铺垫。\n\n'
+          '只写角色反应和世界变化——不要重复描写玩家的选择，也不要替玩家描写决定。'
+          '篇幅由情境决定：简短反应可以只有2-3行，复杂冲突可以写较长。事件还有后续步骤，请在末尾为下一步留下自然的承接。\n\n'
           '【完整剧情记录】\n$recentNarrative';
     } else {
       task = '以下是最新的剧情记录。玩家选择了「$choice」。'
           '你需要紧接上文继续叙事，保持情节连贯、角色行为一致。'
-          '300-500字，第二人称"你"。\n\n'
+          '只写角色反应和世界变化——不要重复描写玩家的选择，也不要替玩家描写决定。'
+          '篇幅由情境决定。\n\n'
           '【完整剧情记录】\n$recentNarrative';
     }
 
     return _callApi(
       systemPrompt: sysPrompt,
       userPrompt: task,
-      maxTokens: 1024,
+      maxTokens: 1200,
       temperature: 0.9,
     );
   }
@@ -579,8 +585,9 @@ class DeepSeekClient {
     buf.writeln();
     buf.writeln('当前好感度: ${affection.toStringAsFixed(2)}');
     buf.writeln();
-    buf.writeln('请生成一段300-500字的场景互动叙事。你（${script.player.name}）来到${location.name}，遇到了${character.basic.name}。');
-    buf.writeln('根据角色设定和当前好感度自然发展互动。用第二人称"你"。');
+    buf.writeln('请根据角色设定和当前好感度，生成一段自然的场景互动叙事。${script.player.name}来到${location.name}，遇到了${character.basic.name}。');
+    buf.writeln('只写角色的反应与对话——不要替玩家做决定，也不要重复描写玩家的意图。');
+    buf.writeln('场景描写放在（）里，对话单独成行。篇幅由情境决定，不强行凑字。');
     if (narrativeHistory.isNotEmpty) {
       final recent = narrativeHistory.length > 400 ? narrativeHistory.substring(narrativeHistory.length - 400) : narrativeHistory;
       buf.writeln();
@@ -590,7 +597,62 @@ class DeepSeekClient {
     return _callApi(
       systemPrompt: buf.toString(),
       userPrompt: '玩家来到${location.name}，遇到了${character.basic.name}。请描述这次偶遇互动。当前的好感度是${affection.toStringAsFixed(1)}，请据此决定角色对待玩家的态度和反应。',
-      maxTokens: 1024,
+      maxTokens: 1100,
+      temperature: 0.9,
+    );
+  }
+
+  Future<String> generateSceneAtmosphere({
+    required SceneLocation location,
+    required List<Character> presentChars,
+    required int currentDay,
+    required String season,
+    required String weather,
+    required String phase,
+    required GameScript script,
+    required String playerCard,
+    CharacterMemoryService? charMemory,
+  }) async {
+    final buf = StringBuffer();
+    buf.writeln(_buildWorldSystemPrompt(script, {
+      'day': currentDay, 'season': season, 'weather': weather, 'phase': phase,
+    }, ''));
+    buf.writeln();
+
+    buf.writeln('【场景描述】');
+    buf.writeln('地点: ${location.name}');
+    buf.writeln('描述: ${location.desc}');
+    buf.writeln('氛围提示: ${location.eventsHint}');
+    buf.writeln('可见性: ${location.visibilityDefault == "private" ? "私密场合" : "公共场所"}');
+    buf.writeln();
+
+    buf.writeln('【当前时空】');
+    buf.writeln('第${currentDay}天 ${season}季 ${weather} ${phase}');
+    buf.writeln();
+
+    buf.writeln(playerCard);
+
+    if (presentChars.isNotEmpty) {
+      buf.writeln();
+      buf.writeln('【在场角色】');
+      for (final char in presentChars) {
+        buf.writeln(buildCharProfile(char));
+      }
+    }
+
+    if (charMemory != null && presentChars.isNotEmpty) {
+      for (final c in presentChars) {
+        final mc = charMemory.buildMemoryContext(c.basic.id);
+        if (mc.isNotEmpty) {
+          buf.writeln(mc);
+        }
+      }
+    }
+
+    return _callApi(
+      systemPrompt: buf.toString(),
+      userPrompt: '你站在${location.name}。请用一段叙事描述当前的场景氛围：光线、声音、气味、在场角色的状态。场景描写放在（）里，对话单独成行。不要替玩家做任何决定。篇幅由情境决定，宁短不凑。',
+      maxTokens: 800,
       temperature: 0.9,
     );
   }
@@ -646,15 +708,17 @@ class DeepSeekClient {
       }
     } else {
       buf.writeln('【裁定规则】');
-      buf.writeln('1. 生成300-500字叙事描述行动过程和结果');
-      buf.writeln('2. 每个相关角色的好感度变化以 [affection:角色id:+或-数字] 标记在叙事末尾');
-      buf.writeln('3. 用中文，第二人称"你"');
+      buf.writeln('1. 篇幅由情境决定——简短反应可以只有2-3行，复杂冲突可以写较长。宁短不凑。只写角色反应和世界变化，不要重复描写玩家的行动');
+      buf.writeln('2. 可以描写玩家动作的后果（如"你的巴掌十分大力，把她脸扇得通红"），但不要写"你决定走过去"这种替玩家做决定的句子');
+      buf.writeln('3. 场景描写放在（）里，对话单独成行，动作与对话分行呈现');
+      buf.writeln('4. 每个相关角色的好感度变化以 [affection:角色id:+或-数字] 标记在叙事末尾');
+      buf.writeln('5. 用中文');
     }
 
     return _callApi(
       systemPrompt: buf.toString(),
       userPrompt: '玩家行动: $action',
-      maxTokens: 768,
+      maxTokens: 1200,
       temperature: 0.85,
     );
   }
@@ -670,9 +734,10 @@ class DeepSeekClient {
     String narrativeHistory = '',
     String memoryContext = '',
     String rankingContext = '',
+    String locationContext = '',
   }) async {
     return _callApi(
-      systemPrompt: _buildChatSystemPrompt(character, affection, playerName, worldContext, script: script, narrativeHistory: narrativeHistory, memoryContext: memoryContext, rankingContext: rankingContext),
+      systemPrompt: _buildChatSystemPrompt(character, affection, playerName, worldContext, script: script, narrativeHistory: narrativeHistory, memoryContext: memoryContext, rankingContext: rankingContext, locationContext: locationContext),
       userPrompt: userMessage,
       maxTokens: 512,
       temperature: 0.9,
@@ -691,9 +756,10 @@ class DeepSeekClient {
     String narrativeHistory = '',
     String memoryContext = '',
     String rankingContext = '',
+    String locationContext = '',
   }) {
     return _callApiStreaming(
-      systemPrompt: _buildChatSystemPrompt(character, affection, playerName, worldContext, script: script, narrativeHistory: narrativeHistory, memoryContext: memoryContext, rankingContext: rankingContext),
+      systemPrompt: _buildChatSystemPrompt(character, affection, playerName, worldContext, script: script, narrativeHistory: narrativeHistory, memoryContext: memoryContext, rankingContext: rankingContext, locationContext: locationContext),
       userPrompt: userMessage,
       maxTokens: 512,
       temperature: 0.9,
@@ -701,7 +767,7 @@ class DeepSeekClient {
     );
   }
 
-  String _buildChatSystemPrompt(Character character, double affection, String playerName, String worldContext, {GameScript? script, String narrativeHistory = '', String memoryContext = '', String rankingContext = '', String focus = ''}) {
+  String _buildChatSystemPrompt(Character character, double affection, String playerName, String worldContext, {GameScript? script, String narrativeHistory = '', String memoryContext = '', String rankingContext = '', String focus = '', String locationContext = ''}) {
     final buf = StringBuffer();
     final isClose = affection >= 60;
     final f = focus.isNotEmpty ? focus : null;
@@ -711,6 +777,9 @@ class DeepSeekClient {
     final bool dislike = affection >= 30 && affection < 40;
     final bool mildDislike = affection >= 40 && affection < 50;
     buf.writeln('你正在扮演一个恋爱模拟游戏中的角色进行即时聊天。完全沉浸，这是命令。');
+    buf.writeln();
+    buf.writeln('【当前】$worldContext');
+    if (locationContext.isNotEmpty) buf.writeln('地点: $locationContext');
     buf.writeln();
     buf.writeln('【角色档案】${character.basic.name} ${character.basic.age}岁${character.basic.gender}');
     buf.writeln('概述: ${character.summary}');
@@ -923,6 +992,8 @@ class DeepSeekClient {
     final buf = StringBuffer();
     buf.writeln('你是一个恋爱模拟游戏的事件叙事引擎。根据脚本设定生成事件叙事。');
     buf.writeln();
+    buf.writeln('【叙事格式规则】只写世界/角色的行为与对话。场景描写放在（）里，对话单独成行。不要替玩家描写玩家的意图与决定。可以描写"你的"动作的后果。篇幅由情境决定，宁短不凑。');
+    buf.writeln();
 
     final plot = script.plot;
     if (plot != null) {
@@ -983,7 +1054,7 @@ class DeepSeekClient {
         buf.writeln('$name: 好感${m['affection']} ${m['tier']}${m['relation'].toString().isNotEmpty ? ' 关系:${m['relation']}' : ''}');
       }
       buf.writeln();
-      buf.writeln('这是自由叙事事件。请根据在场角色的好感度、关系和性格设定，自然生成一段300-500字的场景叙事。');
+      buf.writeln('这是自由叙事事件。请根据在场角色的好感度、关系和性格设定，自然生成一段场景叙事。篇幅由情境决定，不强行凑字。');
       buf.writeln('不需要推动主线剧情——只需要写一个真实的、符合角色当前状态的日常瞬间。');
       buf.writeln('谁先开口、谁说得多、谁沉默、谁在偷看——这些由角色性格和关系状态决定。');
     } else {
@@ -1021,7 +1092,7 @@ class DeepSeekClient {
     return _callApi(
       systemPrompt: buf.toString(),
       userPrompt: prompt,
-      maxTokens: 1024,
+      maxTokens: 1200,
       temperature: 1.0,
     );
   }
@@ -1038,22 +1109,94 @@ class DeepSeekClient {
     required String playerCard,
     required String rankingContext,
     required List<String> charProfiles,
-    required List<String> collisionLines,
-    required List<String> infoGapLines,
+    required List<String> worldDynamicsLines,
     required String locationName,
     required String locationDesc,
     required String participantDetails,
     String? focus,
+    String tensionSnapshot = '',
+    String frequencyHooks = '',
+    CharacterMemoryService? charMemory,
+    bool isQuietDay = false,
   }) async {
-    final buf = StringBuffer();
     final w = directive.wordCount as int;
     final weightLabel = directive.weight.toString().split('.').last;
     final focusLabel = directive.focusLabel as String;
     final hint = directive.narrativeHint as String?;
     final effectiveFocus = focus ?? 'worldTexture';
 
-    buf.writeln('【叙事权重】$weightLabel（写${w}字左右）');
+    Map<String, dynamic>? route;
+    if (!isQuietDay) {
+      try {
+        route = await _routeNarrative(
+          currentDay: currentDay, totalDays: totalDays, season: season,
+          weather: weather, phase: phase, locationName: locationName,
+          participantDetails: participantDetails, tensionSnapshot: tensionSnapshot,
+          collisionLines: worldDynamicsLines, infoGapLines: const [],
+          recentHistory: fullNarrativeHistory.length > 400
+              ? fullNarrativeHistory.substring(fullNarrativeHistory.length - 400)
+              : fullNarrativeHistory,
+        );
+      } catch (_) { /* fallback */ }
+    }
+
+    final routedFocus = route?['primary_focus'] as String? ?? effectiveFocus;
+    final routedShape = route?['narrative_shape'] as String? ?? 'dialogue_heavy';
+    final routedTone = route?['tone'] as String? ?? '';
+    final routedIntents = (route?['character_intents'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, v.toString())) ?? <String, String>{};
+    final routedTags = (route?['relevant_tags'] as List?)?.cast<String>() ?? <String>[];
+
+    // ─── Step 2: Build prompt ───
+    final buf = StringBuffer();
+
+    if (isQuietDay) {
+      buf.writeln('第${currentDay}天 · $season · $weather · $phase');
+
+      if (tensionSnapshot.isNotEmpty) {
+        buf.writeln('【三维张力】$tensionSnapshot');
+      }
+
+      if (participantDetails.isNotEmpty) {
+        buf.writeln('\n【在场角色】');
+        buf.writeln(participantDetails);
+      }
+
+      if (frequencyHooks.isNotEmpty) {
+        buf.writeln('\n【日程提示】');
+        buf.writeln(frequencyHooks);
+      }
+
+      buf.writeln('\n【玩家】');
+      buf.writeln(playerCard);
+
+      final quietHistory = fullNarrativeHistory.length > 400
+          ? fullNarrativeHistory.substring(fullNarrativeHistory.length - 400)
+          : fullNarrativeHistory;
+      buf.writeln('\n---');
+      buf.writeln('【最近发生的事】');
+      buf.writeln(quietHistory);
+
+      buf.writeln('\n---');
+      buf.writeln('请根据以上信息写一段叙事。');
+      buf.writeln('规则：');
+      buf.writeln('1. 用（）描写环境，对话单独成行。不要替玩家写意图');
+      buf.writeln('2. 从最近发生的事中接上情节，不要凭空开始新的一天');
+      buf.writeln('3. 篇幅由情境决定，宁短不凑');
+
+      return _callApi(
+        systemPrompt: '你是一个恋爱模拟游戏的世界叙事引擎。根据设定生成生动、有画面感的世界叙事。',
+        userPrompt: buf.toString(),
+        temperature: 0.9,
+        isWorldNarrative: true,
+      );
+    }
+
+    buf.writeln('【叙事权重】$weightLabel（篇幅由情境决定，不强行凑字。环境描写简短，对话与冲突较长）');
     buf.writeln('【叙事焦点】$focusLabel');
+    if (route != null) {
+      buf.writeln('【叙事形状】$routedShape');
+      if (routedTone.isNotEmpty) buf.writeln('【基调】$routedTone');
+    }
     if (hint != null && hint.isNotEmpty) {
       buf.writeln('【特殊指引】$hint');
     }
@@ -1061,6 +1204,10 @@ class DeepSeekClient {
 
     buf.writeln('【世界此刻】');
     buf.writeln('第${currentDay}天/$totalDays天 · $season · $weather · $phase');
+
+    if (tensionSnapshot.isNotEmpty) {
+      buf.writeln('【三维张力】$tensionSnapshot');
+    }
 
     if (locationName.isNotEmpty) {
       buf.writeln('地点: $locationName');
@@ -1072,17 +1219,20 @@ class DeepSeekClient {
       buf.writeln(participantDetails);
     }
 
-    if (collisionLines.isNotEmpty) {
-      buf.writeln('\n【日程动态】');
-      for (final line in collisionLines) {
-        buf.writeln(line);
+    if (routedIntents.isNotEmpty) {
+      buf.writeln('\n【角色此刻意图】');
+      for (final e in routedIntents.entries) {
+        buf.writeln('$e.key: $e.value');
       }
     }
 
-    if (infoGapLines.isNotEmpty) {
-      buf.writeln('\n【信息传播】');
-      for (final line in infoGapLines) {
+    if (worldDynamicsLines.isNotEmpty || frequencyHooks.isNotEmpty) {
+      buf.writeln('\n【世界动态】');
+      for (final line in worldDynamicsLines) {
         buf.writeln(line);
+      }
+      if (frequencyHooks.isNotEmpty) {
+        buf.writeln(frequencyHooks);
       }
     }
 
@@ -1094,27 +1244,49 @@ class DeepSeekClient {
       buf.writeln(rankingContext);
     }
 
-    buf.writeln('\n---');
-    buf.writeln('【所有角色档案】');
-    for (final profile in charProfiles) {
-      buf.writeln(_trimForFocus(profile, 'speech', effectiveFocus));
+    if (charMemory != null && participantDetails.isNotEmpty) {
+      final memBuf = StringBuffer();
+      final pids = RegExp(r'\((\w+)\)').allMatches(participantDetails).map((m) => m.group(1)!).toList();
+      for (final pid in pids) {
+        final ctx = charMemory.buildMemoryContext(pid, filterTags: routedTags.isEmpty ? null : routedTags);
+        if (ctx.isNotEmpty) {
+          memBuf.writeln('【$pid】');
+          memBuf.writeln(ctx);
+        }
+      }
+      if (memBuf.isNotEmpty) {
+        buf.writeln('\n【角色记忆（按当前焦点过滤）】');
+        buf.writeln(memBuf.toString());
+      }
+    }
+
+    if (charProfiles.isNotEmpty) {
+      buf.writeln('\n---');
+      buf.writeln('【所有角色档案】');
+      for (final profile in charProfiles) {
+        buf.writeln(_trimForFocus(profile, 'speech', routedFocus));
+      }
     }
 
     buf.writeln('\n---');
     buf.writeln('【叙事历史（最近）】');
-    final history = fullNarrativeHistory.length > 800
-        ? fullNarrativeHistory.substring(fullNarrativeHistory.length - 800)
+    final history = fullNarrativeHistory.length > 600
+        ? fullNarrativeHistory.substring(fullNarrativeHistory.length - 600)
         : fullNarrativeHistory;
     buf.writeln(history);
+
+    final shapeInstructions = _shapePrompt(routedShape, routedFocus);
 
     buf.writeln('\n---');
     buf.writeln('请根据以上信息写一段叙事。');
     buf.writeln('规则：');
     buf.writeln('1. 不要把上面的数据逐条罗列，而是展开一个具体的、可感的瞬间');
     buf.writeln('2. 重点描写角色的感受、互动和环境细节');
-    buf.writeln('3. ${w}字左右，纯叙事不含选项');
-    buf.writeln('4. 如果叙事焦点是"世界质感"，重点写氛围、环境、时间流逝');
-    buf.writeln('5. 如果叙事焦点是"关系节拍"，重点写角色间的情绪变化和关系进展');
+    buf.writeln('3. 纯叙事不含选项。篇幅由情境决定，不强行凑字');
+    buf.writeln('4. $shapeInstructions');
+    if (routedTone.isNotEmpty) {
+      buf.writeln('5. 基调：$routedTone');
+    }
 
     return _callApi(
       systemPrompt: '你是一个恋爱模拟游戏的世界叙事引擎。根据设定生成生动、有画面感的世界叙事。',
@@ -1122,6 +1294,80 @@ class DeepSeekClient {
       temperature: 0.9,
       isWorldNarrative: true,
     );
+  }
+
+  // ─── Two-step Prompting: Route ───
+
+  Future<Map<String, dynamic>?> _routeNarrative({
+    required int currentDay,
+    required int totalDays,
+    required String season,
+    required String weather,
+    required String phase,
+    required String locationName,
+    required String participantDetails,
+    required String tensionSnapshot,
+    required List<String> collisionLines,
+    required List<String> infoGapLines,
+    required String recentHistory,
+  }) async {
+    final buf = StringBuffer();
+    buf.writeln('你是叙事路由器。根据情境摘要，选择1个主要叙事焦点、2个次要焦点、叙事形状、基调，并为每个在场角色写1句话意图（不超过15字）。');
+    buf.writeln();
+    buf.writeln('焦点选项: characterMoment(角色瞬间), relationshipBeat(关系节拍), plotAdvancement(剧情推进), worldTexture(世界质感), tensionEscalation(张力升级), ensembleScene(群像场景)');
+    buf.writeln('形状选项: dialogue_heavy(对话主导), montage(蒙太奇), reveal(信息揭示), tension_escalation(张力上升), quiet(静谧时刻), action_reaction(动作反应)');
+    buf.writeln('基调选项: warm(温暖), tense(紧张), melancholic(忧伤), hopeful(期待), awkward(尴尬), subtle_tension(暗流)');
+    buf.writeln('记忆标签: 考试, 暧昧, 吃醋, 共同经历, 第三方提及, 冲突, 日常, 核心记忆');
+    buf.writeln();
+    buf.writeln('情境: 第${currentDay}天/$totalDays · $season · $weather · $phase');
+    if (locationName.isNotEmpty) buf.writeln('地点: $locationName');
+    if (participantDetails.isNotEmpty) buf.writeln('在场: $participantDetails');
+    if (tensionSnapshot.isNotEmpty) buf.writeln('张力: $tensionSnapshot');
+    if (collisionLines.isNotEmpty) buf.writeln('日程: ${collisionLines.take(2).join(' | ')}');
+    if (infoGapLines.isNotEmpty) buf.writeln('信息: ${infoGapLines.take(2).join(' | ')}');
+    if (recentHistory.isNotEmpty) {
+      buf.writeln('最近: ${recentHistory.length > 200 ? recentHistory.substring(recentHistory.length - 200) : recentHistory}');
+    }
+    buf.writeln();
+    buf.writeln('输出纯JSON（不要markdown包裹）：');
+    buf.writeln('{"primary_focus":"...","narrative_shape":"...","tone":"...","character_intents":{"角色名":"意图..."},"relevant_tags":["..."]}');
+
+    final raw = await _callApi(
+      systemPrompt: buf.toString(),
+      userPrompt: '输出路由决策JSON。',
+      maxTokens: 256,
+      temperature: 0.3,
+    );
+    return _parseRouteResult(raw);
+  }
+
+  Map<String, dynamic>? _parseRouteResult(String raw) {
+    final match = RegExp(r'\{[\s\S]*\}').firstMatch(raw);
+    if (match == null) return null;
+    try {
+      final map = json.decode(match.group(0)!) as Map<String, dynamic>;
+      if (map.containsKey('primary_focus')) return map;
+    } catch (_) {}
+    return null;
+  }
+
+  String _shapePrompt(String shape, String focus) {
+    switch (shape) {
+      case 'dialogue_heavy':
+        return '以对话为主，动作描写辅助。角色之间的对话应该推动情节或揭示关系。';
+      case 'montage':
+        return '快速切换几个片段，蒙太奇风格。每个片段简短但有画面感，片段之间有时间跳跃。';
+      case 'reveal':
+        return '逐步揭示一个信息。先铺垫氛围，再通过细节或对话慢慢揭露，不要一次性说完。';
+      case 'tension_escalation':
+        return '张力逐步上升，每段都比前一段更紧。从平静开始，逐步积累到一个小高潮。';
+      case 'quiet':
+        return '静谧时刻，环境描写为主。写声音、光线、气味、温度——让读者感受到此刻的氛围。';
+      case 'action_reaction':
+        return '动作→反应→动作，快速节奏。一个动作紧接着一个反应，不要停顿。';
+      default:
+        return '以对话为主，动作描写辅助。';
+    }
   }
 }
 

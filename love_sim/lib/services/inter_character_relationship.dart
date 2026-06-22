@@ -47,11 +47,23 @@ class InterCharRelationshipService {
     return att;
   }
 
-  void initFromScript(List<Character> characters) {
+  void initFromScript(List<Character> characters, {InterCharRelationConfig? config}) {
     final ids = characters.where((c) => c.fullCharacter).map((c) => c.basic.id).toList();
     for (int i = 0; i < ids.length; i++) {
       for (int j = i + 1; j < ids.length; j++) {
         _getOrCreate(ids[i], ids[j]);
+      }
+    }
+    if (config != null) {
+      for (final att in config.initialAttitudes) {
+        final key = _pairKey(att.fromId, att.toId);
+        final existing = _attitudes[key];
+        if (existing != null) {
+          existing.affinity = att.affinity;
+          existing.label = att.label.isNotEmpty ? att.label : _labelFor(att.affinity);
+          existing.isSecretAdmirer = att.isSecretAdmirer;
+          if (att.history.isNotEmpty) existing.history = att.history;
+        }
       }
     }
   }

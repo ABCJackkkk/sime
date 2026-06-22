@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoveSim v2.9 — 剧本架构拓扑图</title>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --panel: #11151c;
+    --border: #1e2530;
+    --text: #8896a6;
+    --text-bright: #c5d0dd;
+    --live: #22c55e;
+    --live-glow: rgba(34,197,94,0.25);
+    --dead: #4a3030;
+    --dead-text: #6b4a4a;
+    --ghost: #5a3e6e;
+    --ghost-text: #8878a0;
+    --fresh: #3b82f6;
+    --fresh-glow: rgba(59,130,246,0.25);
+    --accent: #f59e0b;
+    --accent-glow: rgba(245,158,11,0.2);
+    --link: #6366f1;
+    --link-glow: rgba(99,102,241,0.2);
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    --font-sans: 'Manrope', 'Inter', system-ui, sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { font-size:14px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    line-height:1.55;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index:0;
+  }
+
+  header {
+    position: relative;
+    z-index: 1;
+    padding: 48px 60px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    font-family: var(--font-mono);
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  header .sub {
+    font-size: 0.85rem;
+    color: var(--text);
+    display: flex; gap: 24px; flex-wrap: wrap;
+  }
+  header .sub span { display:flex; align-items:center; gap:6px; }
+  .dot { width:8px; height:8px; border-radius:50%; }
+  .dot-live { background:var(--live); box-shadow:0 0 8px var(--live-glow); }
+  .dot-fresh { background:var(--fresh); box-shadow:0 0 8px var(--fresh-glow); }
+  .dot-ghost { background:var(--ghost); }
+  .dot-dead { background:#ef4444; opacity:0.5; }
+
+  main {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 32px;
+    padding: 32px 60px 60px;
+  }
+
+  .col-main { display:flex; flex-direction:column; gap:28px; }
+
+  /* Panels */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .panel::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  }
+  .panel h2 {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-bright);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel h2 .icon { font-size: 1.1rem; }
+
+  /* Three-layer architecture */
+  .layers {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+  .layer-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    transition: border-color 0.2s;
+  }
+  .layer-card:hover { border-color: rgba(255,255,255,0.15); }
+  .layer-card h3 {
+    font-family: var(--font-mono);
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--accent); letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  .layer-card .desc {
+    font-size: 0.75rem; color: var(--text);
+    margin-bottom: 10px; line-height:1.5;
+  }
+  .layer-card .file {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    color: var(--text);
+    background: rgba(255,255,255,0.03);
+    padding: 4px 8px; border-radius: 4px;
+    display: inline-block;
+  }
+
+  /* Connection diagram */
+  .flow-row {
+    display: flex; gap: 12px; align-items: stretch;
+    flex-wrap: wrap;
+  }
+  .flow-node {
+    flex: 1; min-width: 100px;
+    background: rgba(255,255,255,0.015);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    position: relative;
+  }
+  .flow-node .label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem; font-weight: 600;
+    color: var(--text-bright);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .flow-node .detail {
+    font-size: 0.7rem; color: var(--text);
+    line-height: 1.5;
+  }
+  .flow-arrow {
+    display: flex; align-items: center;
+    color: var(--link);
+    font-size: 1.2rem; flex-shrink: 0;
+    opacity: 0.6;
+  }
+
+  /* Module status grid */
+  .module-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .module-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 100px;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.015);
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .module-row:hover { border-color: var(--border); }
+  .module-name {
+    font-family: var(--font-mono);
+    font-size: 0.73rem; font-weight: 600;
+    color: var(--text-bright);
+    letter-spacing: 0.02em;
+  }
+  .module-files {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .file-tag {
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    padding: 2px 8px; border-radius: 3px;
+    letter-spacing: 0.03em;
+  }
+  .tag-json { background: rgba(245,158,11,0.12); color: var(--accent); }
+  .tag-dart { background: rgba(59,130,246,0.12); color: var(--fresh); }
+  .tag-svc { background: rgba(34,197,94,0.12); color: var(--live); }
+
+  .status-badge {
+    font-family: var(--font-mono);
+    font-size: 0.63rem; font-weight: 700;
+    padding: 3px 10px; border-radius: 12px;
+    text-align: center; letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .status-live { background: rgba(34,197,94,0.12); color: var(--live); border: 1px solid rgba(34,197,94,0.3); }
+  .status-fresh { background: rgba(59,130,246,0.12); color: var(--fresh); border: 1px solid rgba(59,130,246,0.3); }
+  .status-ghost { background: rgba(136,120,160,0.12); color: var(--ghost-text); border: 1px solid rgba(136,120,160,0.3); }
+  .status-dead { background: rgba(239,68,68,0.08); color: #6b4a4a; border: 1px solid rgba(239,68,68,0.2); }
+
+  /* Sidebar */
+  .col-side {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .side-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    position: relative; overflow: hidden;
+  }
+  .side-card::after {
+    content: '';
+    position: absolute; top:0; left:0; right:0; height:1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+  }
+  .side-card h3 {
+    font-family: var(--font-mono);
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--text-bright);
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.73rem;
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-val {
+    font-family: var(--font-mono);
+    font-weight: 600; font-size: 0.75rem;
+  }
+  .val-live { color: var(--live); }
+  .val-fresh { color: var(--fresh); }
+  .val-ghost { color: var(--ghost-text); }
+  .val-dead { color: #ef4444; opacity:0.6; }
+
+  /* Legend */
+  .legend {
+    display: flex; flex-direction: column; gap:6px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.7rem; color: var(--text);
+  }
+  .legend-dot { width:10px; height:10px; border-radius:3px; flex-shrink: 0; }
+
+  /* Data flow animation */
+  @keyframes pulse-arrow {
+    0%,100% { opacity:0.3; }
+    50% { opacity:0.8; }
+  }
+  .pulse { animation: pulse-arrow 2s ease-in-out infinite; }
+
+  /* Responsive */
+  @media (max-width: 960px) {
+    main { grid-template-columns: 1fr; padding: 24px; }
+    header { padding: 32px 24px 24px; }
+    .layers { grid-template-columns: 1fr; }
+    .module-row { grid-template-columns: 1fr; gap:4px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>LoveSim v2.9 · Script Architecture Topology</h1>
+  <div class="sub">
+    <span><i class="dot dot-live"></i> 全链路通</span>
+    <span><i class="dot dot-fresh"></i> 本次新增/修复</span>
+    <span><i class="dot dot-ghost"></i> 幽灵字段 (PRD未提及)</span>
+    <span><i class="dot dot-dead"></i> 未实现</span>
+  </div>
+</header>
+
+<main>
+<div class="col-main">
+
+  <!-- Three Layer Architecture -->
+  <div class="panel">
+    <h2><span class="icon">📐</span> 三层架构</h2>
+    <div class="layers">
+      <div class="layer-card">
+        <h3>Layer 1 · 工业规范</h3>
+        <div class="desc">定义所有字段的数据结构和语义。引擎需要新数据维度时修改。</div>
+        <div class="file">sim-script.json</div>
+      </div>
+      <div class="layer-card">
+        <h3>Layer 2 · 填空模板</h3>
+        <div class="desc">剧本作者的起点。按 sim-script 规范填写的空白模板。</div>
+        <div class="file">_template.json</div>
+      </div>
+      <div class="layer-card">
+        <h3>Layer 3 · 实际剧本</h3>
+        <div class="desc">当前运行的剧本内容——校园青春「十七岁的坐标系」。</div>
+        <div class="file">campus_love.json</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Flow: JSON → Model → Service → Engine -->
+  <div class="panel">
+    <h2><span class="icon">🔗</span> 数据注入链路 (以 inter_character_relationships 为例)</h2>
+    <div class="flow-row">
+      <div class="flow-node">
+        <div class="label">JSON</div>
+        <div class="detail">campus_love.json<br>inter_character_relationships</div>
+      </div>
+      <div class="flow-arrow pulse">→</div>
+      <div class="flow-node">
+        <div class="label">Model</div>
+        <div class="detail">script.dart<br>InterCharRelationConfig.fromJson()</div>
+      </div>
+      <div class="flow-arrow pulse">→</div>
+      <div class="flow-node">
+        <div class="label">Service</div>
+        <div class="detail">inter_character_relationship.dart<br>initFromScript(chars, config:)</div>
+      </div>
+      <div class="flow-arrow pulse">→</div>
+      <div class="flow-node">
+        <div class="label">Engine</div>
+        <div class="detail">world_engine.dart<br>tickWorld() → interCharRel</div>
+      </div>
+      <div class="flow-arrow pulse">→</div>
+      <div class="flow-node">
+        <div class="label">AI Prompt</div>
+        <div class="detail">generateWorldNarrative<br>角色间关系上下文注入</div>
+      </div>
+    </div>
+    <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap;">
+      <div class="flow-node">
+        <div class="label">信息传播</div>
+        <div class="detail">information_system<br>→ InformationSystemConfig<br>→ infoProp.initFromConfig()<br>→ tickWorld() 每推进扩散1步</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Module Status Table -->
+  <div class="panel">
+    <h2><span class="icon">🔬</span> 16 个模块全链路状态</h2>
+    <div class="module-grid">
+
+      <div class="module-row">
+        <span class="module-name">meta</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">player</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">world</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">engine ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">characters</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">AI prompt ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">inter_character_relationships</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">service ✓</span></span>
+        <span class="status-badge status-fresh">本次跑通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">information_system</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">service ✓</span></span>
+        <span class="status-badge status-fresh">本次跑通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">plot</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">engine ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">events</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">engine ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">dialogue</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">items</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">interaction</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">engine ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">data_layer</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span></span>
+        <span class="status-badge status-live">全链路通</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">rhythm_config</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">engine ✓</span></span>
+        <span class="status-badge status-fresh">已对齐</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">memory_config</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span></span>
+        <span class="status-badge status-fresh">已对齐</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">action_rules</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">engine ✓</span></span>
+        <span class="status-badge status-fresh">已对齐</span>
+      </div>
+      <div class="module-row">
+        <span class="module-name">fallback_narratives</span>
+        <span class="module-files"><span class="file-tag tag-json">sim-script ✓</span><span class="file-tag tag-json">_template ✓</span><span class="file-tag tag-json">campus ✓</span><span class="file-tag tag-dart">model ✓</span><span class="file-tag tag-svc">engine ✓</span></span>
+        <span class="status-badge status-fresh">已对齐</span>
+      </div>
+
+      <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border);">
+        <div class="module-row" style="border-color:rgba(136,120,160,0.2);">
+          <span class="module-name">game_events</span>
+          <span class="module-files"><span class="file-tag tag-json">_template</span></span>
+          <span class="status-badge status-ghost">幽灵字段</span>
+        </div>
+        <div class="module-row" style="border-color:rgba(136,120,160,0.2);">
+          <span class="module-name">game_items</span>
+          <span class="module-files"><span class="file-tag tag-json">_template</span></span>
+          <span class="status-badge status-ghost">幽灵字段</span>
+        </div>
+        <div class="module-row" style="border-color:rgba(136,120,160,0.2);">
+          <span class="module-name">game_interaction</span>
+          <span class="module-files"><span class="file-tag tag-json">_template</span></span>
+          <span class="status-badge status-ghost">幽灵字段</span>
+        </div>
+        <div class="module-row" style="border-color:rgba(239,68,68,0.1);">
+          <span class="module-name">social_stats</span>
+          <span class="module-files"><span class="file-tag tag-json">_template</span></span>
+          <span class="status-badge status-dead">未实现</span>
+        </div>
+        <div class="module-row" style="border-color:rgba(239,68,68,0.1);">
+          <span class="module-name">action_points</span>
+          <span class="module-files"><span class="file-tag tag-json">_template</span></span>
+          <span class="status-badge status-dead">未实现</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="col-side">
+  <!-- Stats -->
+  <div class="side-card">
+    <h3>📊 模块统计</h3>
+    <div class="stat-row">
+      <span>全链路通 (JSON→Dart→Engine)</span>
+      <span class="stat-val val-live">10</span>
+    </div>
+    <div class="stat-row">
+      <span>本次新增/修复跑通</span>
+      <span class="stat-val val-fresh">6</span>
+    </div>
+    <div class="stat-row">
+      <span>幽灵字段 (仅_template)</span>
+      <span class="stat-val val-ghost">3</span>
+    </div>
+    <div class="stat-row">
+      <span>未实现</span>
+      <span class="stat-val val-dead">2</span>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="side-card">
+    <h3>🎨 图例</h3>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--live);"></span> 全链路通 — JSON解析→Dart模型→引擎/服务消费</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--fresh);"></span> 已对齐 — sim-script.json 刚补入，跨文件统一</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--ghost);"></span> 幽灵字段 — 仅 _template.json 有，PRD未提及，引擎不读</div>
+      <div class="legend-item"><span class="legend-dot" style="background:#ef4444; opacity:0.5;"></span> 未实现 — _template 里有定义，但 PRD 和 Dart 代码都没有</div>
+    </div>
+  </div>
+
+  <!-- Engine Services Active -->
+  <div class="side-card">
+    <h3>⚙️ tickWorld() 激活服务</h3>
+    <div class="stat-row">
+      <span>CharacterScheduleService</span>
+      <span class="stat-val val-live">日程撞车</span>
+    </div>
+    <div class="stat-row">
+      <span>InterCharRelationService</span>
+      <span class="stat-val val-fresh">角色间关系</span>
+    </div>
+    <div class="stat-row">
+      <span>InfoPropagationService</span>
+      <span class="stat-val val-fresh">信息传播</span>
+    </div>
+    <div class="stat-row">
+      <span>LocationFrequencyTracker</span>
+      <span class="stat-val val-live">地点频率</span>
+    </div>
+    <div class="stat-row">
+      <span>RhythmScheduler</span>
+      <span class="stat-val val-live">节奏调度</span>
+    </div>
+    <div class="stat-row">
+      <span>TensionVector</span>
+      <span class="stat-val val-live">三维张力</span>
+    </div>
+  </div>
+
+  <!-- campus_love character relations -->
+  <div class="side-card">
+    <h3>👥 四人关系网 (本次填入)</h3>
+    <div style="font-size:0.7rem; line-height:1.8;">
+      <div style="color:var(--accent); margin-bottom:6px;">温辞 → 陆迟&nbsp;&nbsp;<span style="color:var(--text);">+18 认识</span></div>
+      <div style="margin-left:8px; color:var(--text); opacity:0.7; font-size:0.65rem;">同一天转来，还没说过话</div>
+      <div style="color:var(--accent); margin-bottom:6px; margin-top:6px;">温辞 → 苏念晚&nbsp;&nbsp;<span style="color:var(--text);">+25 认识</span></div>
+      <div style="margin-left:8px; color:var(--text); opacity:0.7; font-size:0.65rem;">图书馆的文静引力</div>
+      <div style="color:var(--accent); margin-bottom:6px; margin-top:6px;">陆迟 → 江屿川&nbsp;&nbsp;<span style="color:var(--text);">+15 认识</span></div>
+      <div style="margin-left:8px; color:var(--text); opacity:0.7; font-size:0.65rem;">旧球场的沉默与三不沾</div>
+      <div style="color:var(--accent); margin-bottom:6px; margin-top:6px;">苏念晚 → 江屿川&nbsp;&nbsp;<span style="color:var(--text);">+30 认识</span></div>
+      <div style="margin-left:8px; color:var(--text); opacity:0.7; font-size:0.65rem;">多年同班，不是朋友但知根知底</div>
+    </div>
+  </div>
+</div>
+</main>
+
+</body>
+</html>

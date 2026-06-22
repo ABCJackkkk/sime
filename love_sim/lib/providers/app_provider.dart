@@ -362,6 +362,27 @@ class AppProvider extends ChangeNotifier {
     );
   }
 
+  Future<Map<String, dynamic>> enterScene(String locationId) async {
+    if (_session == null) return {'atmosphere': '', 'chars': <String>[], 'choices': <Map<String, dynamic>>[]};
+    return await _session!.enterScene(locationId,
+      userName: _userSettings.name, userGender: _userSettings.gender, userHeight: _userSettings.height,
+      userBirthday: _userSettings.birthday, userAppearance: _userSettings.appearance,
+      userPersonality: _userSettings.personality, userBio: _userSettings.bio,
+    );
+  }
+
+  Future<Map<String, dynamic>> actInScene(String action, {bool isFreeText = false}) async {
+    if (_session == null) return {'narrative': '', 'delta': 0.0, 'choices': <Map<String, dynamic>>[]};
+    return await _session!.actInScene(action,
+      userName: _userSettings.name, userGender: _userSettings.gender, userHeight: _userSettings.height,
+      userBirthday: _userSettings.birthday, userAppearance: _userSettings.appearance,
+      userPersonality: _userSettings.personality, userBio: _userSettings.bio,
+      isFreeText: isFreeText,
+    );
+  }
+
+  void leaveScene() => _session?.leaveScene();
+
   // ═══════════════════════════════════════════════
   //  Tabs
   // ═══════════════════════════════════════════════

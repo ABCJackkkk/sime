@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Love Sim - 多主题色预览</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; min-height: 100vh; }
+  </style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<script>
+const themes = {
+  sakura: {
+    name: '🌸 樱暖',
+    accent: '#E96E7D',
+    accentLight: '#F5A5B0',
+    accentDark: '#C45565',
+    secondary: '#D4A373',
+    bg: '#1C1A1E',
+    surface: '#2A262C',
+    surfaceAlt: '#252127',
+    textPrimary: '#F5EDE3',
+    textSecondary: '#C8B8A3',
+    textTertiary: '#8A7C6B',
+    border: '#3D3840',
+    error: '#D4576B',
+    success: '#7FB38A',
+    warning: '#E8B15A',
+  },
+  fog: {
+    name: '🌫️ 雾灰',
+    accent: '#8E7DB5',
+    accentLight: '#B5A8D5',
+    accentDark: '#6E5D95',
+    secondary: '#A8B5C5',
+    bg: '#1A1824',
+    surface: '#252330',
+    surfaceAlt: '#201E2A',
+    textPrimary: '#E8E6F0',
+    textSecondary: '#A8A4C0',
+    textTertiary: '#7870A0',
+    border: '#383548',
+    error: '#C57D8E',
+    success: '#7DB5A0',
+    warning: '#C5B57D',
+  },
+  ocean: {
+    name: '🌊 海蓝',
+    accent: '#6B8CAE',
+    accentLight: '#9BB5D5',
+    accentDark: '#4A6E8E',
+    secondary: '#7D9BB5',
+    bg: '#1A1E22',
+    surface: '#252B32',
+    surfaceAlt: '#20272E',
+    textPrimary: '#E8EEF2',
+    textSecondary: '#A8B8C5',
+    textTertiary: '#687888',
+    border: '#384048',
+    error: '#AE6B7D',
+    success: '#7DB58E',
+    warning: '#C5A87D',
+  },
+  matcha: {
+    name: '🍵 抹茶',
+    accent: '#8FB58E',
+    accentLight: '#B5D5A8',
+    accentDark: '#6E956E',
+    secondary: '#B5A87D',
+    bg: '#1A1E1C',
+    surface: '#262C28',
+    surfaceAlt: '#222826',
+    textPrimary: '#EEF2E8',
+    textSecondary: '#B8C5A8',
+    textTertiary: '#888F7D',
+    border: '#384038',
+    error: '#AE8B7D',
+    success: '#7DB58E',
+    warning: '#C5B57D',
+  },
+  sunset: {
+    name: '🌅 落日',
+    accent: '#E8A87D',
+    accentLight: '#F5C8A8',
+    accentDark: '#C8885E',
+    secondary: '#D48E7D',
+    bg: '#1E1A1C',
+    surface: '#2C2628',
+    surfaceAlt: '#272225',
+    textPrimary: '#F5EEE8',
+    textSecondary: '#C8B8A8',
+    textTertiary: '#8A7C70',
+    border: '#403838',
+    error: '#D4576B',
+    success: '#8EB57D',
+    warning: '#E8C87D',
+  }
+};
+
+let currentTheme = 'sakura';
+
+function render() {
+  const t = themes[currentTheme];
+  document.body.style.background = t.bg;
+  document.body.style.color = t.textPrimary;
+  
+  const html = `
+    <div style="padding: 40px 20px; max-width: 800px; margin: 0 auto;">
+      
+      <!-- 主题切换按钮 -->
+      <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px;">
+        ${Object.keys(themes).map(key => `
+          <button onclick="switchTheme('${key}')" style="
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid ${currentTheme === key ? t.accent : t.border};
+            background: ${currentTheme === key ? t.accent : t.surface};
+            color: ${currentTheme === key ? '#fff' : t.textPrimary};
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+          ">${themes[key].name}</button>
+        `).join('')}
+      </div>
+
+      <!-- 标题 -->
+      <div style="text-align: center; margin-bottom: 40px;">
+        <h1 style="font-size: 28px; font-weight: 700; margin-bottom: 8px;">多主题色预览</h1>
+        <p style="font-size: 14px; color: ${t.textTertiary};">点击上方按钮切换不同主题</p>
+      </div>
+
+      <!-- 色彩面板 -->
+      <div style="margin-bottom: 48px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          色彩面板
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+          ${[
+            { name: '主色', color: t.accent },
+            { name: '浅主色', color: t.accentLight },
+            { name: '深主色', color: t.accentDark },
+            { name: '次色', color: t.secondary },
+            { name: '背景', color: t.bg },
+            { name: '卡片', color: t.surface },
+            { name: '主文字', color: t.textPrimary },
+            { name: '错误', color: t.error },
+            { name: '成功', color: t.success },
+            { name: '警告', color: t.warning },
+          ].map(s => `
+            <div style="text-align: center;">
+              <div style="width: 48px; height: 48px; border-radius: 12px; background: ${s.color}; border: 1px solid ${t.border};"></div>
+              <div style="font-size: 9px; color: ${t.textTertiary}; margin-top: 4px;">${s.name}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- 按钮 -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          按钮
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <button style="padding: 12px 24px; border-radius: 12px; border: none; background: ${t.accent}; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">主按钮</button>
+          <button style="padding: 12px 24px; border-radius: 12px; border: 1px solid ${t.border}; background: transparent; color: ${t.textPrimary}; font-size: 14px; font-weight: 600; cursor: pointer;">描边按钮</button>
+          <button style="padding: 12px 24px; border-radius: 12px; border: none; background: ${t.surfaceAlt}; color: ${t.textPrimary}; font-size: 14px; font-weight: 600; cursor: pointer;">软按钮</button>
+        </div>
+      </div>
+
+      <!-- 标签 -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          标签 & 徽章
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div>
+          <span style="display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; background: ${t.accentLight}; color: ${t.accentDark}; margin-right: 8px; margin-bottom: 8px;">🌸 校园恋爱</span>
+          <span style="display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; background: ${t.secondary}; color: ${t.bg}; margin-right: 8px; margin-bottom: 8px; opacity: 0.8;">作者名</span>
+          <span style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 500; background: ${t.success}22; color: ${t.success}; margin-right: 8px; margin-bottom: 8px;">✓ 已加载</span>
+          <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #fff; background: ${t.error}; padding: 0 6px; margin-right: 8px;">3</span>
+          <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #fff; background: ${t.success}; padding: 0 6px; margin-right: 8px;">✓</span>
+          <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #fff; background: ${t.accent}; padding: 0 6px;">新</span>
+        </div>
+      </div>
+
+      <!-- 聊天气泡 -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          聊天气泡
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; gap: 10px; align-items: flex-end;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: ${t.surfaceAlt}; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: ${t.accent}; flex-shrink: 0;">林</div>
+            <div style="max-width: 70%; padding: 12px 16px; font-size: 15px; line-height: 1.5; background: ${t.surface}; border: 1px solid ${t.border}; color: ${t.textPrimary}; border-radius: 20px 20px 20px 4px; position: relative; padding-left: 20px;">
+              <div style="position: absolute; left: 6px; top: 0; bottom: 0; width: 3px; background: ${t.accent}; border-radius: 3px;"></div>
+              今天的天气真好呢...
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: flex-end; flex-direction: row-reverse;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: ${t.accent}; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #fff; flex-shrink: 0;">我</div>
+            <div style="max-width: 70%; padding: 12px 16px; font-size: 15px; line-height: 1.5; background: linear-gradient(135deg, ${t.accent} 0%, ${t.accentDark} 100%); color: #fff; border-radius: 20px 20px 4px 20px;">
+              是呀，想出去走走吗？
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: flex-end;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: ${t.surfaceAlt}; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: ${t.accent}; flex-shrink: 0;">林</div>
+            <div style="max-width: 70%; padding: 12px 16px; font-size: 15px; line-height: 1.5; background: ${t.surface}; border: 1px solid ${t.border}; color: ${t.textPrimary}; border-radius: 20px 20px 20px 4px; position: relative; padding-left: 20px;">
+              <div style="position: absolute; left: 6px; top: 0; bottom: 0; width: 3px; background: ${t.accent}; border-radius: 3px;"></div>
+              好呀，正好我也想...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 好感度条 -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          好感度条
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div>
+          <div style="height: 8px; background: ${t.surfaceAlt}; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+            <div style="height: 100%; width: 72%; background: linear-gradient(90deg, ${t.accent} 0%, ${t.accentLight} 100%); border-radius: 4px;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 11px; color: ${t.textTertiary};">
+            <span>陌生</span><span>熟悉</span><span>好感</span><span>亲密</span><span>恋人</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 角色卡片 -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          角色卡片
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div style="background: ${t.surface}; border: 1px solid ${t.border}; border-radius: 16px; padding: 20px; display: flex; gap: 16px; margin-bottom: 16px;">
+          <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, ${t.accent} 0%, ${t.accentLight} 100%); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: #fff; flex-shrink: 0;">林</div>
+          <div style="flex: 1;">
+            <div style="font-size: 17px; font-weight: 600; margin-bottom: 4px;">林夏</div>
+            <div style="font-size: 13px; color: ${t.textTertiary}; margin-bottom: 8px;">17岁 · 163cm · 女</div>
+            <div style="font-size: 13px; color: ${t.textSecondary}; line-height: 1.5;">转校来的元气少女，总是在笑，但眼神里藏着秘密...</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: center; min-width: 32px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #fff; background: ${t.accent}; padding: 0 6px;">♥ 72</div>
+        </div>
+      </div>
+
+      <!-- 输入框 -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          输入框
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <input type="text" placeholder="输入消息..." style="width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid ${t.border}; background: ${t.surfaceAlt}; color: ${t.textPrimary}; font-size: 15px; outline: none;">
+      </div>
+
+      <!-- 列表项 -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          列表项
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div style="background: ${t.surface}; border: 1px solid ${t.border}; border-radius: 14px; padding: 20px;">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid ${t.border};">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: ${t.surfaceAlt}; display: flex; align-items: center; justify-content: center; color: ${t.accent}; font-size: 18px;">📖</div>
+            <div style="flex: 1;">
+              <div style="font-size: 15px; font-weight: 500; margin-bottom: 2px;">十七岁的坐标系</div>
+              <div style="font-size: 13px; color: ${t.textTertiary};">校园成长 · 4 个角色</div>
+            </div>
+            <div style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #fff; background: ${t.success}; padding: 0 6px;">已加载</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; padding: 14px 0;">
+            <div style="width: 40px; height: 40px; border-radius: 10px; background: ${t.surfaceAlt}; display: flex; align-items: center; justify-content: center; color: ${t.accent}; font-size: 18px;">📖</div>
+            <div style="flex: 1;">
+              <div style="font-size: 15px; font-weight: 500; margin-bottom: 2px;">自定义剧本</div>
+              <div style="font-size: 13px; color: ${t.textTertiary};">从本地导入</div>
+            </div>
+            <button style="padding: 6px 12px; border-radius: 8px; border: none; background: ${t.surfaceAlt}; color: ${t.textPrimary}; font-size: 12px; font-weight: 600; cursor: pointer;">加载</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 卡片样式 -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          卡片
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div style="background: ${t.surface}; border: 1px solid ${t.border}; border-radius: 14px; padding: 20px; margin-bottom: 16px;">
+          <strong>基础卡片</strong><br>
+          <span style="color: ${t.textSecondary}; font-size: 14px;">1px 暖色描边 + 温暖底色</span>
+        </div>
+        <div style="background: linear-gradient(135deg, ${t.surface} 0%, ${t.surfaceAlt} 100%); border: 1px solid ${t.border}; border-radius: 14px; padding: 20px;">
+          <strong>高级卡片</strong><br>
+          <span style="color: ${t.textSecondary}; font-size: 14px;">左上 → 右下的浅金色渐变底色</span>
+        </div>
+      </div>
+
+      <!-- 底部 Tab -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          底部 Tab 栏
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div style="display: flex; background: ${t.surface}; border-top: 1px solid ${t.border}; padding: 8px 0;">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; color: ${t.accent};">
+            <span style="font-size: 22px;">📖</span>
+            <div style="width: 20px; height: 3px; background: ${t.accent}; border-radius: 2px; margin-top: 4px;"></div>
+            <span style="font-size: 10px;">剧本</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; color: ${t.textTertiary};">
+            <span style="font-size: 22px;">⚙️</span>
+            <span style="font-size: 10px;">设置</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; color: ${t.textTertiary};">
+            <span style="font-size: 22px;">▶️</span>
+            <span style="font-size: 10px;">模拟</span>
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px; color: ${t.textTertiary};">
+            <span style="font-size: 22px;">👤</span>
+            <span style="font-size: 10px;">我的</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 色值对照 -->
+      <div style="margin-bottom: 32px;">
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 16px; color: ${t.textSecondary}; display: flex; align-items: center; gap: 8px;">
+          色值对照
+          <div style="flex: 1; height: 1px; background: ${t.border};"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">
+          ${[
+            { label: '主色', value: t.accent },
+            { label: '背景', value: t.bg },
+            { label: '卡片', value: t.surface },
+            { label: '主文字', value: t.textPrimary },
+            { label: '描边', value: t.border },
+            { label: '次文字', value: t.textSecondary },
+          ].map(item => `
+            <div style="background: ${t.surface}; border: 1px solid ${t.border}; border-radius: 10px; padding: 12px; text-align: center;">
+              <div style="font-size: 11px; color: ${t.textTertiary}; margin-bottom: 6px;">${item.label}</div>
+              <div style="font-size: 13px; font-weight: 600; color: ${t.accent};">${item.value}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <div style="text-align: center; padding: 40px 0; color: ${t.textTertiary}; font-size: 13px;">
+        — Love Sim 多主题视觉系统预览 —
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('app').innerHTML = html;
+}
+
+function switchTheme(theme) {
+  currentTheme = theme;
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>

@@ -86,7 +86,7 @@ class RhythmScheduler {
     _checkPlotBeat(beatHits, mode, currentDay, totalDays, script, affection, nearMilestone, milestoneDay, milestoneName);
     _checkAffectionBoundary(beatHits, affection, allCharIds);
     _checkWorldCollision(beatHits, worldReport, allCharIds);
-    _checkInfoSpread(beatHits, worldReport, allCharIds);
+    _checkInfoSpread(beatHits, worldReport, allCharIds, affection, script);
     _checkDefaultDaily(beatHits, currentPhase, currentWeather);
 
     _detectReversal(beatHits);
@@ -219,23 +219,108 @@ class RhythmScheduler {
     List<_TriggerSource> hits,
     WorldTickReport? report,
     List<String> allCharIds,
+    AffectionEngine affection,
+    GameScript script,
   ) {
     if (report == null || report.infoSpreads.isEmpty) return;
 
     final involved = <String>{};
+    String? sensitiveContent;
+    String? highAffectionRecipient;
+
     for (final s in report.infoSpreads) {
       if (s.toCharId.isNotEmpty) involved.add(s.toCharId);
       if (s.fromCharId.isNotEmpty) involved.add(s.fromCharId);
     }
-    hits.add(_TriggerSource(
-      weight: NarrativeWeight.medium,
-      focus: DramaticFocus.tensionEscalation,
-      tensionContribution: 1.2,
-      participantIds: involved.where((id) => allCharIds.contains(id)).toList(),
-      hint: report.knowledgeSummary.isNotEmpty
-          ? report.knowledgeSummary
-          : '校园里关于你的传言正在传播',
-    ));
+
+    final maxDepth = _calcChainDepth(report.infoSpreads);
+    final config = script.rhythmConfig;
+    final keywords = (config['info_spread_trigger']?['sensitive_keywords'] as List?)?.cast<String>() ?? [];
+    final affThreshold = (config['info_spread_trigger']?['high_affection_threshold'] as num?)?.toDouble() ?? 60;
+
+    for (final s in report.infoSpreads) {
+      for (final kw in keywords) {
+        if (s.distortedContent.contains(kw)) {
+          sensitiveContent = s.distortedContent;
+          break;
+        }
+      }
+      if (sensitiveContent != null) break;
+    }
+
+    for (final pid in involved) {
+      final aff = affection.getAffection(pid);
+      if (aff >= affThreshold) {
+        highAffectionRecipient = pid;
+        break;
+      }
+    }
+
+    final hasDeepSpread = maxDepth >= 3;
+    final hasSensitive = sensitiveContent != null && sensitiveContent.isNotEmpty;
+    final hasHighAffRecipient = highAffectionRecipient != null;
+
+    if (hasDeepSpread && hasSensitive && hasHighAffRecipient) {
+      hits.add(_TriggerSource(
+        weight: NarrativeWeight.heavy,
+        focus: DramaticFocus.relationshipBeat,
+        tensionContribution: 2.5,
+        participantIds: involved.where((id) => allCharIds.contains(id)).toList(),
+        hint: '敏感信息"${sensitiveContent!.length > 40 ? '${sensitiveContent.substring(0, 40)}...' : sensitiveContent}"已传播至${involved.length}人，包括对你有好感的人',
+      ));
+    } else if (hasSensitive && hasHighAffRecipient) {
+      hits.add(_TriggerSource(
+        weight: NarrativeWeight.medium,
+        focus: DramaticFocus.relationshipBeat,
+        tensionContribution: 2.0,
+        participantIds: involved.where((id) => allCharIds.contains(id)).toList(),
+        hint: '关于你的敏感信息传到了对你有好感的人耳中',
+      ));
+    } else if (hasDeepSpread) {
+      hits.add(_TriggerSource(
+        weight: NarrativeWeight.medium,
+        focus: DramaticFocus.tensionEscalation,
+        tensionContribution: 1.5,
+        participantIds: involved.where((id) => allCharIds.contains(id)).toList(),
+        hint: report.knowledgeSummary.isNotEmpty ? report.knowledgeSummary : '关于你的消息正在广泛传播',
+      ));
+    } else {
+      hits.add(_TriggerSource(
+        weight: NarrativeWeight.light,
+        focus: DramaticFocus.worldTexture,
+        tensionContribution: 0.8,
+        participantIds: involved.where((id) => allCharIds.contains(id)).toList(),
+        hint: report.knowledgeSummary.isNotEmpty ? report.knowledgeSummary : '校园里关于你的日常消息在传播',
+      ));
+    }
+  }
+
+  int _calcChainDepth(List<dynamic> spreads) {
+    if (spreads.isEmpty) return 0;
+    final graph = <String, List<String>>{};
+    for (final s in spreads) {
+      final from = (s as dynamic).fromCharId as String;
+      final to = (s as dynamic).toCharId as String;
+      if (from.isEmpty || to.isEmpty) continue;
+      graph.putIfAbsent(from, () => []);
+      graph[from]!.add(to);
+    }
+    int maxDepth = 0;
+    for (final start in graph.keys) {
+      final visited = <String>{};
+      final queue = <MapEntry<String, int>>[MapEntry(start, 1)];
+      while (queue.isNotEmpty) {
+        final cur = queue.removeAt(0);
+        if (cur.value > maxDepth) maxDepth = cur.value;
+        visited.add(cur.key);
+        for (final next in graph[cur.key] ?? <String>[]) {
+          if (!visited.contains(next)) {
+            queue.add(MapEntry(next, cur.value + 1));
+          }
+        }
+      }
+    }
+    return maxDepth;
   }
 
   void _checkDefaultDaily(

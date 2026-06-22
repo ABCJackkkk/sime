@@ -13,6 +13,7 @@ import 'package:love_sim/services/narrative_validator.dart';
 import 'package:love_sim/services/action_validator.dart';
 import 'package:love_sim/services/rhythm_scheduler.dart';
 import 'package:love_sim/services/tension_vector.dart';
+import 'package:love_sim/services/equipment_service.dart';
 
 class GameSession {
   void Function()? onChanged;
@@ -22,6 +23,7 @@ class GameSession {
   WorldEngine? worldEngine;
   AffectionEngine? affectionEngine;
   RelationshipEngine? relationshipEngine;
+  EquipmentService? equipmentService;
   EventScheduler? eventScheduler;
   CharacterMemoryService? charMemory;
   RhythmScheduler? rhythmScheduler;
@@ -67,8 +69,14 @@ class GameSession {
   bool get inLongEvent => _inLongEvent;
   String get lastNarrativeSegment => _lastNarrativeSegment;
 
-  Map<String, dynamic> get tensionVectorData => {};
-  void restoreTension(Map<String, dynamic> d) {}
+  Map<String, dynamic> get tensionVectorData => rhythmScheduler?.tension.toJson() ?? {};
+  void restoreTension(Map<String, dynamic> d) {
+    if (rhythmScheduler != null && d.isNotEmpty) {
+      rhythmScheduler!.tension.loadFromJson(d);
+      _tensionLevel = (rhythmScheduler!.tension.relational * 0.34 + rhythmScheduler!.tension.narrative * 0.33 + rhythmScheduler!.tension.emotional * 0.33);
+      _syncTensionToScript();
+    }
+  }
 
   void appendNarrative(String text) {
     _appendToNarrative(text);
@@ -99,11 +107,16 @@ class GameSession {
   Map<String, List<String>> _sceneChars = {};
   List<String> getSceneChars(String locationId) => _sceneChars[locationId] ?? [];
 
+  Map<String, int> _lastInteractionDay = {};
+  Map<String, int> get lastInteractionDays => Map.unmodifiable(_lastInteractionDay);
+
   final Set<String> _loadingChatIds = {};
   bool isChatLoading(String charId) => _loadingChatIds.contains(charId);
 
   String _currentAct = 'act_1';
   String get currentAct => _currentAct;
+
+  String _currentLocation = '';
 
   Map<String, bool> _triggeredBeats = {};
   Map<String, bool> get triggeredBeats => _triggeredBeats;
@@ -223,6 +236,7 @@ class GameSession {
       worldEngine!.initWorldServices();
     }
     charMemory = CharacterMemoryService();
+    equipmentService = EquipmentService();
     rhythmScheduler = RhythmScheduler();
     discoveredChars.addAll(s.characters.where((c) => c.fullCharacter).map((c) => c.basic.id));
     _narrativeHistory = s.world.memory.worldSummary;
@@ -401,6 +415,67 @@ class GameSession {
     _notify();
   }
 
+  void _recordInteraction(String charId) {
+    final day = int.tryParse(_currentDay) ?? 1;
+    _lastInteractionDay[charId] = day;
+  }
+
+  void _recordInteractions(Iterable<String> charIds) {
+    for (final id in charIds) {
+      _recordInteraction(id);
+    }
+  }
+
+  List<String> _buildCoolingHints(int currentDay) {
+    final hints = <String>[];
+    if (script == null) return hints;
+    for (final char in script!.characters.where((c) => c.fullCharacter)) {
+      final id = char.basic.id;
+      final lastDay = _lastInteractionDay[id] ?? 0;
+      final gap = currentDay - lastDay;
+      final affection = _affectionStates[id] ?? 0;
+      if (affection < 5) continue;
+
+      if (gap >= 12) {
+        final decay = -0.5;
+        modifyAffectionByEvent(id, decay);
+        hints.add('${char.basic.name}已经太久没有出现在的你的视线里了。你们之间隔了$gap天。');
+      } else if (gap >= 6) {
+        final decay = -0.3;
+        modifyAffectionByEvent(id, decay);
+        hints.add('你有$gap天没见过${char.basic.name}了。');
+      }
+    }
+    return hints;
+  }
+
+  List<String> _buildMissedConnectionHints(WorldTickReport tickReport) {
+    final hints = <String>[];
+    if (script == null) return hints;
+    final locations = worldEngine?.getCharacterLocations() ?? {};
+    final charMap = Map.fromEntries(script!.characters.where((c) => c.fullCharacter).map((c) => MapEntry(c.basic.id, c)));
+
+    for (final entry in locations.entries) {
+      final charId = entry.key;
+      final locId = entry.value;
+      if (locId.isEmpty) continue;
+      final affection = _affectionStates[charId] ?? 0;
+      if (affection < 20) continue;
+
+      final lastDay = _lastInteractionDay[charId] ?? 0;
+      final gap = (int.tryParse(_currentDay) ?? 1) - lastDay;
+      if (gap <= 3) continue;
+
+      for (final coll in tickReport.collisions) {
+        if (coll.locationId == locId && !coll.charIds.contains(charId)) {
+          hints.add('${charMap[charId]?.basic.name ?? charId}也在$locId，但你的注意力在别处。');
+          break;
+        }
+      }
+    }
+    return hints;
+  }
+
   Map<String, double> _parseCustomActionAffection(String narrative) {
     final result = <String, double>{};
     final re = RegExp(r'\[affection:(\w+):([+\-][\d.]+)\]');
@@ -432,6 +507,32 @@ class GameSession {
   void setTensionLevel(double v) => _tensionLevel = v;
   void setEndingProgress(Map<String, double> v) { _endingProgress = Map<String, double>.from(v); }
   void discoverChar(String id) { if (discoveredChars.add(id)) _notify(); }
+
+  bool checkAutoDiscover() {
+    bool changed = false;
+    final day = int.tryParse(_currentDay) ?? 1;
+    for (final c in script?.characters ?? <Character>[]) {
+      if (discoveredChars.contains(c.basic.id)) continue;
+      final cond = c.discoveryCondition;
+      if (cond.isEmpty) continue;
+      bool met = false;
+      if (cond.startsWith('day:')) {
+        final threshold = int.tryParse(cond.substring(4)) ?? 999;
+        met = day >= threshold;
+      } else if (cond.startsWith('event:')) {
+        final eventId = cond.substring(6);
+        met = _triggeredBeats[eventId] == true || _recentEvents.any((e) => e['event_id'] == eventId);
+      } else if (cond.startsWith('affection:')) {
+        final threshold = double.tryParse(cond.substring(10)) ?? 999;
+        met = getAffection(c.basic.id) >= threshold;
+      }
+      if (met && discoveredChars.add(c.basic.id)) {
+        changed = true;
+      }
+    }
+    if (changed) _notify();
+    return changed;
+  }
   void setEventCounter(int v) => _eventCounter = v;
   void setRecentEvents(List<Map<String, dynamic>> v) { _recentEvents = List<Map<String, dynamic>>.from(v); }
   void setPlayerStats(Map<String, double> v) { _playerStats = Map<String, double>.from(v); }
@@ -465,7 +566,21 @@ class GameSession {
         );
       }
 
-      final result = await worldEngine!.advance(mode);
+      final timeResult = worldEngine!.advanceTime(mode);
+
+      final worldTick = worldEngine!.tickWorld(playerAffections: _affectionStates);
+      final collisionLines = worldEngine!.buildCollisionInfo(worldTick);
+      final infoGapLines = worldEngine!.buildInfoKnowledgeLines(worldTick);
+      final coolingHints = _buildCoolingHints(day);
+      final missedHints = _buildMissedConnectionHints(worldTick);
+
+      final worldDynamics = <String>[];
+      if (collisionLines.isNotEmpty) worldDynamics.addAll(collisionLines);
+      if (infoGapLines.isNotEmpty) worldDynamics.addAll(infoGapLines);
+      if (coolingHints.isNotEmpty) worldDynamics.addAll(coolingHints);
+      if (missedHints.isNotEmpty) worldDynamics.addAll(missedHints);
+
+      final isQuietDay = eventTemplate == null && worldDynamics.isEmpty;
 
       String narrative;
       List<String>? participants;
@@ -473,98 +588,16 @@ class GameSession {
         eventScheduler?.recordEvent(eventTemplate);
 
         final allCharIds = script!.characters.where((c) => c.fullCharacter).map((c) => c.basic.id).toList();
-        final isFreeform = eventTemplate.aiRule == 'freeform';
 
-        Map<String, dynamic>? freeformContext;
-        if (isFreeform) {
-          final locations = script!.events?.sceneLocations ?? [];
-          freeformContext = eventScheduler!.pickFreeformContext(
-            events: script!.gameEvents!, allCharIds: allCharIds,
-            affection: affectionEngine!, relationship: relationshipEngine,
-            currentPhase: worldEngine!.currentPhase, currentWeather: worldEngine!.currentWeather,
-            locations: locations,
-          );
-        }
-
-        String enrichedHint = eventTemplate.aiHint;
         participants = eventScheduler!.pickParticipants(
           event: eventTemplate, allCharIds: allCharIds,
           affection: affectionEngine!, relationship: relationshipEngine,
         );
-        if (participants.isNotEmpty) {
-          final names = participants.map((id) => getCharacter(id)?.basic.name ?? id).join('、');
-          enrichedHint = '$enrichedHint\n【在场角色】$names';
-        }
 
-        final worldTick = worldEngine!.tickWorld(playerAffections: _affectionStates);
-        String worldReport = '';
-        if (worldTick.hasDrama) {
-          worldReport = worldEngine!.buildWorldReport(worldTick);
-        }
         if (participants.isNotEmpty) {
           worldEngine!.interCharRel.onPlayerEvent(participants, _affectionStates, '共同参与事件: ${eventTemplate.name}');
         }
 
-        final playerCard = buildPlayerCardForAi(userName, userGender, userHeight, userBirthday, userAppearance, userPersonality, userBio);
-
-        if (rhythmScheduler != null) {
-          final directive = rhythmScheduler!.resolve(
-            mode: mode,
-            currentDay: day,
-            totalDays: script!.interaction.totalDays,
-            worldReport: worldTick,
-            affection: affectionEngine!,
-            allCharIds: script!.characters.where((c) => c.fullCharacter).map((c) => c.basic.id).toList(),
-            nearMilestone: false,
-            milestoneDay: null,
-            milestoneName: null,
-            script: script!,
-            currentPhase: _currentPhase,
-            currentWeather: _currentWeather,
-          );
-          final allParticipantIds = {...?participants, ...directive.participantIds}.toList();
-          final participantStr = StringBuffer();
-          for (final pid in allParticipantIds) {
-            final char = getCharacter(pid);
-            if (char != null) {
-              participantStr.writeln('${char.basic.name}(${pid}): 好感${getAffection(pid).toStringAsFixed(1)} ${relationshipEngine?.getRelationshipType(pid) ?? ""}');
-            }
-          }
-          final charProfiles = script!.characters.where((c) => c.fullCharacter).map((c) => deepSeekClient!.buildCharProfile(c)).toList();
-          final collisionLines = worldEngine!.buildCollisionInfo(worldTick);
-          final infoGapLines = worldEngine!.buildInfoKnowledgeLines(worldTick);
-          final rankingCtx = rankingService?.buildRankingContext(day) ?? '';
-          final tensionCtx = rhythmScheduler!.tension.snapshot();
-          narrative = await deepSeekClient!.generateWorldNarrative(
-            mode: mode,
-            directive: directive,
-            currentDay: day,
-            totalDays: script!.interaction.totalDays,
-            season: _currentSeason,
-            weather: _currentWeather,
-            phase: _currentPhase,
-            fullNarrativeHistory: _narrativeHistory,
-            playerCard: playerCard,
-            rankingContext: rankingCtx,
-            charProfiles: charProfiles,
-            collisionLines: collisionLines,
-            infoGapLines: infoGapLines,
-            locationName: _currentSceneLocationName(participants, worldTick),
-            locationDesc: '',
-            participantDetails: participantStr.toString(),
-            focus: directive.primaryFocus.toString().split('.').last,
-          );
-          if (allParticipantIds.length > (participants?.length ?? 0)) {
-            participants = allParticipantIds;
-          }
-        } else {
-          narrative = await deepSeekClient!.generateEventNarrative(
-            eventType: eventTemplate.id.isNotEmpty ? eventTemplate.name : eventTemplate.id,
-            aiHint: enrichedHint, script: script!,
-            narrativeHistory: _narrativeHistory, timeContext: worldEngine!.getTimeContext(),
-            playerCard: playerCard, freeformContext: freeformContext, worldReport: worldReport,
-          );
-        }
         _eventCounter++;
         _recentEvents.add({'event_id': eventTemplate.id, 'name': eventTemplate.name, 'day': _currentDay, 'severity': eventTemplate.severity});
         _tickTensionAfterEvent(eventTemplate.severity);
@@ -573,10 +606,73 @@ class GameSession {
           _longEventStepsRemaining = eventTemplate.maxSteps < 1 ? 1 : (eventTemplate.maxSteps > 5 ? 5 : eventTemplate.maxSteps);
           _inLongEvent = true;
         } else {
-          _inLongEvent = false; _longEventStepsRemaining = 0;
+          _longEventStepsRemaining = 2;
+          _inLongEvent = true;
         }
+      }
+
+      // ── 节奏层 + 生成层：RhythmDirective → generateWorldNarrative（每次推进都运行）──
+      final playerCard = buildPlayerCardForAi(userName, userGender, userHeight, userBirthday, userAppearance, userPersonality, userBio);
+
+      if (rhythmScheduler != null) {
+        final directive = rhythmScheduler!.resolve(
+          mode: mode,
+          currentDay: day,
+          totalDays: script!.interaction.totalDays,
+          worldReport: worldTick,
+          affection: affectionEngine!,
+          allCharIds: script!.characters.where((c) => c.fullCharacter).map((c) => c.basic.id).toList(),
+          nearMilestone: false,
+          milestoneDay: null,
+          milestoneName: null,
+          script: script!,
+          currentPhase: _currentPhase,
+          currentWeather: _currentWeather,
+        );
+        final allParticipantIds = {...?participants, ...directive.participantIds}.toList();
+        if (participants == null || participants.isEmpty) {
+          participants = allParticipantIds;
+        }
+        final participantStr = StringBuffer();
+        for (final pid in allParticipantIds) {
+          final char = getCharacter(pid);
+          if (char != null) {
+            participantStr.writeln('${char.basic.name}(${pid}): 好感${getAffection(pid).toStringAsFixed(1)} ${relationshipEngine?.getRelationshipType(pid) ?? ""}');
+          }
+        }
+        final charProfiles = worldDynamics.isNotEmpty
+            ? script!.characters.where((c) => c.fullCharacter).map((c) => deepSeekClient!.buildCharProfile(c)).toList()
+            : <String>[];
+        final rankingCtx = worldDynamics.isNotEmpty ? (rankingService?.buildRankingContext(day) ?? '') : '';
+        final tensionCtx = rhythmScheduler!.tension.snapshot();
+        final thisLocation = _currentSceneLocationName(participants, worldTick);
+        final freqHooks = worldEngine!.buildFrequencyHooks('player', thisLocation);
+        worldEngine!.recordPlayerLocation(thisLocation);
+        _currentLocation = thisLocation;
+        narrative = await deepSeekClient!.generateWorldNarrative(
+          mode: mode,
+          directive: directive,
+          currentDay: day,
+          totalDays: script!.interaction.totalDays,
+          season: _currentSeason,
+          weather: _currentWeather,
+          phase: _currentPhase,
+          fullNarrativeHistory: _narrativeHistory,
+          playerCard: playerCard,
+          rankingContext: rankingCtx,
+          charProfiles: charProfiles,
+          worldDynamicsLines: worldDynamics,
+          frequencyHooks: freqHooks,
+          locationName: _currentSceneLocationName(participants, worldTick),
+          locationDesc: '',
+          participantDetails: participantStr.toString(),
+          focus: directive.primaryFocus.toString().split('.').last,
+          tensionSnapshot: tensionCtx,
+          charMemory: charMemory,
+          isQuietDay: isQuietDay,
+        );
       } else {
-        narrative = result.narrative;
+        narrative = '[世界引擎推进中...]';
       }
 
       _appendToNarrative('\n\n$narrative');
@@ -584,13 +680,13 @@ class GameSession {
       _segmentEventTypes.add(eventTemplate?.severity ?? 'daily');
       _lastEventType = eventTemplate?.severity ?? 'daily';
       _lastNarrativeSegment = narrative;
-      _currentDay = result.dayAfter.toString();
+      _currentDay = timeResult.dayAfter.toString();
       _currentPhase = worldEngine!.currentPhase;
       _currentWeather = worldEngine!.currentWeather;
       _currentSeason = worldEngine!.currentSeason;
-      _daysSkipped = result.daysSkipped;
+      _daysSkipped = timeResult.daysSkipped;
 
-      final int dayNum = result.dayAfter;
+      final int dayNum = timeResult.dayAfter;
       if (participants != null && participants.isNotEmpty) {
         final eventName = eventTemplate?.name ?? '日常事件';
         for (final pid in participants) {
@@ -598,6 +694,7 @@ class GameSession {
           discoverChar(pid);
         }
       }
+      _recordInteractions(participants ?? []);
     } catch (e) {
       final fallbackChar = script!.characters.firstWhere((c) => c.fullCharacter, orElse: () => script!.characters.first);
       final err = NarrativeValidator.fallbackNarrative('daily', script!.fallbackNarratives, {
@@ -617,10 +714,15 @@ class GameSession {
     if (dayNum > 0) _checkAndProcessExam(dayNum);
     _generateChoices();
     _checkInvitation();
+    checkAutoDiscover();
   }
 
   Future<void> customAction(String action, {required String userName, required String userGender, required String userHeight, required String userBirthday, required String userAppearance, required String userPersonality, required String userBio}) async {
     if (_isLoading || deepSeekClient == null || script == null) return;
+    if (_inLongEvent && _longEventStepsRemaining > 0) {
+      _longEventStepsRemaining--;
+      if (_longEventStepsRemaining == 0) _inLongEvent = false;
+    }
     _isLoading = true; _pendingChoices = []; _notify();
 
     final validator = ActionValidator(
@@ -688,6 +790,10 @@ class GameSession {
     for (final e in affectionDeltas.entries) {
       modifyAffectionByEvent(e.key, e.value);
     }
+    _recordInteractions(affectionDeltas.keys);
+    if (validation.targetCharId != null && validation.targetCharId!.isNotEmpty) {
+      _recordInteraction(validation.targetCharId!);
+    }
     _isLoading = false; _notify();
     _generateChoices();
   }
@@ -714,6 +820,7 @@ class GameSession {
       if (target != null && target.isNotEmpty) {
         modifyAffectionByEvent(target, delta);
         charMemory?.recordCore(target, int.tryParse(_currentDay) ?? 0, text, affection: getAffection(target));
+        _recordInteraction(target);
       } else {
         for (final char in script!.characters.where((c) => c.fullCharacter)) {
           modifyAffectionByEvent(char.basic.id, delta * 0.5);
@@ -787,6 +894,7 @@ class GameSession {
         narrativeHistory: _narrativeHistory,
         memoryContext: charMemory?.buildMemoryContext(charId) ?? '',
         rankingContext: rankingService?.buildRankingContext(int.tryParse(_currentDay) ?? 0) ?? '',
+        locationContext: _currentLocation,
       );
 
       await for (final token in stream) {
@@ -811,6 +919,7 @@ class GameSession {
       } catch (_) {
         modifyAffectionByChat(charId, 0.01);
       }
+      _recordInteraction(charId);
       _notify();
     } catch (e) {
       _loadingChatIds.remove(charId);
@@ -838,6 +947,7 @@ class GameSession {
     _chatHistories[charId]!.add(giftMsg);
     final delta = item.type == 'gift' ? (int.tryParse(item.value)?.toDouble() ?? 1.0) : 0.5;
     modifyAffectionByChat(charId, delta);
+    _recordInteraction(charId);
     _notify();
 
     Future.delayed(const Duration(milliseconds: 500), () {
@@ -874,6 +984,7 @@ class GameSession {
         _narrativeSegments.add('[场景·${loc.name}] $narrative');
         _segmentEventTypes.add('scene_event');
         _lastNarrativeSegment = narrative;
+        _currentLocation = loc.name;
         final deltas = _parseCustomActionAffection(narrative);
         double totalDelta = 0;
         for (final e in deltas.entries) {
@@ -888,6 +999,8 @@ class GameSession {
           relationshipEngine?.syncFromAffection(charId);
           totalDelta = 0.3;
         }
+        charMemory?.recordEvent(charId, int.tryParse(_currentDay) ?? 1, '[场景·${loc.name}] $narrative', getAffection(charId));
+        _checkBeatTriggers();
         _notify();
         return {'narrative': narrative, 'delta': totalDelta};
       }
@@ -895,6 +1008,169 @@ class GameSession {
     } catch (e) {
       return <String, dynamic>{'narrative': '(场景事件触发失败: ${e.toString().length > 40 ? e.toString().substring(0, 40) : e.toString()})', 'delta': 0.0};
     }
+  }
+
+  // ═══════════════════════════════════════
+  // 场景交互
+  // ═══════════════════════════════════════
+
+  bool _sceneInteractionActive = false;
+  bool get sceneInteractionActive => _sceneInteractionActive;
+  String _activeSceneLocationId = '';
+  String get activeSceneLocationId => _activeSceneLocationId;
+  String _activeSceneLocationName = '';
+  String get activeSceneLocationName => _activeSceneLocationName;
+  List<String> _sceneInteractionChars = [];
+  List<String> get sceneInteractionChars => _sceneInteractionChars;
+  String _sceneInteractionNarrative = '';
+  String get sceneInteractionNarrative => _sceneInteractionNarrative;
+
+  Future<Map<String, dynamic>> enterScene(String locationId, {required String userName, required String userGender, required String userHeight, required String userBirthday, required String userAppearance, required String userPersonality, required String userBio}) async {
+    if (deepSeekClient == null || script == null || worldEngine == null) {
+      return {'atmosphere': '', 'chars': <String>[], 'choices': <Map<String, dynamic>>[]};
+    }
+    final scenes = script!.events?.sceneLocations ?? [];
+    SceneLocation? found;
+    for (final s in scenes) { if (s.id == locationId) { found = s; break; } }
+    if (found == null) {
+      return {'atmosphere': '', 'chars': <String>[], 'choices': <Map<String, dynamic>>[]};
+    }
+    final loc = found;
+
+    _sceneInteractionActive = true;
+    _activeSceneLocationId = locationId;
+    _activeSceneLocationName = loc.name;
+    _sceneInteractionNarrative = '';
+
+    final chars = worldEngine!.getCharactersAtLocation(locationId);
+    _sceneInteractionChars = chars.map((c) => c.basic.id).toList();
+
+    final playerCard = buildPlayerCardForAi(userName, userGender, userHeight, userBirthday, userAppearance, userPersonality, userBio);
+
+    _isLoading = true; _notify();
+    try {
+      final atmosphere = await deepSeekClient!.generateSceneAtmosphere(
+        location: loc,
+        presentChars: chars,
+        currentDay: int.tryParse(_currentDay) ?? 1,
+        season: _currentSeason,
+        weather: _currentWeather,
+        phase: _currentPhase,
+        script: script!,
+        playerCard: playerCard,
+      );
+      _sceneInteractionNarrative = atmosphere;
+      await _generateChoices();
+      _isLoading = false; _notify();
+      return {
+        'atmosphere': atmosphere,
+        'chars': _sceneInteractionChars,
+        'choices': List<Map<String, dynamic>>.from(_pendingChoices),
+      };
+    } catch (e) {
+      _isLoading = false; _notify();
+      return {
+        'atmosphere': '（${loc.name}。${_currentWeather}的${_currentPhase}，一切如常。）',
+        'chars': _sceneInteractionChars,
+        'choices': <Map<String, dynamic>>[],
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> actInScene(String action, {required String userName, required String userGender, required String userHeight, required String userBirthday, required String userAppearance, required String userPersonality, required String userBio, bool isFreeText = false}) async {
+    if (deepSeekClient == null || !_sceneInteractionActive) {
+      return {'narrative': '', 'delta': 0.0, 'choices': <Map<String, dynamic>>[]};
+    }
+
+    final savedChoices = List<Map<String, dynamic>>.from(_pendingChoices);
+    final choiceLabel = isFreeText
+        ? action
+        : (savedChoices.isNotEmpty
+            ? (savedChoices[int.tryParse(action) ?? 0]['text'] as String? ?? action)
+            : action);
+
+    _isLoading = true; _pendingChoices = []; _notify();
+
+    try {
+      final playerCard = buildPlayerCardForAi(userName, userGender, userHeight, userBirthday, userAppearance, userPersonality, userBio);
+
+      String narrative;
+      if (isFreeText) {
+        narrative = await deepSeekClient!.generateCustomActionConsequence(
+          action: choiceLabel, script: script!,
+          narrativeHistory: _sceneInteractionNarrative, playerCard: playerCard,
+          timeContext: {
+            'day': int.tryParse(_currentDay) ?? 1,
+            'season': _currentSeason, 'weather': _currentWeather, 'phase': _currentPhase,
+          },
+          characters: script!.characters.where((c) => c.fullCharacter).toList(),
+          affectionStates: _affectionStates,
+        );
+      } else {
+        narrative = await deepSeekClient!.generateChoiceResponse(
+          choice: choiceLabel, script: script!,
+          narrativeHistory: _sceneInteractionNarrative,
+          timeContext: {
+            'day': int.tryParse(_currentDay) ?? 1,
+            'season': _currentSeason, 'weather': _currentWeather, 'phase': _currentPhase,
+          },
+          isContinuation: false,
+        );
+      }
+
+      _sceneInteractionNarrative += '\n\n$narrative';
+      _appendToNarrative('\n\n[场景·$_activeSceneLocationName] $narrative');
+      _narrativeSegments.add('[场景·$_activeSceneLocationName] $narrative');
+      _segmentEventTypes.add('scene_event');
+      _lastNarrativeSegment = narrative;
+
+      final deltas = _parseCustomActionAffection(narrative);
+      double totalDelta = 0;
+      for (final e in deltas.entries) {
+        modifyAffectionByEvent(e.key, e.value);
+        totalDelta += e.value;
+      }
+      if (deltas.isEmpty && _sceneInteractionChars.isNotEmpty) {
+        final pid = _sceneInteractionChars.first;
+        final naturalDelta = affectionEngine != null
+            ? affectionEngine!.modifyAffectionByEvent(pid, 0.2)
+            : (_affectionStates[pid] ?? 50.0) + 0.2;
+        _affectionStates[pid] = naturalDelta;
+        relationshipEngine?.syncFromAffection(pid);
+        totalDelta = 0.2;
+      }
+
+      for (final pid in _sceneInteractionChars) {
+        charMemory?.recordEvent(pid, int.tryParse(_currentDay) ?? 1, '[场景·$_activeSceneLocationName] $narrative', getAffection(pid));
+      }
+      _recordInteractions(_sceneInteractionChars);
+
+      await _generateChoices();
+      _isLoading = false; _notify();
+      return {
+        'narrative': narrative,
+        'delta': totalDelta,
+        'choices': List<Map<String, dynamic>>.from(_pendingChoices),
+      };
+    } catch (e) {
+      _isLoading = false; _notify();
+      return {'narrative': '', 'delta': 0.0, 'choices': <Map<String, dynamic>>[]};
+    }
+  }
+
+  void leaveScene() {
+    if (!_sceneInteractionActive) return;
+    worldEngine?.advancePhase();
+    _currentDay = worldEngine!.currentDay.toString();
+    _currentPhase = worldEngine!.currentPhase;
+    _currentWeather = worldEngine!.currentWeather;
+    _currentSeason = worldEngine!.currentSeason;
+    _sceneInteractionActive = false;
+    _activeSceneLocationId = '';
+    _activeSceneLocationName = '';
+    _sceneInteractionChars = [];
+    _sceneInteractionNarrative = '';
+    _notify();
   }
 
   // ─── Tension ───
@@ -1038,6 +1314,7 @@ class GameSession {
         script: script, narrativeHistory: _narrativeHistory,
         memoryContext: charMemory?.buildMemoryContext(charId) ?? '',
         rankingContext: rankingService?.buildRankingContext(int.tryParse(_currentDay) ?? 0) ?? '',
+        locationContext: _currentLocation,
       );
       _chatHistories.putIfAbsent(charId, () => []);
       final displayName = _resolveDisplayName(charId, char.basic.name, charRemarkNames);

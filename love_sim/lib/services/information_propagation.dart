@@ -16,13 +16,26 @@ class InformationPropagationService {
   final List<InformationFragment> _fragments = [];
   int _fragmentCounter = 0;
 
-  static const _encryptionStyles = {
-    'honest': '如实转述，不加修饰',
-    'gossip': '添油加醋，放大戏剧性',
-    'joke': '用玩笑/阴阳怪气加密，真义埋藏在玩笑里',
-    'cold': '轻描淡写，故意压低重要性',
-    'speculation': '把自己的揣测包装成事实',
+  static const _defaultStyles = {
+    'honest': {'trust': 1.0, 'desc': '如实转述，不加修饰'},
+    'gossip': {'trust': 0.5, 'desc': '添油加醋，放大戏剧性'},
+    'joke': {'trust': 0.7, 'desc': '用玩笑/阴阳怪气加密，真义埋藏在玩笑里'},
+    'cold': {'trust': 0.8, 'desc': '轻描淡写，故意压低重要性'},
+    'speculation': {'trust': 0.4, 'desc': '把自己的揣测包装成事实'},
   };
+
+  Map<String, Map<String, dynamic>> _encryptionStyles = Map<String, Map<String, dynamic>>.from(_defaultStyles);
+
+  void initFromConfig(InformationSystemConfig? config) {
+    if (config == null || config.encryptionStyles.isEmpty) return;
+    _encryptionStyles = {};
+    for (final entry in config.encryptionStyles.entries) {
+      _encryptionStyles[entry.key] = {
+        'trust': entry.value.trust,
+        'desc': entry.value.desc,
+      };
+    }
+  }
 
   List<InformationFragment> get activeFragments => _fragments.where((f) => f.active).toList();
   List<InformationFragment> get allFragments => List.unmodifiable(_fragments);
@@ -48,14 +61,9 @@ class InformationPropagationService {
   }
 
   double _trustFromEncryption(String style) {
-    switch (style) {
-      case 'honest': return 1.0;
-      case 'joke': return 0.7;
-      case 'cold': return 0.8;
-      case 'gossip': return 0.5;
-      case 'speculation': return 0.4;
-      default: return 0.8;
-    }
+    final s = _encryptionStyles[style];
+    if (s != null) return (s['trust'] as num?)?.toDouble() ?? 0.8;
+    return 0.8;
   }
 
   String _distort(String original, String encryption, double affinity) {

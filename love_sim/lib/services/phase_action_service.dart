@@ -225,7 +225,7 @@ class PhaseActionService {
       final bulletEvents = events.map((e) => '• $e').join('\n');
       final daysDesc = days > 365 ? '${(days/365).toStringAsFixed(1)}年' : '${days}天';
       final narrative = await deepSeekClient!.generateNarrative(
-        prompt: '玩家跳过了$daysDesc（从第${dayBefore}天到第${worldEngine!.currentDay}天）。\n\n这段时间内发生的重要事件：\n$bulletEvents\n\n请以回忆的口吻，简述这段时光的主要变化：季节轮回、重要事件、关键转折、与角色的关系变化。300-500字，第二人称"你"。不要说"跳过了X天"，要像在回忆这段时光。',
+        prompt: '玩家跳过了$daysDesc（从第${dayBefore}天到第${worldEngine!.currentDay}天）。\n\n这段时间内发生的重要事件：\n$bulletEvents\n\n请以回忆的口吻，简述这段时光的主要变化：季节轮回、重要事件、关键转折、与角色的关系变化。篇幅由情境决定，不强行凑字。不要说"跳过了X天"，要像在回忆这段时光。',
         mode: 'skip_days', context: ctx, script: script!, narrativeHistory: session.narrativeHistory,
       );
       session.appendNarrative(narrative);

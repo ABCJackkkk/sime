@@ -6,6 +6,7 @@ import 'package:love_sim/main.dart';
 import 'package:love_sim/models/script.dart';
 import 'package:love_sim/providers/app_provider.dart';
 import 'package:love_sim/screens/chat_screen.dart';
+import 'package:love_sim/services/save_service.dart';
 import 'package:love_sim/widgets/crop_screen.dart';
 import 'package:love_sim/widgets/reactive_avatar.dart';
 
@@ -18,6 +19,9 @@ class CharacterProfileScreen extends StatefulWidget {
 
 class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
   final _remarkCtrl = TextEditingController();
+  final _searchCtrl = TextEditingController();
+  String _searchKeyword = '';
+  final ScrollController _historyScrollCtrl = ScrollController();
 
   @override
   void initState() {
@@ -29,7 +33,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
   }
 
   @override
-  void dispose() { _remarkCtrl.dispose(); super.dispose(); }
+  void dispose() { _remarkCtrl.dispose(); _searchCtrl.dispose(); _historyScrollCtrl.dispose(); super.dispose(); }
 
   Future<void> _pickAvatar() async {
     try {
@@ -73,6 +77,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
                 _buildRemarkSection(),
                 _buildInfoSection(char),
                 _buildBioSection(char),
+                _buildChatHistorySection(app),
                 _buildChatButton(),
                 const SizedBox(height: 40),
               ]),
@@ -218,6 +223,166 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
         ]),
       ),
     );
+  }
+
+  Widget _buildChatHistorySection(AppProvider app) {
+    final messages = app.getChatHistory(widget.characterId);
+    final keyword = _searchKeyword.trim().toLowerCase();
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 12),
+      child: GlassContainer(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            Container(width: 28, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: AppColors.accent.withAlpha(30)), child: const Icon(CupertinoIcons.chat_bubble_2, size: 14, color: AppColors.accent)),
+            const SizedBox(width: 10),
+            const Text('历史对话', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+            const Spacer(),
+            Text('${messages.length}条', style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
+          ]),
+          const SizedBox(height: 12),
+          CupertinoTextField(
+            controller: _searchCtrl,
+            placeholder: '搜索对话...',
+            placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13),
+            prefix: const Padding(padding: EdgeInsets.only(left: 12), child: Icon(CupertinoIcons.search, size: 15, color: AppColors.textTertiary)),
+            suffix: _searchKeyword.isNotEmpty
+                ? GestureDetector(onTap: () { _searchCtrl.clear(); setState(() => _searchKeyword = ''); }, child: const Padding(padding: EdgeInsets.only(right: 12), child: Icon(CupertinoIcons.clear_circled_solid, size: 15, color: AppColors.textTertiary)))
+                : null,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
+            style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13),
+            onChanged: (v) => setState(() => _searchKeyword = v),
+          ),
+          if (keyword.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(children: [
+              Text('关键字: ', style: TextStyle(fontSize: 11, color: AppColors.textTertiary.withAlpha(180))),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: AppColors.accent.withAlpha(30)),
+                child: Text(keyword, style: const TextStyle(fontSize: 11, color: AppColors.accent)),
+              ),
+            ]),
+          ],
+          const SizedBox(height: 10),
+          _buildHistoryList(messages, keyword),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildHistoryList(List<ChatMessage> messages, String keyword) {
+    final hasSearch = keyword.isNotEmpty;
+    final filtered = hasSearch
+        ? messages.where((m) => m.content.toLowerCase().contains(keyword)).toList()
+        : messages;
+
+    if (filtered.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Center(
+          child: Text(
+            hasSearch ? '未找到含 "$keyword" 的对话' : '暂无对话记录',
+            style: TextStyle(fontSize: 13, color: AppColors.textTertiary.withAlpha(160)),
+          ),
+        ),
+      );
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_historyScrollCtrl.hasClients) {
+        _historyScrollCtrl.jumpTo(_historyScrollCtrl.position.maxScrollExtent);
+      }
+    });
+
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxHeight: 280),
+      child: ListView.builder(
+        controller: _historyScrollCtrl,
+        shrinkWrap: true,
+        physics: const ClampingScrollPhysics(),
+        itemCount: filtered.length,
+        itemBuilder: (_, i) {
+          final msg = filtered[i];
+          final isPlayer = msg.senderId == 'player';
+          final lines = _buildHighlightedLines(msg.content, keyword);
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: isPlayer ? MainAxisAlignment.end : MainAxisAlignment.start,
+              children: [
+                Flexible(
+                  child: Column(
+                    crossAxisAlignment: isPlayer ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(isPlayer ? '我' : msg.senderName, style: TextStyle(fontSize: 9, color: AppColors.textTertiary.withAlpha(180))),
+                          const SizedBox(width: 4),
+                          Text(_shortTime(msg.timestamp), style: TextStyle(fontSize: 8, color: AppColors.textTertiary.withAlpha(120))),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: isPlayer ? AppColors.accent.withAlpha(25) : const Color(0x0AFFFFFF),
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(8), topRight: const Radius.circular(8),
+                            bottomLeft: isPlayer ? const Radius.circular(8) : const Radius.circular(3),
+                            bottomRight: isPlayer ? const Radius.circular(3) : const Radius.circular(8),
+                          ),
+                          border: Border.all(color: isPlayer ? AppColors.accent.withAlpha(40) : AppColors.border, width: 0.5),
+                        ),
+                        child: Text.rich(
+                          TextSpan(children: lines),
+                          style: TextStyle(fontSize: 12, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  List<InlineSpan> _buildHighlightedLines(String text, String keyword) {
+    if (keyword.isEmpty) return [TextSpan(text: text)];
+
+    final lower = text.toLowerCase();
+    final kw = keyword.toLowerCase();
+    final spans = <InlineSpan>[];
+    int start = 0;
+
+    while (true) {
+      final idx = lower.indexOf(kw, start);
+      if (idx == -1) {
+        spans.add(TextSpan(text: text.substring(start)));
+        break;
+      }
+      if (idx > start) {
+        spans.add(TextSpan(text: text.substring(start, idx)));
+      }
+      spans.add(TextSpan(
+        text: text.substring(idx, idx + kw.length),
+        style: TextStyle(backgroundColor: AppColors.accent.withAlpha(60), color: AppColors.accent, fontWeight: FontWeight.w600),
+      ));
+      start = idx + kw.length;
+    }
+    return spans;
+  }
+
+  String _shortTime(DateTime t) {
+    return '${t.month}/${t.day} ${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
   }
 
   Widget _buildChatButton() {

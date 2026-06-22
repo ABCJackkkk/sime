@@ -8,13 +8,14 @@ class ChatMessage {
   final String senderName;
   String content;
   final DateTime timestamp;
-  ChatMessage({required this.senderId, required this.senderName, required this.content, DateTime? timestamp}) : timestamp = timestamp ?? DateTime.now();
+  bool typewriterPlayed;
+  ChatMessage({required this.senderId, required this.senderName, required this.content, DateTime? timestamp, this.typewriterPlayed = false}) : timestamp = timestamp ?? DateTime.now();
 
-  Map<String, dynamic> toJson() => {'senderId': senderId, 'senderName': senderName, 'content': content, 'timestamp': timestamp.toIso8601String()};
+  Map<String, dynamic> toJson() => {'senderId': senderId, 'senderName': senderName, 'content': content, 'timestamp': timestamp.toIso8601String(), 'typewriterPlayed': typewriterPlayed};
   factory ChatMessage.fromSaved(Map<String, dynamic> json) {
     final ts = json['timestamp'];
     final parsed = ts != null ? DateTime.tryParse(ts.toString()) : null;
-    return ChatMessage(senderId: json['senderId'] ?? '', senderName: json['senderName'] ?? '', content: json['content'] ?? '', timestamp: parsed);
+    return ChatMessage(senderId: json['senderId'] ?? '', senderName: json['senderName'] ?? '', content: json['content'] ?? '', timestamp: parsed, typewriterPlayed: json['typewriterPlayed'] == true);
   }
 }
 

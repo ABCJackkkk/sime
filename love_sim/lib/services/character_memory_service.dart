@@ -99,13 +99,25 @@ class CharacterMemoryService {
     return (_memories[charId] ?? []).where((e) => e.tags.contains(tag)).toList();
   }
 
-  String buildMemoryContext(String charId, {int maxEntries = 8}) {
+  String buildMemoryContext(String charId, {int maxEntries = 8, List<String>? filterTags}) {
     final entries = _memories[charId];
     if (entries == null || entries.isEmpty) return '';
 
-    final core = entries.where((e) => e.layer == 'core').toList();
-    final episodic = entries.where((e) => e.layer == 'episodic').toList();
-    final decay = entries.where((e) => e.layer == 'decay').toList();
+    List<EpisodicEntry> filtered(List<EpisodicEntry> src, int limit) {
+      if (filterTags == null || filterTags.isEmpty) return src.sublist(0, src.length.clamp(0, limit));
+      final matched = src.where((e) => e.tags.any((t) => filterTags.contains(t))).toList();
+      final others = src.where((e) => !e.tags.any((t) => filterTags.contains(t))).toList();
+      matched.length = matched.length.clamp(0, limit);
+      final remaining = limit - matched.length;
+      if (remaining > 0) {
+        matched.addAll(others.take(remaining));
+      }
+      return matched;
+    }
+
+    final core = filtered(entries.where((e) => e.layer == 'core').toList(), maxEntries);
+    final episodic = filtered(entries.where((e) => e.layer == 'episodic').toList(), maxEntries);
+    final decay = filtered(entries.where((e) => e.layer == 'decay').toList(), maxEntries);
 
     final buf = StringBuffer();
 

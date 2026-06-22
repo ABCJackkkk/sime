@@ -5,6 +5,7 @@ import 'package:love_sim/services/character_schedule.dart';
 import 'package:love_sim/services/inter_character_relationship.dart';
 import 'package:love_sim/services/information_propagation.dart';
 import 'package:love_sim/services/calendar_service.dart';
+import 'package:love_sim/services/location_frequency_tracker.dart';
 
 class WorldTickReport {
   final List<ScheduleCollision> collisions;
@@ -36,8 +37,19 @@ class AdvanceResult {
     this.daysSkipped = 0,
     this.milestone,
   });
-
   bool get hitMilestone => milestone != null;
+}
+
+class AdvanceTimeResult {
+  final int dayBefore;
+  final int dayAfter;
+  final int daysSkipped;
+
+  AdvanceTimeResult({
+    required this.dayBefore,
+    required this.dayAfter,
+    required this.daysSkipped,
+  });
 }
 
 class WorldEngine {
@@ -80,9 +92,11 @@ class WorldEngine {
   InterCharRelationshipService interCharRel = InterCharRelationshipService();
   InformationPropagationService infoProp = InformationPropagationService();
   WorldTickReport? lastTickReport;
+  final LocationFrequencyTracker locationTracker = LocationFrequencyTracker();
 
   void initWorldServices() {
-    interCharRel.initFromScript(script.characters);
+    interCharRel.initFromScript(script.characters, config: script.interCharRelationConfig);
+    infoProp.initFromConfig(script.informationSystemConfig);
   }
 
   // ═══════════════════════════════════════
@@ -266,6 +280,37 @@ class WorldEngine {
   }
 
   // ═══════════════════════════════════════
+  // 纯时间推进（不生成叙事——叙事由 game_session 统一驱动）
+  // ═══════════════════════════════════════
+
+  AdvanceTimeResult advanceTime(String mode) {
+    final cfg = getAdvanceModeConfig(mode);
+    final dayBefore = _currentDay;
+
+    if (cfg != null && cfg.canTriggerMilestone == true) {
+      final ms = calendar.getSpecialDay(_currentDay);
+      if (ms != null) {
+        final targetDay = ms['day'] as int;
+        final skip = targetDay - _currentDay;
+        _skipDays(skip);
+      }
+    } else {
+      int skipDays = 2;
+      final dist = calendar.daysUntilNextSpecialDay(_currentDay);
+      if (dist <= 3 && dist > 0) skipDays = dist - 1;
+      final remaining = totalDays - _currentDay;
+      if (skipDays > remaining) skipDays = remaining;
+      if (skipDays > 0) _skipDays(skipDays);
+    }
+
+    return AdvanceTimeResult(
+      dayBefore: dayBefore,
+      dayAfter: _currentDay,
+      daysSkipped: _currentDay - dayBefore,
+    );
+  }
+
+  // ═══════════════════════════════════════
   // 底层时间推进
   // ═══════════════════════════════════════
 
@@ -348,6 +393,16 @@ class WorldEngine {
     final states = scheduleService.getAllLocations(
       script.characters, _currentDay, currentPhase, _currentSeason, _currentWeather,
     );
+    locationTracker.setDay(_currentDay);
+    for (final state in states) {
+      locationTracker.record(state.charId, state.locationId, _currentDay);
+    }
+    for (final c in script.characters.where((c) => c.fullCharacter)) {
+      final sched = c.schedule;
+      if (sched != null && sched.weekday.isNotEmpty) {
+        locationTracker.setFrequentLocation(c.basic.id, sched.weekday.first.locationId, _currentDay);
+      }
+    }
     final collisions = scheduleService.detectCollisions(states);
     final dramatic = scheduleService.pickDramaticCollision(
       script.characters, _currentDay, currentPhase, _currentSeason, _currentWeather,
@@ -416,5 +471,23 @@ class WorldEngine {
       lines.add(report.knowledgeSummary);
     }
     return lines;
+  }
+
+  String buildFrequencyHooks(String playerId, String playerLocation) {
+    final charIds = script.characters.where((c) => c.fullCharacter).map((c) => c.basic.id).toList();
+    final frequentLocs = <String, String>{};
+    for (final c in script.characters.where((c) => c.fullCharacter)) {
+      final sched = c.schedule;
+      if (sched != null && sched.weekday.isNotEmpty) {
+        frequentLocs[c.basic.id] = sched.weekday.first.locationId;
+      }
+    }
+    return locationTracker.buildHooks(playerId, charIds, frequentLocs, _currentDay, playerLocation);
+  }
+
+  LocationFrequencyTracker get freqtracker => locationTracker;
+
+  void recordPlayerLocation(String locationId) {
+    locationTracker.record('player', locationId, _currentDay);
   }
 }

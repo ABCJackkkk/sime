@@ -146,6 +146,13 @@
         "weekday": [],
         "weekend": []
       },
+      "memory_tags": {
+        "_comment": "v2.8 角色记忆标签配置",
+        "default": ["日常"],
+        "affection_breakthrough": ["暧昧"],
+        "conflict": ["冲突"],
+        "triangular": ["吃醋", "第三方提及"]
+      },
       "stats": [
         {
           "id": "stat_1",
@@ -174,6 +181,29 @@
       }
     }
   ],
+  "inter_character_relationships": {
+    "_comment": "角色间初始态度。引擎启动时读取，后续运行时由 InterCharRelationshipService 维护。只定义有特殊初始关系的角色对——未列出的组合默认为「无感·亲和力 0」。",
+    "initial_attitudes": [
+      {
+        "from": "char_id_a",
+        "to": "char_id_b",
+        "affinity": 0,
+        "label": "无感",
+        "history": "",
+        "is_secret_admirer": false
+      }
+    ]
+  },
+  "information_system": {
+    "_comment": "信息传播系统配置。控制校园流言的传播风格。加密风格在 information_propagation.dart 中消费。",
+    "encryption_styles": {
+      "honest": { "trust": 1.0, "desc": "如实转述，不加修饰" },
+      "gossip": { "trust": 0.5, "desc": "添油加醋，放大戏剧性" },
+      "joke": { "trust": 0.7, "desc": "用玩笑/阴阳怪气加密" },
+      "cold": { "trust": 0.8, "desc": "轻描淡写，故意压低重要性" },
+      "speculation": { "trust": 0.4, "desc": "把自己的揣测包装成事实" }
+    }
+  },
   "items": {
     "gifts": [
       {
@@ -302,7 +332,50 @@
     }
   },
   "events": {
-    "sceneLocations": []
+    "_comment": "v2.9: scene_locations 是场景交互的数据源。进入模拟 → 工具箱 → 场景页签，每个地点显示日程引擎实时查到的在场角色，点击卡片进入全屏场景交互页。",
+    "scene_locations": [
+      {
+        "id": "library",
+        "name": "图书馆",
+        "desc": "老旧的红砖建筑，书架之间弥漫着旧书和灰尘的味道。",
+        "visibility_default": "public",
+        "events_hint": "安静的知识堡垒。适合偶遇、学习交流、借书时的擦肩而过。",
+        "available_phases": ["辰时", "巳时", "未时", "申时", "戌时"],
+        "scene_moods": ["静谧", "专注", "旧书的味道"],
+        "narrative_profile": {
+          "event_affinity": {"relationshipBeat": 0.8, "worldTexture": 0.6},
+          "keywords": ["书架", "旧书", "阳光", "灰尘", "翻书声"]
+        }
+      },
+      {
+        "id": "rooftop",
+        "name": "天台",
+        "desc": "教学楼最高处。风很大，空旷的混凝土平台上只有几根晾衣绳。",
+        "visibility_default": "private",
+        "events_hint": "极少有人来的角落。适合独处、谈心、情绪爆发。",
+        "available_phases": ["午时", "酉时", "戌时"],
+        "scene_moods": ["自由", "空旷", "风吹"],
+        "narrative_profile": {
+          "event_affinity": {"tensionEscalation": 0.9, "relationshipBeat": 0.9},
+          "keywords": ["天空", "风", "远处", "安静", "夕阳"]
+        }
+      },
+      {
+        "id": "playground",
+        "name": "操场",
+        "desc": "一圈暗红色的跑道围着草坪。放学后永远有人在跑步或打球。",
+        "visibility_default": "public",
+        "events_hint": "青春活力的集中地。适合运动、观赛、散步聊天。",
+        "available_phases": ["辰时", "未时", "申时", "酉时"],
+        "scene_moods": ["活力", "汗水", "加油声"],
+        "narrative_profile": {
+          "event_affinity": {"ensembleScene": 0.7, "worldTexture": 0.5},
+          "keywords": ["跑道", "篮球", "汗水", "哨声", "散步"]
+        }
+      }
+    ],
+    "_comment2": "v2.9: scene_events 暂未激活，保留字段",
+    "scene_events": []
   },
   "plot": {
     "acts": [
@@ -459,8 +532,30 @@
   "dialogue": {},
   "game_items": {},
   "game_interaction": {},
+  "rhythm_config": {
+    "_comment": "v2.8 节奏调度配置",
+    "narrative_shape_weights": {
+      "dialogue_heavy": 0.3,
+      "montage": 0.2,
+      "reveal": 0.15,
+      "tension_escalation": 0.2,
+      "quiet": 0.1,
+      "action_reaction": 0.05
+    },
+    "info_spread_trigger": {
+      "min_depth": 3,
+      "sensitive_keywords": ["分数", "排名", "好感", "绯闻", "秘密"],
+      "high_affection_threshold": 60
+    }
+  },
+  "memory_config": {
+    "_comment": "v2.8 记忆系统配置",
+    "tags": ["考试", "暧昧", "吃醋", "共同经历", "第三方提及", "冲突", "日常", "核心记忆"],
+    "tag_match_boost": 2.0
+  },
   "action_rules": {
-    "_comment": "玩家自定义行动的合法性校验规则",
+    "_comment": "玩家自定义行动的合法性校验规则。输出格式要求 v2.8：场景描写放（）里，对话单独成行，不要替玩家写意图。",
+    "narrative_format_hint": "场景放在（括号）里，每个角色对白占一行。可以写玩家动作的后果（如'你的脚步踩在落叶上沙沙响'），但不要写'你决定…'。篇幅由情境决定，宁短不凑。",
     "boundary_checks": [
       {
         "_comment": "物理亲密行为需要好感度 >= min_affection",
@@ -507,28 +602,28 @@
     "topic_taboo_rejection": "{char_name}的表情僵了一下，没有接话。"
   },
   "fallback_narratives": {
-    "_comment": "AI生成失败时的兜底叙事模板，支持 {char_name}/{location}/{weather}/{phase}/{season} 占位符",
+    "_comment": "AI生成失败时的兜底叙事模板，v2.8格式：场景描写在（）里，对话单独成行。支持 {char_name}/{location}/{weather}/{phase}/{season} 占位符",
     "_pool_names": "daily/sweet_minor/sweet_major/plot/boundary/reversal/custom_action/scene_event/chat_reply",
     "daily": [
-      "又是{phase}的{location}。{char_name}在做自己的事，{weather}的光线让一切看起来都很平静。",
-      "{location}里的日常一如既往。{char_name}从你身边经过，{weather}的风吹起了她的发梢。"
+      "（{weather}的{phase}，{location}里一切如常。）\n\n{char_name}在做自己的事。",
+      "（{location}里的{phase}。）\n\n{char_name}从你身边经过，{weather}的风吹起了她的发梢。"
     ],
     "sweet_minor": [
-      "{char_name}朝你笑了一下，那笑容很短，但{weather}的光线正好落在她脸上。",
-      "在{location}的{phase}，{char_name}递给你一瓶水。\"顺手拿的。\"她说，但你知道不是。"
+      "（{weather}的光线落下来。）\n\n{char_name}朝你笑了一下。\n\n那笑容很短。",
+      "（{location}的{phase}。）\n\n{char_name}递给你一瓶水。\n\n\"顺手拿的。\"\n\n但你知道不是。"
     ],
     "plot": [
-      "{weather}的{phase}，{location}里弥漫着一种不寻常的气氛。{char_name}的表情比平时严肃了几分。",
-      "一些事情正在{location}悄悄改变。{char_name}站在窗边，像是在等什么人。"
+      "（{weather}的{phase}，{location}里气氛不太寻常。）\n\n{char_name}的表情比平时严肃了几分。",
+      "（{location}，窗边。）\n\n{char_name}站在那里，像是在等什么人。\n\n{weather}的光线在地板上拉出长长的影子。"
     ],
     "custom_action": [
-      "你做了该做的事。{char_name}看了你一眼，没说什么。{weather}的风吹过{location}，一切如常。"
+      "（{location}里，{weather}的光线照进来。）\n\n{char_name}看了你一眼，没说什么。"
     ],
     "scene_event": [
-      "{location}里，{char_name}在做自己的事。{weather}的光线透过窗户洒进来。"
+      "（{location}。）\n\n{char_name}在做自己的事。\n\n{weather}的光线透过窗户洒进来。"
     ],
     "chat_reply": [
-      "\"嗯。\"{char_name}简单地应了一声，低头看了看手机。"
+      "\"嗯。\"\n\n{char_name}简单地应了一声，低头看了看手机。"
     ]
   }
 }

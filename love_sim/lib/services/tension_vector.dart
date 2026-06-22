@@ -35,4 +35,10 @@ class TensionVector {
     narrative: (json['narrative'] as num?)?.toDouble() ?? 10.0,
     emotional: (json['emotional'] as num?)?.toDouble() ?? 10.0,
   );
+
+  void loadFromJson(Map<String, dynamic> json) {
+    relational = (json['relational'] as num?)?.toDouble() ?? 10.0;
+    narrative = (json['narrative'] as num?)?.toDouble() ?? 10.0;
+    emotional = (json['emotional'] as num?)?.toDouble() ?? 10.0;
+  }
 }

@@ -1,6 +1,6 @@
-# Love Sim — 工业化剧本模拟器 项目策划文档
+# LoveSim PRD — 剧本驱动恋爱模拟引擎
 
-> **当前版本：v2.5** — 四层深化（记忆层次化 + 地点叙事属性 + 三维张力 + Prompt动态权重） · 编译通过 ✅ · 2026-06-18
+> **当前版本：v2.9** — 世界驱动统一 + 场景交互改造 + 被动/互斥张力 · 编译通过 ✅ · 2026-06-22
 
 ## 一、项目定位
 
@@ -12,1019 +12,86 @@
 
 ---
 
-## 二、三层架构
+## 二、工程铁律
+
+```
+              ╔═══════════════════════════════╗
+              ║  换剧本不改一行Dart代码        ║
+              ║  Script ≠ Code               ║
+              ╚═══════════════════════════════╝
+```
+
+**核心原则：引擎与剧本严格分离。** 游戏逻辑的所有参数、配置、公式、ID 映射、阈值、成长率，全部来自 JSON 数据层——不在任何 `.dart` 文件中硬编码具体剧本的角色名、科目名、属性名、事件名、地点名。
+
+### 引擎职责（不关心剧本内容）
+- JSON 解析为 Dart 模型
+- 公式执行（代入 JSON 参数，不代值）
+- 存档/读档
+- UI 渲染（数据驱动，不预设固定列表）
+
+### 剧本 JSON 职责
+- 角色定义（含 stat/grades 初始值）
+- 属性池和成绩池（id/name/min/max/initial）
+- 排名体系（总人数/事件间隔）
+- **grade_formulas**（每科成绩的属性加成映射 + 方差参数）
+- **natural_growth_rate**（全局自然成长速率）
+
+---
+
+## 三、三层架构
 
 | 层 | 是什么 | 谁改 | 什么时候改 |
 |---|---|---|---|
-| **sim-script.json** | 工业模板——定义所有字段的数据结构和语义 | 策划 / 剧本作者 | 引擎需要新的数据维度时（如"角色现在需要体型数据"） |
+| **sim-script.json** | 工业模板——定义所有字段的数据结构和语义 | 策划 / 剧本作者 | 引擎需要新的数据维度时 |
 | **模拟器** | Dart/Flutter 代码——JSON→对象→引擎运转→UI | 开发 | 修 bug、加引擎功能、改 UI |
-| **剧本** (.sim / .json) | 按 sim-script 格式填写的具体剧本内容 | 剧本作者 | 写新剧本、调平衡 |
-
-**关键原则**：
-1. 换剧本不需要改一行代码——只要 JSON 结构对齐 `sim-script.json`
-2. 改模板结构必须同步改 Dart 模型和引擎
-3. 调数值（好感度曲线、物品价格等）只改剧本，不动代码
+| **剧本** (.json) | 按 sim-script 格式填写的具体剧本内容 | 剧本作者 | 写新剧本、调平衡 |
 
 ---
 
-## 三、剧本结构（十一层）
+## 四、数据层规范 (data_layer)
 
-### 3.1 meta — 元信息
-剧本的身份证：id、名称、版本、作者、类型、基调、模式(endings/sandbox)、摘要。
-
-### 3.2 player — 主角
-- **剧本只定义背景和处境**：`background`（成长史）和 `current_state`（开局心境）
-- **基础信息来自玩家角色卡**：名字、性别、身高、生日、外貌描述、性格描述 → 由玩家在「我的」页编辑
-- 名字/外貌/性格**不在剧本 JSON 中预设**
-- `playerCardForAi` 运行时拼接：玩家角色卡 + 剧本 background + 剧本 current_state → 注入 AI System Prompt
-
-### 3.3 world — 世界观
-```
-world
-├── summary        — 世界快照（约200-300字）
-├── setting        — 完整世界观（1000-3000字，直接注入 AI System Prompt）
-├── atmosphere     — 氛围（base_mood / color_palette / hint）
-├── locations[]    — 地点列表（id/name/desc/visibility/可用时段/场景氛围/事件提示）
-├── special_rules  — 剧本类型差异化规则（校园空、诡异有限制、系统有面板）
-└── memory         — 运行时状态（当前时间/地点变化/世界历史/世界摘要）
-```
-
-### 3.4 characters — 角色
-角色分两种：
-- **立体角色**（full_character=true）：27 个子字段，全面控制 AI 行为
-- **平面角色**（full_character=false）：一段 summary，只出现在叙事中
-
-立体角色的 27 个字段及其对 AI 的影响：
-
-| 字段 | 对 AI 的影响 | 类型 |
-|---|---|---|
-| **basic** | 外貌、身高、体型、标记——AI 描述外观的依据 | 事实 |
-| **background** | 出身、成长史、当前处境——AI 理解角色动机 | 事实 |
-| **details** | 习惯、日常、癖好、秘密爱好——AI 写日常行为的依据 | 行为 |
-| **soul** | 核心价值观、欲望、创伤、恐惧、矛盾、双模式(对生人/对熟人)——AI 把握角色本质 | 内核 |
-| **speech** | 大五人格、语音学(音高/语速/重音/停顿)、词汇(风格/句式/禁用词/软化词)、互动(话轮/礼貌/提问/话题控制)、双模式 | 语言 |
-| **relations** | 固定关系(flat) + 维度关系(dimensional,按好感度区间变化) | 关系 |
-| **agent** | 角色定位、行动目标、双模式行为 | 行为 |
-| **humanity** | 反AI规则(不自我解释/不情感标注/不安全包裹/非结构化/非均匀注意力)、写作姿态(沉默即言语/允许偏见/允许不完整/情感藏于动作)、非语言行为列表 | 人性 |
-| **appearance** | 默认穿着、特殊穿着、风格描述 | 外观 |
-| **preferences** | 喜欢/厌恶/才能 | 偏好 |
-| **mood_triggers** | 喜怒哀惊妒的触发器 | 情绪 |
-| **gift_response** | love/like/neutral/dislike/hate 五档礼物反应 | 礼物 |
-| **boundary** | 身体距离、情感边界、话题禁区、亲密度节奏 | 边界 |
-| **conduct** | 红线、性命攸关规则、灰色地带(嫉妒/沮丧/试探)、自我纠正方式 | 行为规则 |
-| **evolution** | 好感度11个区间各阶段描述、成长弧线 | 进化 |
-| **memory** | 情景记忆、聊天日志、印象（关键词/趋势）| 记忆 |
-| **schedule** ★新增 | 角色独立日程（weekday/weekend，时段→地点→活动+优先级+条件）| 世界 |
-
-### 3.4A inter_character_relationships — 角色间关系 ★新增★
-不再只有玩家↔角色好感度。角色之间也有数据：
-
-```
-inter_character_relationships
-├── initial_attitudes[]  — 初始角色间态度（from/to/affinity/label/history）
-├── affinity_states      — 8级亲和力标签（死对头→挚友，-100~100）
-└── triggers             — 变化触发器
-    ├── on_player_event   — 玩家事件涉及2+角色→角色间亲和偏移
-    ├── on_schedule_collision — 日程撞车→微小亲和偏移
-    ├── on_witness        — 目睹亲密互动→嫉妒→降低对被目击方的亲和力
-    └── on_info_spread    — 信息传播→加密风格影响亲和偏移方向
-```
-
-**关键原理**：苏念晚对温辞从友善变成疏离、温辞察觉后回避走廊、陆迟和江屿川在球场上有了关于你的对话——全是连锁反应，全由数据驱动。
-
-### 3.4B information_system — 信息传播系统 ★新增★
-不是所有人都立刻知道所有事。消息有延迟、失真、加密：
-
-```
-information_system
-├── encryption_styles    — 5种加密风格(honest/joke/gossip/cold/speculation)
-├── visibility_rules     — 事件可见度决定谁自动成为见证人
-└── fragment_schema      — 信息碎片结构(source_event/witness/content/encryption/
-                           spread_radius/known_by/trustworthiness/spread_count)
-```
-
-**传播流程**：事件发生 → 旁观者成为见证人 → 信息碎片创建 → 每次推进扩散1步 → 已知者→未知者 → 内容被加密扭曲 → 可信度衰减。
-
-### 3.5 plot — 剧情
-不是预写的故事，是给 AI 的"方向指令"：
-
-```
-plot
-├── summary / premise      — 剧情快照 + 一句话故事前提
-├── acts[]                 — 幕（id/名称/描述/阶段区间/出入条件/叙事方向/基调/节拍列表/节奏权重）
-├── beats[]                — 剧情节拍（触发条件+AI方向+结果+优先级+是否一次性+是否记忆）
-├── endings[]              — 结局定义（条件+AI方向+类型）
-├── narrative_tension      — 叙事张力曲线（低/中/高张力→AI不同写法）
-├── branch_system          — 路线追踪（不同角色线）
-├── foreshadow_system      — 伏笔系统（埋→回收）
-├── post_ending            — 结局后世界（继续日常但无主线）
-└── memory                 — 运行时（当前幕/已触发节拍/伏笔/结局进度）
-```
-
-### 3.6 events — 事件
-
-事件分两种长度：
-
-| 类型 | duration | 行为 |
-|---|---|---|
-| **短事件** | `"short"` (默认) | 生成叙事 → 弹出选项 → 选完结束 |
-| **长事件** | `"long"` | 生成叙事 → 弹出选项 → 选完继续 → 再弹选项 → 直到 `max_steps` 轮结束 |
-
-`EventTemplate` 新增字段：
-- `duration`：`"short"` 或 `"long"`，默认 `"short"`
-- `max_steps`：长事件的最大选择轮数（1-5，默认3）
-
-14 种事件池，每种有不同的触发逻辑：
-
-| 池 | 说明 | 触发条件 |
-|---|---|---|
-| **plot** | 剧情事件 | 重要推进主导 |
-| **boundary** | 临界好感事件 | 好感度到达区间边界时 |
-| **daily** | 日常事件 | 日常推进高频 |
-| **sweet_minor** | 小甜蜜 | 好感≥80 |
-| **sweet_major** | 大甜蜜里程碑 | 好感≥80 + 冷却 |
-| **love_triangle** | 修罗场 | ≥2个角色好感≥60 |
-| **reversal** | 反转 | chaos≥0.5 |
-| **echo** | 回声（callback旧记忆）| 有相关记忆时 |
-| **misunderstanding** | 误会 | 信息不对称 |
-| **ensemble** | 群像 | ≥2角色在场 |
-| **world_shift** | 世界变迁 | 季节/地点/节日变化 |
-| **forced_choice** | 强制选择 | 关键剧情节点 |
-| **resource** | 资源获得 | 日常推进 |
-| **dialogue_trigger** | 对话触发 | 事件后/好感里程碑 |
-
-辅助系统：butterfly（蝴蝶效应种子）/ tension_field（关系张力场）/ conditions（条件匹配）/ chains（事件链）
-
-### 3.7 dialogue — 对话
-三个引擎驱动：
-- **world_sim** — 主世界叙事引擎（用户点推进→生成事件叙事）
-- **character_chat** — 角色对话引擎（用户和角色1v1聊天）
-- **compressor** — 上下文压缩（定期压缩长历史为摘要）
-
-每类角色按好感度分双模式（对生人/对熟人），注入完整角色卡 + speech 字段约束。
-
-### 3.8 items — 物品
-- currency：货币系统（多币种支持）
-- list：物品列表（gift/key_item/consumable/collectible 四类）
-- shop：商店（商品池+刷新规则+特殊商品）
-- gifting：送礼规则（冷却/五档反应/唯一礼物/连续送礼衰减）
-- crafting：合成（可选）
-
-### 3.9 interaction — 交互
-
-```
-interaction
-├── time_config       — 时间推进配置（时段列表/单位/特殊日）
-├── advance_modes     — 三种推进模式
-│   ├── daily  — 日常推进（1时段，轻量事件，好感自由浮动）
-│   ├── major  — 重要推进（2-4时段，剧情事件，破阶关键）
-│   └── free   — 自定义行动（玩家自由输入，AI裁定后果，0-1时段）
-├── seasons[]         — 季节阶段（天气池/持续天数）
-├── weather_system    — 天气概率/效果
-├── affection         — 好感度系统（核心）
-│   ├── boundery_events   — 临界事件机制
-│   ├── tier_breakthrough — 破阶规则
-│   ├── difficulty_curve  — 难度曲线（增益/衰减乘数）
-│   ├── decline_rules     — 衰减规则
-│   ├── tiers_desc        — 梯度描述
-│   └── unique_bond       — 唯一羁绊（100仅一人）
-├── chat              — 聊天好感参数
-├── messages          — 消息系统配置
-├── pace              — 节奏
-├── context_management — 上下文窗口管理
-└── memory            — 运行时状态
-```
-
-**好感度核心规则**：
-- 精度 0.01，范围 1-100
-- 区间内自由浮动，跨区间必须通过对应层级的事件
-- 80 以下：临界事件通过即可跨
-- 80：必须重要推进+长剧情事件
-- 90：必须重要推进+剧情事件
-- 100：终极事件，只能一人
-
----
-
-## 四、模拟器代码结构
-
-```
-love_sim/lib
-├── main.dart                    — 入口+主题+全局组件
-├── models/
-│   └── script.dart              — 所有 Dart 数据模型（约1700行）
-├── services/
-│   ├── script_loader.dart       — JSON→GameScript 解析
-│   ├── deepseek_client.dart     — DeepSeek API 调用+System Prompt（generateWorldNarrative + 动态权重）
-│   ├── world_engine.dart        — 世界时间/天气/季节推进+世界驱动（getNextMilestone/getNextMilestone）
-│   ├── rhythm_scheduler.dart     — ★节奏调度器（五路触发源→RhythmDirective + 反节奏检测）
-│   ├── tension_vector.dart       — ★三维张力向量（relational/narrative/emotional）
-│   ├── character_schedule.dart   — ★角色独立日程（查表/撞车/戏剧性评分+地点加成）
-│   ├── character_memory_service.dart — ★角色记忆（core/episodic/decay 三层化）
-│   ├── inter_character_relationship.dart — ★角色间关系（亲和力/态度/嫉妒）
-│   ├── information_propagation.dart — ★信息传播（碎片/加密/扩散）
-│   ├── affection_engine.dart     — 好感度计算引擎（破阶/衰减/难度曲线）
-│   ├── event_scheduler.dart     — 事件调度（useRhythmLayer=false 时使用）
-├── providers/
-│   └── app_provider.dart        — 状态中枢（约800行，协调所有引擎+UI状态）
-├── screens/
-│   ├── root_screen.dart         — 底部导航框架
-│   ├── scripts_screen.dart      — 剧本管理（加载/导入/删除）
-│   ├── sim_screen.dart          — 模拟主界面（推进+叙事展示）
-│   ├── world_screen.dart        — 世界观/场景总览
-│   ├── contacts_screen.dart     — 通讯录（角色列表+快捷交流）
-│   ├── chat_screen.dart         — 1v1 聊天
-│   ├── shop_screen.dart         — 商店
-│   ├── settings_screen.dart     — 设置（API Key/外观/背景）
-│   ├── character_profile_screen.dart — 角色档案
-│   ├── scene_screen.dart        — 场景事件
-│   └── sim_profile_screen.dart  — 玩家状态
-└── assets/
-    └── scripts/
-        └── campus_love.json     — 默认剧本「春日未央」
-```
-
----
-
-## 五、核心流程
-
-### 5.1 应用启动
-```
-main() → AppProvider.init() → 从 SharedPreferences 恢复 API Key → 创建 DeepSeekClient
-```
-
-### 5.2 加载剧本
-```
-用户点击剧本 → ScriptLoader.loadFromAsset()
-  → json.decode() → 逐层解析（meta/player/world/characters/items/interaction...）
-  → GameScript.fromJson()
-  → _initScript():
-      ├── 初始化时间/天气/季节
-      ├── 初始化 AffectionEngine（所有立体角色好感度=50）
-      ├── 初始化 WorldEngine（如果 DeepSeekClient 存在）
-      ├── 初始化货币（金币=50）
-      └── 加载世界摘要到叙事历史
-```
-
-### 5.3 日常推进 (daily)
-```
-用户点击"日常推进"
-  → tickTension() — 更新叙事张力
-  → checkBeatTriggers() — 检查剧情节拍触发条件
-  → selectEventTemplate() — 从 daily 事件池中选一个事件
-  → DeepSeekClient.generateEventNarrative() — AI 生成叙事
-  → 存入 narrativeHistory / narrativeSegments
-  → 更新世界状态（时间/天气/好感度）
-```
-
-### 5.4 重要推进 (major)
-```
-用户点击"重要推进"
-  → 类似日常推进，但从 major 事件池选事件
-  → 可触发 plot / forced_choice / world_shift 等
-  → 可突破好感度 80 边界
-```
-
-### 5.5 角色聊天
-```
-用户发消息 → ChatMessage 添加到历史
-  → _generateAiReply():
-      检查 DeepSeekClient 是否存在
-      → _buildChatSystemPrompt(角色卡+当前好感度+世界状态+对话历史)
-      → _callApi(userPrompt=用户消息)
-      → analyzeAffectionDelta() — AI 分析本次互动的好感度变化
-      → 更新好感度
-```
-
-### 5.6 自定义行动 (free)
-```
-用户输入行动（如"给林晓雨写一封信"）
-  → app.customAction(action)
-  → DeepSeekClient.generateCustomActionConsequence()
-      输入：玩家角色卡 + 世界观 + 当前场景 + 角色好感度 + 完整角色档案 + 最近剧情
-      输出：300-500字叙事 + [affection:角色id:+或-数字] 标记
-  → _parseCustomActionAffection() 解析标记
-  → 修改好感度
-  → 自动存档
-```
-
-### 5.7 好感度变化
-```
-modifyAffectionByChat() — 聊天变化（不破阶，区间内浮动）
-modifyAffectionByEvent() — 事件变化（可破阶）
-  → 查 difficulty_curve 乘数
-  → 应用盈亏
-  → 检查是否到达临界点
-  → 到达→触发 boundery_event
-```
-
-### 5.8 长事件多轮选择
-```
-短事件: advance → narrative → choices → pick → 结束
-长事件: advance → narrative → choices → pick → continue → choices → pick → ...(max_steps轮) → 结束
-```
-长事件由 `EventTemplate.duration == 'long'` + `max_steps` 控制。
-`generateChoiceResponse(isContinuation: true)` 让 AI 在叙事末尾留悬念，
-`pickChoice()` 在第 N 轮后自动调用 `_generateChoices()` 生成下一轮选项。
-
-### 5.9 模拟页操作栏
-```
-┌────────────────────────────────────────┐
-│ [晓] [雨] [薇] │ [日常] [推进] [✎]  │
-│ (输入自定义行动…)  [执行]           │  ← 点击 ✎ 展开
-└────────────────────────────────────────┘
-```
-角色头像 + 操作按钮合并为一行紧凑操作栏，不再拆分三层。
-
----
-
-## 六、改动影响分析速查
-
-| 你想改什么 | 改哪里 | 要不要动代码 |
-|---|---|---|
-| 加一个新角色字段（如"星座"） | sim-script.json → script.dart | 是 |
-| 改角色日程（几点去哪） | 剧本的 character.schedule | 否 |
-| 改角色间初始关系 | 剧本的 inter_character_relationships.initial_attitudes | 否 |
-| 调好感度曲线数值 | 剧本的 interaction.affection | 否 |
-| 调礼物价格/好感加成 | 剧本的 items.list | 否 |
-| 加一个新事件类型（如"噩梦"） | sim-script + script.dart + world_engine/app_provider | 是 |
-| 改信息加密风格/传播半径 | 剧本的 information_system | 否 |
-| 改角色对话风格约束 | 剧本的 character.speech/humanity | 否 |
-| 修 UI bug（按钮不生效等） | 模拟器代码 | 是 |
-| 加新功能（如日记系统） | 模拟器代码 + 可能需要 sim-script | 是 |
-| 换一个完全不同的剧本 | 写新 JSON | 否（结构对齐即可） |
-| 剧本中某字段是字符串但模型要数组 | 改 sim-script 统一规范，或加 _parseStringList 兜底 | 视情况 |
-
----
-
-## 七、已知技术细节
-
-### 7.1 JSON 解析健壮性
-- 剧本来自不同作者，格式可能不完全一致
-- `_parseStringList()` 兜底：String 自动包成单元素 List
-- `_safeParse()` / `_safeParseTop()` 兜底：任何层解析失败返回 null 不崩全局
-- `GameInteraction.fromJson` 兼容 `advance_modes` 为数组或对象两种格式
-
-### 7.2 Flutter Web 构建
-- 命令：`flutter build web --no-tree-shake-icons --no-source-maps`
-- 静态资源在 `build/web/assets/assets/scripts/` 下
-- 本地服务器：`serve.ps1`（PowerShell HTTP Listener，端口 8765）
-
-### 7.3 DeepSeek API
-- 端点：`https://api.deepseek.com/chat/completions`
-- 模型：`deepseek-chat`
-- 认证：`Bearer {apiKey}` Header
-- API Key 存储在 SharedPreferences，应用启动时恢复
-
-### 7.4 Provider 状态管理
-- `AppProvider` 是全局唯一状态中枢
-- `notifyListeners()` → Consumer Widget 刷新
-- 所有引擎和状态变量都在 AppProvider 内部
-
----
-
-## 八、文件索引
-
-| 文件 | 用途 |
-|---|---|
-| [sim-script.json](file:///d:/AR/sim-script.json) | 工业模板——所有字段定义和注释 |
-| [script.dart](file:///d:/AR/love_sim/lib/models/script.dart) | Dart 数据模型（~1000行） |
-| [app_provider.dart](file:///d:/AR/love_sim/lib/providers/app_provider.dart) | 状态中枢（~1200行） |
-| [deepseek_client.dart](file:///d:/AR/love_sim/lib/services/deepseek_client.dart) | AI 调用 + Prompt 构建（~780行） — generateWorldNarrative + 动态权重 |
-| [world_engine.dart](file:///d:/AR/love_sim/lib/services/world_engine.dart) | 世界时间/天气/推进（~340行） — 含 getNextMilestone/isNearMilestone |
-| [rhythm_scheduler.dart](file:///d:/AR/love_sim/lib/services/rhythm_scheduler.dart) | ★节奏调度器（~360行） — 五路触发源 + 反节奏检测 |
-| [tension_vector.dart](file:///d:/AR/love_sim/lib/services/tension_vector.dart) | ★三维张力向量（~60行） — relational/narrative/emotional |
-| [affection_engine.dart](file:///d:/AR/love_sim/lib/services/affection_engine.dart) | 好感度系统（~370行） |
-| [character_memory_service.dart](file:///d:/AR/love_sim/lib/services/character_memory_service.dart) | ★角色记忆（~150行） — core/episodic/decay 三层 |
-| [character_schedule.dart](file:///d:/AR/love_sim/lib/services/character_schedule.dart) | ★角色日程服务（~170行） — 撞车检测含地点叙事加成 |
-| [inter_character_relationship.dart](file:///d:/AR/love_sim/lib/services/inter_character_relationship.dart) | ★角色间关系服务 — 亲和力追踪/态度标签/嫉妒触发（~180行） |
-| [information_propagation.dart](file:///d:/AR/love_sim/lib/services/information_propagation.dart) | ★信息传播服务 — 信息碎片/5种加密风格/传播扩散（~170行） |
-| [script_loader.dart](file:///d:/AR/love_sim/lib/services/script_loader.dart) | JSON 解析入口（含逐层诊断） |
-| [save_service.dart](file:///d:/AR/love_sim/lib/services/save_service.dart) | 存档服务（读写+ChatMessage模型） |
-| [plot_service.dart](file:///d:/AR/love_sim/lib/services/plot_service.dart) | 剧情节拍判定服务 |
-| [initiative_service.dart](file:///d:/AR/love_sim/lib/services/initiative_service.dart) | 角色主动消息+邀请服务 |
-| [campus_love.json](file:///d:/AR/love_sim/assets/scripts/campus_love.json) | 默认剧本「十七岁的坐标系」 |
-
----
-
-## 八、游戏引擎底层实现
-
-### 8.1 整体架构（v2.3 — 世界驱动引擎）
-
-```
-UI层（屏幕/Widget）
-    ↓
-Provider层（AppProvider）— UI状态 + 服务引用
-    ↓
-┌───────────────── 服务层（lib/services/） ──────────────────────┐
-│                                                                  │
-│  WorldEngine        EventScheduler     AffectionEngine          │
-│  时间/天气/世界驱动  事件选择/节拍      好感度区间/突破           │
-│                                                                  │
-│  CharacterSchedule  InterCharRel       InfoPropagation          │
-│  ★角色独立日程      ★角色间关系         ★信息传播               │
-│                                                                  │
-│  RelationshipEngine  DeepSeekClient     PlotService             │
-│  关系状态机           AI调用+P构建      剧情节拍判定             │
-│                                                                  │
-│  SaveService         InitiativeService  ScriptLoader             │
-│  存档读写            角色主动消息        剧本解析                │
-│                                                                  │
-│  NarrativeCompressor                                                 │
-│  叙事压缩/上下文管理                                                │
-│                                                                  │
-└──────────────────────────┬───────────────────────────────────────┘
-                           ↓
-AI层（DeepSeek 大模型 → 生成叙事/对话/选项）
-```
-
-**协议统一（2026-06-13）：**
-- `sim-script.json` 是字段名唯一标准，campus_love.json 和 script.dart 严格遵循
-- 模板字段 `non_verbal / physical / emotional / topic_taboo / pace_hint` 三者一致
-- `CharacterDetails` 扩展为双格式兼容（campus_love 的 goals/fears/secrets/quirks 全量保留）
-- `CharacterAppearance` 扩展为详细格式（body/face/hair/eyes/clothing 不再丢失）
-- fromJson 中移除了所有 `?? json['旧字段名']` fallback 代码
-- `ChatMessage` 移到 save_service.dart，app_provider 从服务导入
-
-**职责分层（2026-06-13）：**
-- `SaveService` 替代 app_provider 内嵌的存档逻辑
-- `PlotService` 替代 app_provider 内嵌的节拍判定/张力管理
-- `InitiativeService` 替代 app_provider 内嵌的角色主动消息/邀请系统
-- `EventScheduler.pickParticipants` 计算结果注入 AI Prompt，大模型知道场上角色
-
-### 8.1A 世界驱动引擎（World-Driven Engine）— v2.3 ★新增★
-
-**核心概念：从"事件驱动"升级为"世界驱动"。**
-
-| 事件驱动（旧） | 世界驱动（新） |
-|---|---|
-| 引擎等着玩家点"推进"，从池里选一个事件模板 | 角色在后台活着——有日程、有关系、有记忆、有信息差 |
-| 丰富度上限 = 事件池里的模板数量 | 丰富度 = 角色日程 × 关系状态 × 信息传播网络的组合 |
-| 修罗场 = 调度器选中了三角事件 | 修罗场 = 两个角色的日程撞上了同一条走廊 |
-| "被安排的场景" | "汇报此刻世界正在发生的最值得看的事" |
-
-#### 第一层：角色独立日程（CharacterScheduleService）
-
-```
-character_schedule.dart
-├── CharacterScheduleService.getCharacterLocation(角色, 天, 时段, 季节, 天气) → 返回该角色此刻在哪个地点做什么
-├── getAllLocations() → 查所有立体角色此刻的位置
-├── detectCollisions() → 按地点分组，检测撞车(≥2角色同地点)
-├── pickDramaticCollision() → 按(好感度A×好感度B)/100计算戏剧性分数，选最值得写的撞车
-└── findCollision() → 如果玩家在当前地点，检测是否有角色也在这里
-```
-
-**日程数据结构**（在 character.schedule 中定义）：
+### 4.1 属性池 (stats)
 ```json
-{
-  "weekday": [{"phase":"放学","location":"piano_room","activity":"练琴","priority":90,"conditions":["weekday"]}],
-  "weekend": [{"phase":"上午","location":"library_3f","activity":"自习","priority":60}]
-}
+"stats": [
+  {"id": "intelligence", "name": "智商", "category": "talent", "min": 0, "max": 100, "initial": 55}
+]
 ```
-每个角色有 weekday（工作日）和 weekend（周末）两套日程。时段名与 `time_config.phases` 对齐。
+- `id` 必须在该剧本内唯一，并与 `grade_formulas.stat_bonuses` 中引用的 key 一致
+- `category` 用于 UI 分组，可自定义
 
-**撞车示例**：
-- 放学·校门口：苏念晚(等) + 江屿川(闲聊) → 青梅竹马撞车
-- 课间·走廊：苏念晚(巡查) + 江屿川(活跃) → 高频
-- 傍晚·旧球场：陆迟(打球) + 江屿川(经过) → 体育系撞车
-
-#### 第二层：角色间关系（InterCharRelationshipService）
-
-```
-inter_character_relationship.dart
-├── InterCharRelationshipService
-│   ├── initFromScript() → 初始化所有角色对之间的态度(默认"无感")
-│   ├── shiftAffinity(from, to, delta) → 修改亲和力(-100~100)
-│   ├── onPlayerEvent(参与角色, 好感度, 记录) → 玩家事件中涉及的2+角色间自动产生互动
-│   ├── onWitness(目击者, 角色A, 角色B, 好感度) → 目睹亲密互动→嫉妒→亲和下降
-│   ├── detectDrama() → 输出当前关系动态文案
-│   └── buildContextForPrompt() → 注入AI Prompt
-│
-├── InterCharAttitude (数据模型)
-│   ├── fromCharId / toCharId → 方向
-│   ├── affinity → 亲和力 (-100~100)
-│   ├── label → 自动计算标签(死对头/厌恶/疏离/无感/认识/友善/好友/挚友)
-│   └── history → 互动历史摘要
-```
-
-**亲和力分级**：
-| 标签 | 亲和力范围 |
-|---|---|
-| 死对头 | -100 ~ -60 |
-| 厌恶 | -60 ~ -30 |
-| 疏离 | -30 ~ -10 |
-| 无感 | -10 ~ 10 |
-| 认识 | 10 ~ 30 |
-| 友善 | 30 ~ 60 |
-| 好友 | 60 ~ 85 |
-| 挚友 | 85 ~ 100 |
-
-**触发机制**：
-- `onPlayerEvent`：玩家事件涉及2+角色 → 角色间亲和偏移±(0~5)。两人都对玩家好感>70时偏移更大。
-- `onWitness`：目睹亲密互动 → 嫉妒 → 对被目击方亲和下降。
-- `onScheduleCollision`：日程撞车 → 微小亲和偏移。
-
-#### 第三层：信息传播（InformationPropagationService）
-
-```
-information_propagation.dart
-├── InformationPropagationService
-│   ├── createFragment() → 每次事件后从见证人创建信息碎片
-│   ├── propagate() → 每次推进推进1步扩散：已知者→未知者
-│   ├── buildKnowledgeReport() → 输出"各角色此刻知道什么"
-│   └── _distort(content, encryption, affinity) → 按加密风格扭曲信息
-│
-├── InformationFragment (数据模型)
-│   ├── witnessCharId → 首次见证人
-│   ├── content → 原始信息
-│   ├── encryption → 加密风格
-│   ├── spreadRadius → 传播半径
-│   ├── knownBy → 已知此信息的角色ID
-│   └── trustworthiness → 可信度(每次传播×0.85)
-```
-
-**五种加密风格**：
-| 风格 | 可信度 | 效果 |
-|---|---|---|
-| honest（如实） | 1.0 | 如实转述，不加修饰 |
-| joke（玩笑） | 0.7 | 用玩笑/阴阳怪气加密，真义埋藏在玩笑里 |
-| cold（冷淡） | 0.8 | 轻描淡写，故意压低重要性 |
-| gossip（八卦） | 0.5 | 添油加醋，放大戏剧性 |
-| speculation（揣测） | 0.4 | 把自己的揣测包装成事实 |
-
-**传播流程**：事件发生 → 见证人创建信息碎片 → 每次推进1步扩散 → 随机已知者传播给随机未知者 → 内容被加密风格扭曲 → 可信度衰减 → 达到传播半径后停止。
-
-#### 引擎集成：`WorldEngine.tickWorld()`
-
-每次推进时自动调用：
-```dart
-WorldTickReport tickWorld({Map<String,double> playerAffections}) {
-  1. 查所有角色此刻在哪里（日程）
-  2. 检测撞车 → 计算戏剧性分数
-  3. 查角色间关系 → 输出动态(detectDrama)
-  4. 推进1步信息传播
-  5. 拼成 WorldTickReport → 注入 AI Prompt
-}
-
-String buildWorldReport(WorldTickReport report) {
-  // 输出结构化文本，直接注入 AI 叙事 Prompt
-  // AI 在生成叙事时能看到"此刻世界正在发生什么"——
-  // 这些是事实，不是事件模板选择
-}
-```
-
-**数据模型新增**（script.dart）：
-- `CharacterScheduleSlot` — 单个日程槽位（时段/地点/活动/优先级/条件）
-- `CharacterSchedule` — 工作日+周末两套日程
-- `InterCharAttitude` — 角色对角色态度（亲和力/标签/历史/暗恋标记）
-- `InformationFragment` — 信息碎片（见证人/内容/加密/可信度/传播半径）
-- `WorldTickReport` — 推进报告（撞车列表/戏剧撞车/角色间动态/信息传播/知识状态）
-
-### 8.2 一次"推进"的完整流程（v2.3 — 世界驱动 + freeform 事件系统）
-
-```
-玩家点 [推进]
-  → app.advance('major')
-    → 1. tickTension — 叙事张力+5
-    → 2. checkBeatTriggers — 检查是否触发剧情节拍
-    → 3. checkCharacterInitiative — 角色是否主动发消息
-    → 4. WorldEngine.tickWorld() ★世界驱动★
-         ├ scheduleService.getAllLocations() → 所有角色此刻在哪里
-         ├ scheduleService.pickDramaticCollision() → 最值得写的撞车
-         ├ interCharRel.detectDrama() → 角色间关系动态
-         └ infoProp.propagate() → 推进1步信息扩散
-    → 5. EventScheduler.selectEvent
-         ├ _passesVarietyRule — 连续3次不重复，同类型每天不超过2次
-         ├ _passesPacingRule — 高情感事件后冷却2回合
-         ├ _passesConditionCheck — 好感度门槛，修罗场条件
-         └ 加权随机（chaos_factor + 三角权重）
-    → 5.5 如果事件 ai_rule == "freeform":
-         ├ pickFreeformContext — 从 daily_scenes 池随机抽场景
-         └ 不传 ai_hint，改为传场景参数 + 角色实时状态
-    → 6. DeepSeekClient.generateEventNarrative
-         ├ 注入 WorldTickReport（撞车/关系动态/信息传播）
-         ├ fixed模式：按 ai_hint 生成叙事
-         └ freeform模式：根据场景/好感度/角色状态 + 世界状态自主发挥
-         输入：完整角色档案 + 在场角色好感度/关系/区间 + 场景参数 + 世界驱动报告
-         输出：300-500字叙事
-    → 7. 拼接叙事 → narrativeHistory
-    → 8. interCharRel.onPlayerEvent() → 记录角色间互动
-    → 9. _generateChoices — AI生成3个行动选项
-    → 10. 通知UI刷新
-```
-
-**事件双模式（2026-06-13）：**
-
-| 模式 | `ai_rule` | 叙事方向来源 | 适用池 |
-|------|-----------|-------------|--------|
-| 固定模板 | `"fixed"`（默认） | 剧本作者的 `ai_hint` | plot/boundary/reversal/love_triangle/sweet/echo/ensemble |
-| 自由叙事 | `"freeform"` | DS 根据场景参数 + 角色实时状态自主创作 | daily |
-
-**daily_scenes 场景种子池：** 7个地点 × 5个时段 × 4种情绪 × C(4,2)角色组合 = 理论 560 种不重复日常。
-
-> 例如：`{location: rooftop, phase: 放学, mood: 微风, participants: [温辞, 苏念晚]}` → DS 根据温辞好感35/熟人 + 苏念晚好感68/好友的状态，自行决定天台上谁先开口、对话走向。
-
-玩家选选项
-  → app.pickChoice
-    → 1. DeepSeekClient.generateChoiceResponse
-         输入：完整1200字剧情记录
-         输出：300-500字后续叙事
-    → 2. modifyAffectionByEvent — 好感度变化（可破阶）
-    → 3. RelationshipEngine.syncFromAffection — 关系状态同步
-    → 4. 长事件→自动再生选项
-    → 5. autoSave → localStorage
-
-通讯录聊天
-  → DeepSeekClient.generateChatReply
-     输入：角色档案 + 当前好感度 + 最近300字剧情 + 代码层dualMode选择
-     输出：AI回复
-  → analyzeAffectionDelta → modifyAffectionByChat
-```
-
-### 8.3 关系状态机（RelationshipEngine）
-
-**8个状态**：none→stranger→acquaintance→friend→close_friend→crush→lover→partner
-
-| 特性 | 机制 |
-|------|------|
-| 状态来源 | 好感度驱动，但**不是纯数学**——破80需要告白事件 |
-| 确立恋人 | `confirmLover(charId)` 由关键事件触发 |
-| 多恋人 | 支持，tracked：每个恋人 who knows about whom |
-| 修罗场检测 | `hasMultiLovers()` + `characterKnowsAbout()` → 触发 jealousy 事件 |
-| 暴露惩罚 | 80-90区间: -10~-20; 90+区间: -15~-30 |
-| 持久化 | save/load 时随存档存储和恢复 |
-
-### 8.4 事件调度引擎（EventScheduler）
-
-**相比旧版 `_selectEventTemplate`（millisecond % pool）的改进：**
-
-| 规则 | 旧版 | 新版 |
-|------|------|------|
-| variety_rule | ❌ 未实现 | ✅ 连续3次不重复，同类型日限2次 |
-| pacing_rule | ❌ 未实现 | ✅ 高情感事件后冷却2回合 |
-| chaos_factor | ❌ 未实现 | ✅ 权重乘数 + 加权随机 |
-| 修罗场检测 | ❌ 无 | ✅ 多恋人→三角事件权重×3 |
-| 破阶事件优先 | ❌ 无 | ✅ boundary 池权重×2 |
-
-### 8.5 说话模式硬规则
-
-Chat System Prompt 构建时：
-- `affection < 60` → 只写入 `dualMode.toStranger`（语音、用词、例句）
-- `affection >= 60` → 只写入 `dualMode.toClose`
-- `关系状态 = lover/partner` → toClose 模式 + 亲密行为提升
-
-**不再把两套例句都发给AI让它自己选**。
-
-### 8.6 聊天/场景/世界的一致性
-
-| Prompt 层 | 叙事历史 | 关系状态 |
-|-----------|---------|---------|
-| 世界推进 | ✅ 1200字 | ✅ 自动注入（playerCard） |
-| 选项续写 | ✅ 1200字 | ✅ 自动注入 |
-| 通讯录聊天 | ✅ 300字（新增） | ✅ 代码层dualMode |
-| 场景偶遇 | ✅ 400字（新增） | ⚠ prompt无但好感已融入 |
-| 自定义行动 | ✅ 600字 | ✅ 自动注入 |
-
-### 8.7 剧本工业化能力
-
-**引擎完全通用，换 JSON 换剧本：**
-
-| 剧本类型 | 改什么 |
-|---------|--------|
-| 校园纯爱 | 世界观=校园，角色=学生，事件=学业/社团/天台 |
-| 修仙修真 | 世界观=修真，角色=修士/魔族，事件=秘境/渡劫/双修 |
-| 都市职场 | 世界观=都市，角色=同事/上司，事件=加班/出差/暧昧 |
-| 末日废土 | 世界观=废土，角色=幸存者/变异者，事件=搜索/逃亡/信任 |
-
-所有引擎代码不动，只换 JSON 数据。
-
----
-
-## 九、数据层（Data Layer）—— v2.0 新增
-
-### 9.1 设计动机
-
-当前系统缺失玩家自身的"可量化状态"。主角姓名、外貌、属性、成绩、排名——这些信息：
-- 没有存储位置
-- 没有更新机制
-- AI 每次问"主角叫什么"乱编
-- 无法支撑"月考排名 → 角色反应"这种关键剧情
-
-### 9.2 数据层结构
-
-在 `sim-script.json` 中新增 `data_layer` 段，与 `characters`、`events` 同级：
-
-```
-data_layer
-├── player_profile     — 玩家基础信息（名字/性别/外貌/性格，由玩家编辑）
-├── stats[]            — 通用属性（id/name/category/min/max/initial）
-├── grades[]           — 成绩/技能（id/name/min/max/initial）
-├── ranking            — 排名系统配置
-│   ├── total_students  — 总人数
-│   └── events[]        — 排名事件（月考/期末/大比/渡劫）
-└── memory
-    ├── stat_values     — 当前属性值
-    ├── grade_values    — 当前成绩值
-    ├── grade_history   — 历次排名记录
-    └── last_ranking_day
-```
-
-### 9.3 工业化示例
-
-| 校园剧本 | 修仙剧本 |
-|---|---|
-| stats: 智商/颜值/体能/魅力 | stats: 灵根/悟性/根骨/神识/气运 |
-| grades: 语文/数学/英语/理综 | grades: 修为/丹道/剑法/阵法/符箓 |
-| ranking: 月考(30天)/期末(90天) | ranking: 宗门大比(60天)/渡劫(180天) |
-
-### 9.4 数据层驱动什么
-
-1. **System Prompt 注入**：`playerCardForAi` 拼接姓名+属性+成绩→AI 知道主角是谁
-2. **排名事件**：到达 ranking 间隔日自动触发 → 生成排名叙事 → 角色对排名变化做出反应
-3. **事件条件**：`require: {stat: "intelligence", min: 70}` 可解锁选项
-4. **角色认知**：AI 根据主角属性调整角色行为（"她注意到你数学最近进步了"）
-
----
-
-## 十、时间系统 v2.0 — Milestone 跳转
-
-### 10.1 设计动机
-
-旧系统：1 次日常 = 1 个时段，1 天 = 8 次推进。对于两年半（900+ 天）剧本，玩家需要点击 7200+ 次日常，不可能。
-
-### 10.2 新推进模型
-
-| 概念 | 旧（60天） | 新（两年半） |
-|---|---|---|
-| 基础推进单位 | 时段（一天8段） | 天（一天1段，日常跳2-4天） |
-| 日常推进 | 推进1个时段 | 跳过 2-4 天，生成"这几天发生了什么"摘要 |
-| 重要推进 | 推进2-4时段 | 跳到下一个 milestone 日期 |
-| 时间上限 | 无 | `total_days` 由引擎读取并校验 |
-| 特殊日 | 定义了没用 | milestone 自动拦截——到达时触发长事件 |
-
-### 10.3 Milestone 类型
-
-在 `time_config.special_days` 中定义，引擎自动检测：
-
-| 类型 | 示例 | 效果 |
-|---|---|---|
-| `exam` | 月考、期中考、期末考 | 触发排名事件 + 角色反应 |
-| `event` | 运动会、文化祭、修学旅行 | 触发长事件（多轮选择） |
-| `transition` | 转学日、开学日 | 触发世界观变更叙事 |
-| `ending` | 毕业典礼 | 触发结局判定 |
-
-### 10.4 推进流程
-
-```
-用户点 [日常推进]
-  → 计算距下一个 milestone 的天数
-  → 如果 < 3天：直接跳到 milestone 前一天
-  → 如果 ≥ 3天：跳过 2-4 天，生成摘要叙事
-  → AI 生成"这几天的日常"摘要（200-400字）
-  → 更新属性（成绩微调、好感度微调）
-
-用户点 [重要推进]
-  → 直接跳到下一个 milestone
-  → 触发 milestone 对应的长事件
-  → 如果是考试类：生成排名 + 角色反应
-  → 如果是活动类：触发多轮选择长事件
-```
-
----
-
-## 十一、剧情灵活化 v2.0
-
-### 11.1 设计动机
-
-旧系统：`plot.beats` 有 `mandatory` 节拍，`_checkBeatTriggers()` 硬触发，无论角色关系实际状态如何，AI 被强制写特定场景。
-
-### 11.2 新设计
-
-节拍从"剧本命令"降级为"AI 可选素材"：
-
-1. **移除 `mandatory/optional` 区分** → 所有节拍改为 `relevance` 权重（0-100）
-2. **`_checkBeatTriggers()` 改为收集** → 把满足条件的节拍打包为 `available_beats` 列表
-3. **AI 决定是否使用** → System Prompt 中注入"以下节拍方向可供参考，但不强制"，AI 自行判断当前上下文是否需要
-4. **节拍触发后记录** → 已用过的节拍 `relevance` 降为 0，避免重复
-
----
-
-## 十二、多角色参与引擎
-
-### 12.1 设计动机
-
-当前事件模板的 `required_chars` 要么硬编码某角色，要么为空随机选一个。没有"当前谁和谁之间最有张力"的判断。
-
-### 12.2 EventScheduler 新增 `_pickParticipants()`
-
-```
-选事件模板 → 检查 required_chars：
-  ├── 为空 → 动态选择：
-  │   ├── 计算每个角色的"出场权重"（好感度 × 最近未出场天数 × 关系状态加分）
-  │   ├── 如果多个角色好感度 ≥ 60 → 优先选 ensemble / love_triangle 事件
-  │   └── 加权随机选 1-3 个角色
-  ├── 有硬编码 → 使用硬编码角色
-  └── 修罗场检测：如果有 2+ 恋人且互相知道 → 权重 × 3
-```
-
----
-
-## 十三、场景事件记忆闭环
-
-### 13.1 当前问题
-
-场景事件只生成一段叙事，不产生好感度变化、不写记忆、不影响后续。
-
-### 13.2 改进
-
-场景事件结束后：
-1. 写入角色 `memory.episodic`（标记 importance=5）
-2. 产生微小好感度变化（±0.1~0.5）
-3. 成为聊天话题素材（AI 聊天时注入最近场景记忆）
-4. 新增"邀请角色到场景"功能：玩家选场景 → 选角色 → 触发双人场景事件
-
----
-
-## 十四、v2.5 四层深化（2026-06-18）
-
-### 14.1 角色层：记忆三层化
-
-`character_memory_service.dart` 全面重构，从扁平日志 → 三层结构：
-
-| 层 | 上限 | 衰减规则 | Prompt标签 |
-|---|---|---|---|
-| core（核心）| 8条 | 永不清洗，溢出淘汰最旧 | 【她的记忆锚点】 |
-| episodic（情景）| 10条 | 溢出→降级到decay | 【你们之间的重要时刻】 |
-| decay（衰减）| 20条 | 溢出→自动丢弃 | 【最近的日常】 |
-
-分层规则：`critical`/`heavy` → core，`medium` → episodic，`light` → decay。
-好感度≥60的聊天 → episodic，否则 → decay。
-
-### 14.2 世界层：地点叙事属性
-
-`SceneLocation` 新增 `LocationNarrativeProfile`：
-- `eventAffinity`：对 characterMoment/relationshipBeat/tensionEscalation/ensembleScene 的加成系数
-- `narrativeKeywords`：AI prompt 中注入的地点专属关键词
-
-撞车检测 `pickDramaticCollision` 改造：`dramaScore *= (1.0 + 地点平均加成系数)`。
-天台 × relationshipBeat=0.9，走廊 × tensionEscalation=0.7，食堂 × ensembleScene=0.9。
-
-剧本 JSON 中所有 `scene_locations` 添加 `narrative_profile`——天台的秘密、走廊的偶遇、食堂的群像，不再是同一个背景板。
-
-### 14.3 节奏层：三维张力拆解
-
-`tension_vector.dart` — TensionVector 三轴：
-- `relational`：好感临界/三角关系/信任动摇
-- `narrative`：主线推进/信息揭露/截止日
-- `emotional`：角色内在情绪累积
-
-反节奏检测：`emotional > 0.6 && relational < 0.4` → 爆发（被冷落太久终于爆发）
-双维临界：`relational > 0.7 && narrative > 0.7` → 高潮时刻
-
-存档支持完整持久化。AI prompt 注入张力快照："此刻关系紧绷82%，情节蓄势45%，她内心不安61%"
-
-### 14.4 生成层：Prompt 动态权重
-
-`DeepSeekClient` 新增 `_focusWeights` 配置表 + `_trimForFocus` 按焦点裁剪：
-
-| focus | speech | relationship | characterArc | plot | world |
-|---|---|---|---|---|---|
-| worldTexture | 10% | 5% | 5% | 5% | **75%** |
-| relationshipBeat | 15% | **40%** | 10% | 15% | 20% |
-| plotAdvancement | 5% | 10% | 10% | **60%** | 15% |
-
-日常推进 → worldTexture → 世界描述权重 75%，角色档案按比例缩减。告别"全量塞入"的信息噪声。
-
-### 14.5 产出文件（v2.5）
-
-| 文件 | 变更 | 说明 |
-|---|---|---|
-| `character_memory_service.dart` | 重写 | 三层数据结构 + EpisodicEntry.layer + 分层回收 |
-| `script.dart` | 新增 | LocationNarrativeProfile 类 |
-| `character_schedule.dart` | 修改 | pickDramaticCollision 接受 sceneLocations + 地点加成 |
-| `world_engine.dart` | 修改 | tickWorld 传 sceneLocations 给撞车检测 |
-| `tension_vector.dart` | 新建 | TensionVector 三轴类 |
-| `rhythm_scheduler.dart` | 重构 | 集成 TensionVector + _detectReversal + 反节奏检测 |
-| `deepseek_client.dart` | 修改 | _focusWeights + _trimForFocus + generateWorldNarrative 接受 focus |
-| `game_session.dart` | 重构 | 集成 TensionVector + RhythmScheduler + rhythmNarrative 路径 |
-| `save_service.dart` | 修改 | SaveData.tensionVectorData |
-| `app_provider.dart` | 修改 | 存档/读档 tension vector |
-| `campus_love.json` | 修改 | 11个地点添加 narrative_profile |
-| `PRD.md` | 修改 | v2.5 版本标记 + 架构图更新 + 文件索引更新 + 本章节 |
-
----
-
-## 十六、v2.6 —— 时段行动系统
-
-### 16.1 设计动机
-
-旧系统：玩家点「日常推进」→ AI 自动跳过 2-4 天生成摘要叙事。时间只是计数器，不参与玩法。
-
-新系统：时间是玩家手中的资源。每天 8 个时段（8 行动点），每次行动消耗时段，时段用完进入下一天。
-
-### 16.2 时段循环
-
-```
-工作日：清晨 → 上午 → 课间 → 午休 → 下午 → 放学 → 傍晚 → 夜晚 → (下一天清晨)
-周末：  清晨 → 上午 → 中午 → 下午 → 傍晚 → 夜晚 → (下一天清晨)
-```
-
-每时段 = 1 行动点。玩家可选：
-- **去别处**：前往某个地点，看场景描述 + 在场角色
-- **互动**：与角色对话/互动，消耗 1 时段
-- **度过**：跳过当前时段，AI 生成过渡叙事
-- **自定义**：手动输入行动
-
-### 16.3 日历系统
-
-| 数据 | 来源 |
-|---|---|
-| 周几 | 公式 (day-1)%7，0=周一 |
-| 周末 | 周六日时段缩短为 6 个 |
-| 特殊日 | 剧本 `special_days` 配置，检测到自动高亮 + 图标 |
-| 考前复习期 | 考试前 14 天自动检测，可触发复习复合叙事 |
-
-配置全部在剧本 JSON 中：
-- `time_config.phases`：时段列表
-- `time_config.special_days`：特殊日定义
-- `time_config.total_days`：总天数
-- `ranking.events`：考试间隔（自动计算考前复习期）
-
-### 16.4 渐进式角色发现
-
-剧本 JSON 中 `characters[i].discovery_condition` 定义发现条件：
-- 空字符串 → 初始可见
-- `day>=N` → 第 N 天自动发现
-- `location==loc_id` → 到达指定地点发现
-- `affection>=N:char_id` → 其他角色好感度达标后引荐
-
-未发现角色：
-- 通讯录中不可见
-- 世界照常运行（有日程、有位置）
-- 场景中可作"???"路人出现
-- 发现后解锁通讯录 + 日程可见
-
-### 16.5 场景互动
-
-- 每个地点有 `narrative_profile`（氛围/光照/声景/气味/温度），AI 据此生成场景描述
-- 角色日程决定当前谁在此地
-- 玩家进入场景 → 场景描述 + 在场角色列表 → 可选互动动作
-- 每个互动消耗 1 时段
-
-### 16.6 代码/剧本分离
-
-| 剧本 JSON 定义 | Dart 引擎处理 |
-|---|---|
-| `time_config.phases` | `WorldEngine._phases` 读取 |
-| `time_config.special_days` | `CalendarService` 读取 |
-| `time_config.total_days` | `WorldEngine.totalDays` 读取 |
-| `characters[i].discovery_condition` | `GameSession.checkDiscoveryConditions()` 解析 |
-| `characters[i].schedule` | `CharacterScheduleService` 查询 |
-| `world.locations[i].narrative_profile` | `DeepSeekClient` 注入场景 Prompt |
-
-引擎不硬编码任何剧本特定 ID、名称或数值。
-
-### 16.7 文件变更
-
-| 文件 | 操作 | 说明 |
-|---|---|---|
-| `lib/services/calendar_service.dart` | 新增 | 日历服务：周几/周末/特殊日/考前复习期 |
-| `lib/services/world_engine.dart` | 重写 | 时段循环 + 日历集成 + 角色位置查询 |
-| `lib/services/game_session.dart` | 修改 | +时段行动方法 + 角色发现追踪 |
-| `lib/providers/app_provider.dart` | 修改 | +passPhase/goToLocation/interactWithChar |
-| `lib/screens/world_screen.dart` | 重写 | 旧[日常/推进]按钮 → 新[去别处/互动/度过]面板 + 地点/角色选择器 |
-| `lib/screens/simulation_screen.dart` | 修改 | 顶部栏显示周几+特殊日 |
-| `lib/screens/contacts_screen.dart` | 修改 | 通讯录过滤未发现角色 |
-| `lib/models/script.dart` | 修改 | Character 新增 discoveryCondition |
-| `campus_love.json` | 修改 | +discovery_condition +ranking_narrative |
-
----
-
-## 十七、v2.7 —— 十二时辰 + 养成系统 + 跳过天数
-
-### 17.1 十二时辰
-
-时段列表完全由剧本 `time_config.phases` 定义，引擎不硬编码：
-
+### 4.2 成绩池 (grades)
 ```json
-// 剧本 JSON 示例
-"time_config": {
-  "phases": [
-    {"id":"zi","name":"子时","hour":"23-01","mood":"夜深人静","skippable":true},
-    {"id":"chou","name":"丑时","hour":"01-03","mood":"万籁俱寂","skippable":true},
-    ...
-    {"id":"hai","name":"亥时","hour":"21-23","mood":"就寝之前","skippable":false}
+"grades": [
+  {"id": "chinese", "name": "语文", "min": 0, "max": 150, "initial": 108}
+]
+```
+- `id` 必须与 `grade_formulas` 的 key 和 ranking `affects` 数组中引用的 ID 一致
+
+### 4.3 成绩公式 (grade_formulas)
+```json
+"grade_formulas": {
+  "chinese": {
+    "base_weight": 0.70,
+    "variance": 10,
+    "stat_bonuses": {"intelligence": 0.07, "charisma": 0.05}
+  }
+}
+```
+
+### 4.4 成长率 (natural_growth_rate)
+- 每次考试前，所有 stat/grade 按 `(max - current) × rate` 自然成长
+
+### 4.5 排名体系 (ranking)
+```json
+"ranking": {
+  "total_students": 750,
+  "events": [
+    {"id": "monthly_exam", "name": "月考", "interval_days": 30, "affects": ["chinese","math","english","science"]}
   ]
 }
 ```
 
-- 每个时辰 = 1 行动点
-- `skippable` 标记可跳过的睡眠时段
-- 换修仙剧本只需改 JSON：卯时→练功、酉时→炼丹
-
-### 17.2 养成训练系统
-
-`data_layer.training.actions` 定义训练动作：
-
+### 4.6 养成训练系统 (training)
 ```json
 "training": {
   "actions": [
@@ -1036,40 +103,732 @@ data_layer
 }
 ```
 
-- 玩家点击「锻炼」→ 列出当前时辰可做的训练 → 选择 → 消耗 1 时段 → 属性/成绩增加
-- 每个训练可提升 1-2 项属性 + 0-1 项成绩
-- AI 简述训练效果
+### 4.7 工业化示例
+
+| 校园剧本 | 修仙剧本 |
+|---|---|
+| stats: 智商/颜值/体能/魅力 | stats: 灵根/悟性/根骨/神识/气运 |
+| grades: 语文/数学/英语/理综 | grades: 修为/丹道/剑法/阵法/符箓 |
+| ranking: 月考(30天)/期末(90天) | ranking: 宗门大比(60天)/渡劫(180天) |
+
+---
+
+## 五、剧本结构（十一层）
+
+### 5.1 meta — 元信息
+剧本的身份证：id、名称、版本、作者、类型、基调、模式(endings/sandbox)、摘要。
+
+### 5.2 player — 主角
+- **剧本只定义背景和处境**：`background`（成长史）和 `current_state`（开局心境）
+- **基础信息来自玩家角色卡**：名字、性别、身高、生日、外貌描述、性格描述 → 由玩家在「我的」页编辑
+- `playerCardForAi` 运行时拼接：玩家角色卡 + 剧本 background + 剧本 current_state → 注入 AI System Prompt
+
+### 5.3 world — 世界观
+```
+world
+├── summary        — 世界快照（约200-300字）
+├── setting        — 完整世界观（直接注入 AI System Prompt）
+├── atmosphere     — 氛围（base_mood / color_palette / hint）
+├── locations[]    — 地点列表（id/name/desc/visibility/可用时段/场景氛围/narrative_profile）
+├── special_rules  — 剧本类型差异化规则
+└── memory         — 运行时状态（当前时间/地点变化/世界历史/世界摘要）
+```
+
+### 5.4 characters — 角色
+角色分两种：
+- **立体角色**（full_character=true）：27 个子字段，全面控制 AI 行为
+- **平面角色**（full_character=false）：一段 summary，只出现在叙事中
+
+立体角色的关键字段：
+
+| 字段 | 对 AI 的影响 |
+|---|---|
+| **basic** | 外貌、身高、体型——AI 描述外观的依据 |
+| **background** | 出身、成长史——AI 理解角色动机 |
+| **soul** | 核心价值观、欲望、创伤、恐惧、矛盾、双模式 |
+| **speech** | 大五人格、语音学、词汇风格、互动模式、双模式 |
+| **humanity** | 反AI规则、写作姿态、非语言行为列表 |
+| **evolution** | 好感度11个区间各阶段描述、成长弧线 |
+| **schedule** ★ | 角色独立日程（weekday/weekend，时段→地点→活动+优先级+条件） |
+| **boundary** | 身体距离、情感边界、话题禁区、亲密度节奏 |
+| **memory** | 情景记忆、聊天日志、印象 |
+| **memory_tags** ★v2.8 | 记忆标签配置（default/affection_breakthrough/conflict/triangular） |
+
+### 5.4A inter_character_relationships — 角色间关系 ★
+不再只有玩家↔角色好感度。角色之间也有数据：
+- `initial_attitudes[]` — 初始角色间态度（from/to/affinity/label/history）
+- `affinity_states` — 8级亲和力标签（死对头→挚友，-100~100）
+- `triggers` — 变化触发器（on_player_event / on_schedule_collision / on_witness / on_info_spread）
+
+### 5.4B information_system — 信息传播系统 ★
+- `encryption_styles` — 5种加密风格(honest/joke/gossip/cold/speculation)
+- `visibility_rules` — 事件可见度决定谁自动成为见证人
+- `fragment_schema` — 信息碎片结构(source_event/witness/content/encryption/spread_radius/known_by/trustworthiness)
+
+**传播流程**：事件发生 → 旁观者成为见证人 → 信息碎片创建 → 每次推进扩散1步 → 内容被加密扭曲 → 可信度衰减。
+
+### 5.5 plot — 剧情
+不是预写的故事，是给 AI 的"方向指令"：
+- `acts[]` — 幕（id/名称/描述/阶段区间/出入条件/叙事方向/基调/节拍列表/节奏权重）
+- `beats[]` — 剧情节拍（触发条件+AI方向+结果+优先级）
+- `endings[]` — 结局定义
+- `narrative_tension` — 叙事张力曲线
+- `branch_system` / `foreshadow_system` — 路线追踪 / 伏笔系统
+
+### 5.6 events — 事件
+
+| 类型 | duration | 行为 |
+|---|---|---|
+| **短事件** | `"short"` (默认) | 生成叙事 → 弹出选项 → 选择后自动续 2 回合 → 自然结束 |
+| **长事件** | `"long"` | 生成叙事 → 弹出选项 → 选择后继续 → 直到 `max_steps` 轮结束 |
+
+**v2.8 起所有事件都是多回合**：不再是"选完就结束"。玩家在任何事件中至少有 2 次继续推进的机会，让事件有"对话感"而不是"选择题"。
+
+14 种事件池：plot / boundary / daily / sweet_minor / sweet_major / love_triangle / reversal / echo / misunderstanding / ensemble / world_shift / forced_choice / resource / dialogue_trigger
+
+### 5.7 dialogue — 对话
+- **world_sim** — 主世界叙事引擎
+- **character_chat** — 角色对话引擎
+- **compressor** — 上下文压缩
+
+### 5.8 items — 物品
+- currency：货币系统（多币种支持）
+- list：物品列表（gift/key_item/consumable/collectible 四类）
+- shop：商店 + gifting：送礼规则 + crafting：合成（可选）
+
+### 5.9 interaction — 交互
+- `time_config` — 时间推进配置（十二时辰）
+- `advance_modes` — 三种推进模式（daily / major / free）
+- `affection` — 好感度系统（核心）
+  - 精度 0.01，范围 1-100。区间内自由浮动，跨区间必须通过对应层级的事件
+  - 80 以下：临界事件通过即可跨。80：必须重要推进+长剧情事件。90：必须重要推进+剧情事件。100：终极事件，只能一人
+- `seasons[]` / `weather_system` — 季节/天气
+
+---
+
+## 六、模拟器代码结构
+
+```
+love_sim/lib
+├── main.dart
+├── models/
+│   └── script.dart              — 所有 Dart 数据模型（约2000行）
+├── services/
+│   ├── script_loader.dart       — JSON→GameScript 解析
+│   ├── deepseek_client.dart     — DeepSeek API 调用+Prompt 构建（Two-step Prompting）
+│   ├── world_engine.dart        — 世界时间/天气/季节推进+世界驱动
+│   ├── rhythm_scheduler.dart    — ★节奏调度器（五路触发源→RhythmDirective + 反节奏检测）
+│   ├── tension_vector.dart      — ★三维张力向量（relational/narrative/emotional）
+│   ├── character_schedule.dart   — ★角色独立日程（查表/撞车/戏剧性评分+地点加成）
+│   ├── character_memory_service.dart — ★角色记忆（core/episodic/decay 三层）
+│   ├── inter_character_relationship.dart — ★角色间关系（亲和力/态度/嫉妒）
+│   ├── information_propagation.dart — ★信息传播（碎片/加密/扩散）
+│   ├── affection_engine.dart    — 好感度计算引擎
+│   ├── relationship_engine.dart  — 关系状态机（8状态）
+│   ├── event_scheduler.dart     — 事件调度（useRhythmLayer=false 时使用）
+│   ├── game_session.dart        — 游戏会话主协调器
+│   ├── phase_action_service.dart — 时段行动服务
+│   ├── ranking_service.dart     — 排名系统
+│   ├── plot_service.dart        — 剧情节拍判定
+│   ├── calendar_service.dart    — 日历服务
+│   ├── save_service.dart        — 存档读写
+│   ├── initiative_service.dart   — 角色主动消息
+│   └── narrative_compressor.dart — 叙事压缩
+├── providers/
+│   └── app_provider.dart        — 状态中枢
+├── screens/
+│   ├── sim_screen.dart          — 模拟主界面
+│   ├── world_screen.dart        — 世界场景
+│   ├── contacts_screen.dart     — 通讯录
+│   ├── chat_screen.dart         — 1v1 聊天
+│   ├── shop_screen.dart         — 商店
+│   ├── settings_screen.dart     — 设置
+│   └── ...                      — 其他屏幕
+└── assets/
+    └── scripts/
+        └── campus_love.json     — 默认剧本「春日未央」
+```
+
+---
+
+## 七、核心流程
+
+### 7.1 应用启动
+```
+main() → AppProvider.init() → 从 SharedPreferences 恢复 API Key → 创建 DeepSeekClient
+```
+
+### 7.2 加载剧本
+```
+ScriptLoader.loadFromAsset() → json.decode() → GameScript.fromJson() → _initScript():
+  ├── 初始化时间/天气/季节/十二时辰
+  ├── 初始化 AffectionEngine（所有立体角色好感度=50）
+  ├── 初始化 WorldEngine / RhythmScheduler / CharacterMemory
+  ├── 初始化 RankingService / RelationshipEngine
+  └── 加载世界摘要到叙事历史
+```
+
+### 7.3 日常推进 (daily) — v2.9 世界驱动统一
+
+```
+玩家点 [推进]
+  → advanceTime() → 仅跳天数，不生成叙事
+  → tickWorld()（每次推进都运行）
+    ├── 日程撞车检测
+    ├── 信息传播推进
+    ├── 角色间关系动态
+    └── LocationFrequencyTracker
+  → worldReport = buildWorldReport(worldTick)（每次推进都生成）
+  → _buildCoolingHints(day) →【关系冷却】注入 worldReport（v2.9 新增）
+  → _buildMissedConnectionHints(tickReport) →【暗流·错过】注入 worldReport（v2.9 新增）
+  → 选事件（可选种子，降级为可选输入）
+  → rhythmScheduler.resolve() → RhythmDirective（每次都运行，不走旧裸路径）
+  → DeepSeekClient.generateWorldNarrative ← Two-step Prompting
+    ├── Step 1: _routeNarrative() → 路由决策 JSON
+    └── Step 2: 裁剪后的 Prompt + 冷却提示 + 错过提示 → AI 生成叙事
+  → 叙事返回 + modifyAffectionByEvent() + _recordInteractions(participants)
+  → charMemory.recordEvent(tags 打标) → 记忆持久化
+  → _longEventStepsRemaining > 0：继续生成选项
+```
+
+> **v2.9 关键变更**：旧版有两条路径（eventTemplate 路径和裸路径），裸路径跳过 rhombusScheduler 和 generateWorldNarrative。v2.9 统一为单一路径——eventTemplate 降级为可选种子，tickWorld + rhythmScheduler + generateWorldNarrative 每次都运行。
+
+### 7.4 角色聊天
+```
+用户发消息 → _generateAiReply():
+  → buildChatSystemPrompt(角色卡+好感度+世界状态+对话历史+memoryContext+rankingContext)
+  → DeepSeekClient.generateChatReplyStreaming → 流式 AI 回复
+  → modifyAffectionByChat() → recordChat()
+```
+
+### 7.5 自定义行动 (free)
+```
+用户输入行动 → customAction():
+  → DeepSeekClient.generateCustomActionConsequence()
+  → _parseCustomActionAffection() → modifyAffectionByEvent()
+```
+
+### 7.6 养成训练 (v2.7)
+- 玩家点击「锻炼」→ 列出当前时辰可做的训练 → 选择 → 消耗 1 时段 → 属性/成绩增加 → AI 简述效果
+
+### 7.7 跳过天数 (v2.7)
+- 时间栏「跳过」按钮 → 输入 N 天 → 引擎逐天推进 → AI 生成摘要叙事 → 好感度自然漂移
+
+### 7.8 十二时辰 (v2.7)
+- 时段列表完全由剧本 `time_config.phases` 定义。每个时辰 = 1 行动点
+- `skippable` 标记可跳过的睡眠时段。换修仙剧本只需改 JSON
+
+---
+
+## 八、好感度系统核心规则
+
+- 精度 0.01，范围 1-100
+- 区间内自由浮动，跨区间必须通过对应层级的事件
+- 80 以下：临界事件通过即可跨
+- 80：必须重要推进+长剧情事件
+- 90：必须重要推进+剧情事件
+- 100：终极事件，只能一人
+- `difficulty_curve`：增益/衰减乘数
+- `freeFallThreshold`：衰减下限保护
+- `uniqueBond`：唯一羁绊（100 仅一人）
+
+---
+
+## 九、关系状态机（RelationshipEngine）
+
+**8个状态**：none→stranger→acquaintance→friend→close_friend→crush→lover→partner
+
+| 特性 | 机制 |
+|------|------|
+| 状态来源 | 好感度驱动，但破80需要告白事件 |
+| 多恋人 | 支持，tracked：每个恋人 who knows about whom |
+| 修罗场检测 | `hasMultiLovers()` + `characterKnowsAbout()` |
+| 暴露惩罚 | 80-90区间: -10~-20; 90+区间: -15~-30 |
+
+---
+
+## 十、配置热替换
+
+引擎通过 `ScriptRegistry` 管理多剧本：
+```dart
+ScriptRegistry().register('my_wuxia', 'assets/scripts/wuxia_world.json');
+ScriptRegistry().activate('my_wuxia');
+```
+切换剧本即重新解析 JSON → 所有公式/属性池/角色池即时更新。存档按剧本 ID 隔离。
+
+---
+
+## 十一、存档兼容性
+
+- 存档中携带 `scriptId` + `scriptName`
+- 存档加载时校验剧本版本，不匹配则提示
+- 剧本升级时需维护向后兼容的 `data_layer` 迁移
+
+---
+
+## 十二、改动影响分析速查
+
+| 你想改什么 | 改哪里 | 要不要动代码 |
+|---|---|---|
+| 加一个新角色字段 | sim-script.json → script.dart | 是 |
+| 改角色日程（几点去哪） | 剧本的 character.schedule | 否 |
+| 改角色间初始关系 | 剧本的 inter_character_relationships | 否 |
+| 调好感度曲线数值 | 剧本的 interaction.affection | 否 |
+| 调礼物价格/好感加成 | 剧本的 items.list | 否 |
+| 加一个新事件类型 | sim-script + script.dart + engine | 是 |
+| 改信息加密风格/传播半径 | 剧本的 information_system | 否 |
+| 改角色对话风格约束 | 剧本的 character.speech/humanity | 否 |
+| 修 UI bug | 模拟器代码 | 是 |
+| 加新功能 | 模拟器代码 + 可能需要 sim-script | 是 |
+| 换一个完全不同的剧本 | 写新 JSON | 否 |
+
+---
+
+## 十三、已知技术细节
+
+### 13.1 JSON 解析健壮性
+- `_parseStringList()` 兜底：String 自动包成单元素 List
+- `_safeParse()` / `_safeParseTop()` 兜底：任何层解析失败返回 null 不崩全局
+- `GameInteraction.fromJson` 兼容 `advance_modes` 为数组或对象两种格式
+
+### 13.2 DeepSeek API
+- 端点：`https://api.deepseek.com/chat/completions`
+- 模型：`deepseek-chat`
+- 认证：`Bearer {apiKey}` Header
+- API Key 存储在 SharedPreferences，应用启动时恢复
+
+### 13.3 Flutter Web 构建
+- 命令：`flutter build web --no-tree-shake-icons --no-source-maps`
+- 静态资源在 `build/web/assets/assets/scripts/` 下
+
+---
+
+## 十四、世界驱动引擎（v2.3）
+
+**核心概念：从"事件驱动"升级为"世界驱动"。**
+
+| 事件驱动（旧） | 世界驱动（新） |
+|---|---|
+| 引擎等着玩家点"推进"，从池里选一个事件模板 | 角色在后台活着——有日程、有关系、有记忆、有信息差 |
+| 修罗场 = 调度器选中了三角事件 | 修罗场 = 两个角色的日程撞上了同一条走廊 |
+
+### 第一层：角色独立日程（CharacterScheduleService）
+```
+getCharacterLocation() → 返回角色此刻在哪个地点做什么
+getAllLocations() → 所有立体角色此刻位置
+detectCollisions() → 按地点分组检测撞车
+pickDramaticCollision() → 按(好感度A×好感度B)/100 计算戏剧性分数
+```
+
+### 第二层：角色间关系（InterCharRelationshipService）
+- 8级亲和力标签（死对头→挚友）
+- onPlayerEvent / onWitness / onScheduleCollision → 自动亲和偏移
+
+### 第三层：信息传播（InformationPropagationService）
+- 5种加密风格（honest/joke/gossip/cold/speculation）
+- 每次推进扩散1步 → 可信度衰减 ×0.85
+
+### 引擎集成：WorldEngine.tickWorld()
+每次推进时自动调用日程→撞车→角色间关系→信息传播，生成 WorldTickReport 注入 AI Prompt。
+
+---
+
+## 十五、v2.5 四层深化
+
+### 15.1 角色层：记忆三层化
+| 层 | 上限 | 衰减规则 | Prompt标签 |
+|---|---|---|---|
+| core（核心）| 8条 | 永不清洗 | 【她的记忆锚点】 |
+| episodic（情景）| 10条 | 溢出→降级到decay | 【你们之间的重要时刻】 |
+| decay（衰减）| 20条 | 溢出→自动丢弃 | 【最近的日常】 |
+
+### 15.2 世界层：地点叙事属性
+`SceneLocation` 新增 `LocationNarrativeProfile`：eventAffinity 加成系数 + narrativeKeywords。天台 × relationshipBeat=0.9，走廊 × tensionEscalation=0.7。
+
+### 15.3 节奏层：三维张力拆解
+`TensionVector` 三轴：relational / narrative / emotional。反节奏检测：`emotional > 0.6 && relational < 0.4` → 爆发。
+
+### 15.4 生成层：Prompt 动态权重
+`_trimForFocus` 按焦点裁剪角色档案段落长度。
+
+---
+
+## 十六、v2.6 时段行动系统
+
+- 十二时辰，每时段 = 1 行动点
+- 去别处 / 互动 / 度过 / 自定义 四种行动
+- 渐进式角色发现（discovery_condition）
+- 场景互动（每个地点有 narrative_profile → AI 生成场景描述）
+
+---
+
+## 十七、v2.7 十二时辰 + 养成系统 + 跳过天数
+
+### 17.1 十二时辰
+时段列表完全由剧本 `time_config.phases` 定义，每个时辰 = 1 行动点，`skippable` 标记可跳过时段。
+
+### 17.2 养成训练系统
+`data_layer.training.actions` 定义训练动作，玩家点击「锻炼」→ 选择训练 → 消耗时段 → 属性/成绩增加 + AI 简述效果。
 
 ### 17.3 跳过天数
+输入 N 天 → 引擎逐天推进 → AI 生成摘要叙事 → 好感度自然漂移。
 
-- 时间栏右侧「跳过」按钮 → 输入 N 天
-- 引擎逐天推进（天气轮转、季节更替、特殊日检测、考试触发）
-- AI 生成摘要叙事：季节变化、考试排名、角色关系变化
-- 好感度自然漂移（向中间值靠拢，可配置 `natural_drift`）
+---
 
-### 17.4 代码/剧本分离（更新）
+## 十八、v2.8 叙事质量提升 — 六项增量改进
 
-| 剧本 JSON 定义 | Dart 引擎处理 |
+> 前置：v2.7 核心闭环已打通（RhythmScheduler + TensionVector + CharacterMemory + generateWorldNarrative 全部接入 advance 流程）
+> 目标：不改架构，在现有骨架上做增量提升，让 AI 叙事质量从"能看"到"有质"
+
+### 18.1 Two-step Prompting（A+ 级）✅ 已实现
+
+当前一次性把 3000+ 字数据塞进一个 Prompt，DeepSeek 注意力在长文本中不可靠。改为两阶段：
+
+**Step 1：路由**（短 Prompt，~150 tokens 输出）
+- 输入：情境摘要（2 行）+ 三维张力快照 + 最近事件
+- 输出：主焦点 + 各角色意图（≤15 字）+ 叙事形状 + 基调 + 记忆标签
+- 返回 JSON 结构化决策
+
+**Step 2：生成**（用 Step 1 的决策裁剪 Prompt）
+- 按焦点裁剪 Prompt 段落长度
+- 注入叙事形状指令 + 张力快照 + 角色意图
+- 路由失败时自动 fallback 到单步模式
+
+### 18.2 Prompt 加权裁剪（A+ 级）✅ 已实现
+
+根据 `RhythmDirective.primaryFocus` 动态调整各 Prompt 段落的字符配额：
+
+| focus | 角色档案 | 世界状态 | 记忆 | 排名 | 信息传播 |
+|-------|:--------:|:--------:|:----:|:----:|:--------:|
+| characterMoment | 60% | 20% | 15% | 0% | 5% |
+| relationshipBeat | 40% | 15% | 30% | 5% | 10% |
+| plotAdvancement | 20% | 30% | 10% | 20% | 20% |
+| worldTexture | 10% | 60% | 5% | 5% | 20% |
+| tensionEscalation | 30% | 20% | 25% | 10% | 15% |
+| ensembleScene | 35% | 25% | 15% | 5% | 20% |
+
+### 18.3 三维张力注入 Prompt（A 级）✅ 已实现
+
+`generateWorldNarrative` 新增 `tensionSnapshot` 参数，Prompt 中注入 TensionVector 快照：
+
+```
+【三维张力】
+关系张力: 72/100 (↑ 上升 — 最近两次互动中好感度波动较大)
+情节张力: 45/100 (→ 平稳)
+情绪张力: 61/100 (↑ 上升 — 她被冷落了三天)
+整体: 暗流涌动 [反节奏风险 — 情绪累积但关系冷淡]
+```
+
+### 18.4 日程频率感知（A 级）✅ 已实现
+
+`LocationFrequencyTracker` 独立文件：
+- **重复故意检测**：主角连续 N 天出现在某角色的常去地点 → 生成叙事钩子
+- **规律打破检测**：某角色今天没有去她的日常地点 → 生成叙事钩子
+- 数据通过 `world_engine.tickWorld()` 录制 → `buildFrequencyHooks()` → 注入 Prompt
+
+### 18.5 记忆标签过滤（B+ 级）✅ 已实现
+
+记忆条目增加 `tags` 字段，`buildMemoryContext` 增加 `filterTags` 参数：
+优先返回含匹配 tag 的记忆，不足时用无 tag 的补齐。
+
+| 标签 | 来源 |
+|------|------|
+| 考试 | ranking 事件 |
+| 暧昧 | 好感度突破事件 |
+| 吃醋 | interCharRel.onWitness |
+| 共同经历 | 撞车事件 |
+| 第三方提及 | 信息传播 |
+| 冲突 | 好感度下降事件 |
+| 日常 | decay 层默认 |
+| 核心记忆 | core 层默认 |
+
+路由 AI 输出 `relevant_tags` → `buildMemoryContext` 按标签过滤 → 注入到生成阶段 Prompt。
+
+### 18.6 信息传播作为事件触发源（B 级）✅ 已实现
+
+`RhythmScheduler._checkInfoSpread` 三层阈值触发：
+1. 信息传播深度 ≥ 3
+2. 信息包含敏感关键词（分数/排名/绯闻/秘密等）
+3. 传播到好感度 ≥ 60 的角色
+→ 触发 weight: medium，focus: relationshipBeat
+
+敏感关键词从 `rhythm_config.info_spread_trigger.sensitive_keywords` 读取（JSON 可配置）
+
+### 18.7 叙事形状指令（B- 级）✅ 已实现
+
+路由决策中包含 `narrative_shape` 字段，Step 2 Prompt 中注入形状指令：
+
+| 形状 | 适用场景 |
+|------|----------|
+| dialogue-heavy | 撞车、冲突、亲密 |
+| montage | 跳过天数、日常推进 |
+| reveal | 信息传播触发、秘密揭露 |
+| tension-escalation | 冲突升级、反节奏 |
+| quiet | 好感度平稳期的日常 |
+| action-reaction | 突发场景事件 |
+
+### 18.8 叙事格式重构（A 级）✅ 已实现
+
+**核心问题**：AI 用"第二人称你"替玩家写了意图和动作，玩家只是旁观者。固定字数强制凑字数，叙事缺乏节奏感。
+
+**重构后的格式规则**（在 `_buildWorldSystemPrompt` 注入到所有叙事生成的 System Prompt）：
+
+| 规则 | 说明 |
+|------|------|
+| **不替玩家写意图** | 只写世界/环境/角色的行为与反应。不写"你决定走过去"、"你假装没看见"这类玩家还没说要做的事 |
+| **可以写玩家动作的后果** | 允许写"你的脚步声在走廊里回响"、"你的巴掌十分大力"——这些是客观结果描写，不是意图 |
+| **场景描写放括号** | 环境、氛围、动作描写放在 `（）` 里，与对白区分 |
+| **对话单独成行** | 每个角色的对白占一行或多行，清晰可读 |
+| **篇幅由情境决定** | 取消所有"300-500字"、"200-300字"等固定字数要求。简短反应可以只 2-3 行，复杂冲突写较长 |
+| **宁短不凑** | 没东西可写就少写，不要为凑字数而写空洞描写 |
+
+**影响范围**：`generateWorldNarrative` / `generateChoiceResponse` / `generateCustomActionConsequence` / `generateSceneEventNarrative` / `_buildWorldUserPrompt`（skip_days）全部同步。
+
+### 18.9 全事件多回合（B+ 级）✅ 已实现
+
+| 改动前 | 改动后 |
+|--------|--------|
+| `duration=short` → 选完就结束 | **所有事件**至少给 2 回合的选项循环 |
+| 事件感 = 选择题 | 事件感 = 有来有回的"对话"|
+
+实现：`game_session.dart` 中 `pickChoice` 后不再根据 `duration` 区分，所有事件统一走循环逻辑。普通事件默认 `_longEventStepsRemaining=2`，长事件用剧本定义的 `max_steps`。
+
+---
+
+**v2.8 汇总表（9 项增量改进，全部落地）**：
+
+| # | 项目 | 等级 | 效果 |
+|---|------|------|------|
+| 18.1 | Two-step Prompting（路由→生成） | A+ | AI 不再被 3000 字淹没，先做决策再生成 |
+| 18.2 | Prompt 加权裁剪 | A+ | 按 focus 动态分配字符配额 |
+| 18.3 | 三维张力注入 | A | 张力快照注入 Prompt |
+| 18.4 | 日程频率感知 | A | 检测主角重复/角色打破规律 |
+| 18.5 | 记忆标签过滤 | B+ | 路由输出 relevant_tags → 过滤记忆 |
+| 18.6 | 信息传播→事件触发 | B | 深度+关键词+高好感三层触发 |
+| 18.7 | 叙事形状指令 | B- | 6 种形状指导写作风格 |
+| 18.8 | 叙事格式重构 | A | 不替玩家写意图，括号+分行，灵活篇幅 |
+| 18.9 | 全事件多回合 | B+ | 任何事件至少 2 回合循环 |
+
+---
+
+## 十九、v2.8 数据层扩展
+
+### 19.1 剧本级 rhythm_config
+
+```json
+{
+  "rhythm_config": {
+    "narrative_shape_weights": {
+      "dialogue_heavy": 0.3, "montage": 0.2, "reveal": 0.15,
+      "tension_escalation": 0.2, "quiet": 0.1, "action_reaction": 0.05
+    },
+    "info_spread_trigger": {
+      "min_depth": 3,
+      "sensitive_keywords": ["分数", "排名", "好感", "绯闻", "秘密"],
+      "high_affection_threshold": 60
+    }
+  }
+}
+```
+
+### 19.2 剧本级 memory_config
+
+```json
+{
+  "memory_config": {
+    "tags": ["考试", "暧昧", "吃醋", "共同经历", "第三方提及", "冲突", "日常", "核心记忆"],
+    "tag_match_boost": 2.0
+  }
+}
+```
+
+### 19.3 角色级 memory_tags
+
+```json
+{
+  "characters": [{
+    "memory_tags": {
+      "default": ["日常"],
+      "affection_breakthrough": ["暧昧"],
+      "conflict": ["冲突"],
+      "triangular": ["吃醋", "第三方提及"]
+    }
+  }]
+}
+```
+
+---
+
+## 二十、v2.9 世界驱动统一
+
+> **动机**：v2.8 的 `advance()` 存在两条路径——有事件时走世界驱动全路径（tickWorld + rhythmScheduler + generateWorldNarrative），无事件时走旧裸路径（直接拿 result.narrative，没有世界数据注入）。导致日常推进中很多回合的叙事质量断崖下降。
+
+### 20.1 核心改动
+
+| 改动 | 旧 | 新 |
+|------|----|----|
+| 时间推进 | `worldEngine.advance()` 内部生成叙事 | `advanceTime()` 纯跳天数，叙事由 game_session 统一驱动 |
+| tickWorld | 有事件时 2 次，无事件时 1 次 | **每次 1 次** |
+| rhythmScheduler | 有事件时运行 | **每次都运行** |
+| 叙事生成 | eventTemplate 路径 / 裸路径 二选一 | **统一走 generateWorldNarrative** |
+| eventTemplate | 主驱动（决定用哪条路径） | 降级为可选种子（有则注入事件名和参与者） |
+
+### 20.2 新增 WorldEngine 方法
+
+```dart
+AdvanceTimeResult advanceTime(String mode);
+```
+
+与 `advance()` 的时间跳转逻辑完全一致，但不生成叙事。`AdvanceTimeResult` 仅含 `dayBefore / dayAfter / daysSkipped`。
+
+---
+
+## 二十一、v2.9 场景交互改造
+
+> **动机**：场景页签之前是摆设——角色是随机抽的（好感度 >50 随机选），点击角色弹窗看一眼就没了，没有"进入场景"的体验。
+
+### 21.1 架构
+
+```
+SceneScreen（工具箱页签）
+  ├── 数据源：events.sceneLocations（类型化 SceneLocation）
+  ├── 在场角色：worldEngine.getCharactersAtLocation(locId)（日程实时查询，不再随机）
+  └── 点击卡片 → Navigator.push → SceneInteractionScreen（全屏）
+
+SceneInteractionScreen（新文件）
+  ├── enterScene() → AI 生成场景氛围开场 + _generateChoices
+  ├── actInScene() → AI 回应 + 追加全局叙事 [场景·地名] 前缀 + 好感度 + 记忆
+  ├── leaveScene() → advancePhase() 消耗 1 时段 → Navigator.pop
+  └── 场景内叙事：generateChoiceResponse / generateCustomActionConsequence
+       （不走 generateWorldNarrative，场景是小空间对话张力）
+```
+
+### 21.2 四条设计原则
+
+| 原则 | 实现 |
+|------|------|
+| **记忆全局存储** | 场景叙事加 `[场景·琴房]` 前缀写入 `_narrativeHistory`，好感度走 `charMemory.recordEvent` |
+| **离开消耗时段** | `leaveScene()` → `worldEngine.advancePhase()` + 时间同步 |
+| **日程感知** | 角色出现由日程引擎实时查，不再是随机缓存 |
+| **入口在工具箱** | SceneScreen 页签不变，点击卡片进入全屏交互页 |
+
+### 21.3 现有入口
+
+- SceneScreen：全部 `events.sceneLocations`，日程引擎实时查人
+- WorldScreen "去别处"：仍然用 `world.locations`（字典列表），预览 + 行动
+- 邀请横幅：角色随机约你去某地（好感度 >65）
+
+### 21.4 新增文件
+
+| 文件 | 用途 |
+|------|------|
+| [scene_interaction_screen.dart](file:///d:/AR/love_sim/lib/screens/scene_interaction_screen.dart) | 全屏场景交互页面（~380 行）|
+| [deepseek_client.dart](file:///d:/AR/love_sim/lib/services/deepseek_client.dart) 的 `generateSceneAtmosphere()` | 场景氛围开场生成（~55 行）|
+| [game_session.dart](file:///d:/AR/love_sim/lib/services/game_session.dart) 的 `enterScene/actInScene/leaveScene` | 场景交互三剑客（~160 行）|
+
+---
+
+## 二十二、v2.9 被动张力 + 互斥张力
+
+> **动机**：现有惩罚体系（行为界限 -5、表白界限 -3、话题禁忌 -3）只覆盖"做错"，不覆盖"不做"和"选了 A 没选 B"。
+
+### 22.1 被动张力：关系自然冷却
+
+`_buildCoolingHints(day)` — 每次推进扫描所有角色：
+
+| 条件 | 衰减 | 叙事提示 |
+|------|:--:|------|
+| ≥6 天未互动 | -0.3 | "你有 N 天没见过 XX 了" |
+| ≥12 天未互动 | -0.5 | "XX 已经太久没有出现在你的视线里了。你们之间隔了 N 天" |
+
+冷却不影响 ≤5 天内的互动记录。提示注入 `worldReport`，随 `generateWorldNarrative` 进入 Prompt。
+
+### 22.2 互斥张力：在场未遇
+
+`_buildMissedConnectionHints(tickReport)` — 每次推进扫描日程引擎：
+
+- 好感度 >20 且 >3 天未互动的角色
+- 该角色此刻在一个有日程碰撞的地点
+- 但你不在那个碰撞中 → **角色在同一个地方，你的注意力在别处**
+
+提示："XX 也在琴房，但你的注意力在别处。"
+
+### 22.3 互动登记
+
+与好感度系统解耦的**独立记录机制**：`_lastInteractionDay[charId]`。在 6 个入口登记：`advance` / `pickChoice` / `customAction` / `sendMessage` / `sendGift` / `actInScene`。
+
+### 22.4 数据流
+
+```
+每次推进：
+  tickWorld → worldReport
+    → _buildCoolingHints: 检查所有人的冷却 → 注入 worldReport
+    → _buildMissedConnectionHints: 检查错过 → 注入 worldReport
+    → rhythmScheduler + generateWorldNarrative
+    → AI 在叙事里自然吸收这些提示
+
+每次互动：
+  pickChoice / customAction / chat / gift / scene
+    → _recordInteraction(id) 重置冷却计时
+```
+
+---
+
+## 二十三、创建新剧本检查清单
+
+- [ ] 定义 `data_layer.stats`（属性池）
+- [ ] 定义 `data_layer.grades`（成绩池）
+- [ ] 定义 `data_layer.grade_formulas`（每科公式）
+- [ ] 定义 `data_layer.natural_growth_rate`
+- [ ] 定义 `data_layer.ranking`（总人数 + 考试事件）
+- [ ] 定义 `rhythm_config`（节奏层配置）
+- [ ] 定义 `memory_config`（记忆系统配置）
+- [ ] 为每个 full_character 填写 `stats`、`grades`、`memory_tags`
+- [ ] 确保所有 ID 在 stat/grades/formula 三层之间一致引用
+- [ ] **不要修改任何 .dart 文件**
+
+---
+
+## 二十四、文件索引
+
+| 文件 | 用途 |
 |---|---|
-| `time_config.phases[].name/hour/mood/skippable` | `CalendarService.getPhaseNames()` |
-| `data_layer.training.actions[]` | `PhaseActionService.getAvailableTraining()` |
-| `interaction.affection.natural_drift` | `PhaseActionService.skipDays()` 漂移计算 |
-| `data_layer.ranking.events[].interval_days` | `RankingService.shouldTriggerExam()` |
+| [sim-script.json](file:///d:/AR/sim-script.json) | 工业模板——所有字段定义和注释 |
+| [script.dart](file:///d:/AR/love_sim/lib/models/script.dart) | Dart 数据模型（约2000行） |
+| [game_session.dart](file:///d:/AR/love_sim/lib/services/game_session.dart) | 游戏会话主协调器 |
+| [deepseek_client.dart](file:///d:/AR/love_sim/lib/services/deepseek_client.dart) | AI 调用 + Two-step Prompting + generateSceneAtmosphere |
+| [world_engine.dart](file:///d:/AR/love_sim/lib/services/world_engine.dart) | 世界时间/天气/推进 + WorldTickReport + advanceTime |
+| [rhythm_scheduler.dart](file:///d:/AR/love_sim/lib/services/rhythm_scheduler.dart) | ★节奏调度器 — 五路触发源 + 反节奏检测 |
+| [tension_vector.dart](file:///d:/AR/love_sim/lib/services/tension_vector.dart) | ★三维张力向量 |
+| [affection_engine.dart](file:///d:/AR/love_sim/lib/services/affection_engine.dart) | 好感度计算引擎 |
+| [relationship_engine.dart](file:///d:/AR/love_sim/lib/services/relationship_engine.dart) | 关系状态机 |
+| [character_memory_service.dart](file:///d:/AR/love_sim/lib/services/character_memory_service.dart) | ★角色记忆三层化 |
+| [character_schedule.dart](file:///d:/AR/love_sim/lib/services/character_schedule.dart) | ★角色日程服务 |
+| [inter_character_relationship.dart](file:///d:/AR/love_sim/lib/services/inter_character_relationship.dart) | ★角色间关系服务 |
+| [information_propagation.dart](file:///d:/AR/love_sim/lib/services/information_propagation.dart) | ★信息传播服务 |
+| [phase_action_service.dart](file:///d:/AR/love_sim/lib/services/phase_action_service.dart) | 时段行动服务 |
+| [ranking_service.dart](file:///d:/AR/love_sim/lib/services/ranking_service.dart) | 排名系统 |
+| [plot_service.dart](file:///d:/AR/love_sim/lib/services/plot_service.dart) | 剧情节拍判定 |
+| [script_loader.dart](file:///d:/AR/love_sim/lib/services/script_loader.dart) | JSON 解析入口 |
+| [save_service.dart](file:///d:/AR/love_sim/lib/services/save_service.dart) | 存档服务 |
+| [app_provider.dart](file:///d:/AR/love_sim/lib/providers/app_provider.dart) | 状态中枢 |
+| [scene_interaction_screen.dart](file:///d:/AR/love_sim/lib/screens/scene_interaction_screen.dart) | ★v2.9 场景交互全屏页面 |
+| [campus_love.json](file:///d:/AR/love_sim/assets/scripts/campus_love.json) | 默认剧本「春日未央」 |
+| [_template.json](file:///d:/AR/love_sim/assets/scripts/_template.json) | 剧本模板 |
 
-无硬编码时段名、训练动作名、漂移参数。
+---
 
-### 17.5 文件变更
+## 二十五、待实施项目
 
-| 文件 | 操作 | 说明 |
-|---|---|---|
-| `lib/services/phase_action_service.dart` | 新增 | 时段行动服务：场景预览/行动/互动/训练/跳过天数 |
-| `lib/services/calendar_service.dart` | 修改 | +`getPhaseNames()`/`isPhaseSkippable()` 从剧本读取 |
-| `lib/models/script.dart` | 修改 | GameDataLayer 新增 `training` 字段 |
-| `lib/providers/app_provider.dart` | 修改 | +skipDays/doTraining/getAvailableTraining |
-| `lib/screens/world_screen.dart` | 修改 | +锻炼按钮 + 训练选择器 + 跳过天数弹窗 |
-| `lib/screens/simulation_screen.dart` | 修改 | 顶部栏显示周几/十二时辰 |
-| `lib/services/deepseek_client.dart` | 修改 | +skip_days prompt 模式 |
-| `lib/services/game_session.dart` | 修改 | +appendNarrative/isLoading setter/tensionVector |
-| `campus_love.json` | 修改 | +phases(十二时辰) +training +natural_drift |
-| `_template.json` | 修改 | +phases +training +natural_drift |
-| `PRD.md` | 修改 | +本章节 |
+> v2.8 的 9 项增量改进 + v2.9 的 3 项架构改进已全部落地。
+
+```
+✅ 世界驱动统一 — advance() 统一为单一路径，裸路径已删除
+✅ 场景交互改造 — SceneInteractionScreen 全屏交互 + 日程实时查询 + 记忆全局存储
+✅ 被动/互斥张力 — 关系冷却（6/12天阈值）+ 在场未遇（日程碰撞感知）
+```
+
+**下一个版本（v2.10）考虑方向**（讨论中，待确定）：
+- 叙事模板化：为高频场景（偶遇、独处、第三方介入）提供可复用的 JSON 叙事骨架
+- 角色主动消息优化（目前 initiative_service 只有简单触发）
+- 信息碎片发现系统：JSON 里埋秘密，unlock_condition 驱动玩家从不知道到知道

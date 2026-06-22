@@ -862,6 +862,7 @@ class Character {
   final List<CharacterGrade>? grades;
   final String discoveryCondition;
   final String? coopArcana;
+  final Map<String, dynamic>? memoryTags;
 
   Character({
     required this.fullCharacter,
@@ -887,6 +888,7 @@ class Character {
     this.grades,
     this.discoveryCondition = '',
     this.coopArcana,
+    this.memoryTags,
   });
 
   factory Character.fromJson(Map<String, dynamic> json) {
@@ -909,6 +911,7 @@ class Character {
     CharacterSchedule? _sc; try { _sc = json['schedule'] != null ? CharacterSchedule.fromJson(json['schedule']) : null; } catch(e) { _sc = null; }
     final stats = (json['stats'] as List<dynamic>?)?.map((e) => CharacterStat.fromJson(e)).toList();
     final grades = (json['grades'] as List<dynamic>?)?.map((e) => CharacterGrade.fromJson(e)).toList();
+    final memoryTags = json['memory_tags'] is Map ? Map<String, dynamic>.from(json['memory_tags'] as Map) : null;
 
     _b = _enrichBasicFromAppearance(_b, json['appearance'] as Map<String, dynamic>?);
 
@@ -920,6 +923,7 @@ class Character {
       moodTriggers: _mt, giftResponse: _gr, boundary: _bo,
       evolution: _ev, memory: _m, relations: _r, schedule: _sc,
       stats: stats, grades: grades, discoveryCondition: json['discovery_condition'] ?? '', coopArcana: json['coop']?['arcana']?.toString(),
+      memoryTags: memoryTags,
     );
   }
 }
@@ -1213,6 +1217,10 @@ class GameScript {
   final GameDataLayer? dataLayer;
   final ActionRules? actionRules;
   final FallbackNarratives? fallbackNarratives;
+  final InterCharRelationConfig? interCharRelationConfig;
+  final InformationSystemConfig? informationSystemConfig;
+  final Map<String, dynamic> rhythmConfig;
+  final Map<String, dynamic> memoryConfig;
 
   GameScript({
     required this.meta,
@@ -1230,7 +1238,12 @@ class GameScript {
     this.dataLayer,
     this.actionRules,
     this.fallbackNarratives,
-  });
+    Map<String, dynamic>? rhythmConfig,
+    Map<String, dynamic>? memoryConfig,
+    this.interCharRelationConfig,
+    this.informationSystemConfig,
+  }) : rhythmConfig = rhythmConfig ?? {},
+       memoryConfig = memoryConfig ?? {};
 
   factory GameScript.fromJson(Map<String, dynamic> json) {
     final worldJson = json['world'] ?? {};
@@ -1260,6 +1273,10 @@ class GameScript {
       dataLayer: _safeParse(json, 'data_layer', (v)=>GameDataLayer.fromJson(v)),
       actionRules: _safeParseTop(json, 'action_rules', (v) => ActionRules.fromJson(v)),
       fallbackNarratives: _safeParseTop(json, 'fallback_narratives', (v) => FallbackNarratives.fromJson(v)),
+      rhythmConfig: json['rhythm_config'] is Map ? Map<String, dynamic>.from(json['rhythm_config'] as Map) : null,
+      memoryConfig: json['memory_config'] is Map ? Map<String, dynamic>.from(json['memory_config'] as Map) : null,
+      interCharRelationConfig: _safeParseTop(json, 'inter_character_relationships', (v) => InterCharRelationConfig.fromJson(v)),
+      informationSystemConfig: _safeParseTop(json, 'information_system', (v) => InformationSystemConfig.fromJson(v)),
     );
   }
   static T? _safeParse<T>(Map<String,dynamic> json, String key, T? Function(Map<String,dynamic>) parser) {
@@ -1699,8 +1716,11 @@ class ScriptItem {
   final ItemGiftMeta giftMeta;
   final ItemRequirement requirements;
   final bool isShopItem;
-  ScriptItem({this.itemId='',this.name='',this.type='',this.rarity='common',this.desc='',this.flavorText='',this.price=0,this.canSell=true,this.sellPrice=0,this.stackable=true,this.maxStack=99,this.obtain='',this.obtainHint='',ItemEffect? effects,ItemGiftMeta? giftMeta,ItemRequirement? requirements,this.isShopItem=false}):effects=effects??ItemEffect(),giftMeta=giftMeta??ItemGiftMeta(),requirements=requirements??ItemRequirement();
-  factory ScriptItem.fromJson(Map<String,dynamic> json)=>ScriptItem(itemId: json['item_id']??'',name: json['name']??'',type: json['type']??'',rarity: json['rarity']??'common',desc: json['desc']??'',flavorText: json['flavor_text']??'',price: json['price']??0,canSell: json['can_sell']??true,sellPrice: json['sell_price']??0,stackable: json['stackable']??true,maxStack: json['max_stack']??99,obtain: json['obtain']??'',obtainHint: json['obtain_hint']??'',effects: ItemEffect.fromJson(json['effects']??{}),giftMeta: ItemGiftMeta.fromJson(json['gift_meta']??{}),requirements: ItemRequirement.fromJson(json['requirements']??{}));
+  final Map<String, double> equipStats;
+  final String slot;
+  final int durability;
+  ScriptItem({this.itemId='',this.name='',this.type='',this.rarity='common',this.desc='',this.flavorText='',this.price=0,this.canSell=true,this.sellPrice=0,this.stackable=true,this.maxStack=99,this.obtain='',this.obtainHint='',ItemEffect? effects,ItemGiftMeta? giftMeta,ItemRequirement? requirements,this.isShopItem=false,Map<String,double>? equipStats,this.slot='',this.durability=100}):effects=effects??ItemEffect(),giftMeta=giftMeta??ItemGiftMeta(),requirements=requirements??ItemRequirement(),equipStats=equipStats??{};
+  factory ScriptItem.fromJson(Map<String,dynamic> json)=>ScriptItem(itemId: json['item_id']??'',name: json['name']??'',type: json['type']??'',rarity: json['rarity']??'common',desc: json['desc']??'',flavorText: json['flavor_text']??'',price: json['price']??0,canSell: json['can_sell']??true,sellPrice: json['sell_price']??0,stackable: json['stackable']??true,maxStack: json['max_stack']??99,obtain: json['obtain']??'',obtainHint: json['obtain_hint']??'',effects: ItemEffect.fromJson(json['effects']??{}),giftMeta: ItemGiftMeta.fromJson(json['gift_meta']??{}),requirements: ItemRequirement.fromJson(json['requirements']??{}),equipStats: (json['equip_stats'] as Map<String,dynamic>?)?.map((k,v)=>MapEntry(k,(v as num).toDouble()))??{},slot: json['slot']??'',durability: json['durability']??100);
 }
 
 class ShopRestockRule {
@@ -2014,6 +2034,89 @@ class CharacterGrade {
   CharacterGrade({this.id='',this.name='',this.value=100,this.max=150});
   factory CharacterGrade.fromJson(Map<String,dynamic> json)=>CharacterGrade(id: json['id']??'',name: json['name']??'',value: (json['value'] as num?)?.toDouble()??100,max: (json['max'] as num?)?.toDouble()??150);
   Map<String,dynamic> toJson()=>{'id':id,'name':name,'value':value,'max':max};
+}
+
+class InterCharInitAttitude {
+  final String fromId;
+  final String toId;
+  final double affinity;
+  final String label;
+  final bool isSecretAdmirer;
+  final String history;
+
+  InterCharInitAttitude({
+    this.fromId = '',
+    this.toId = '',
+    this.affinity = 0.0,
+    this.label = '',
+    this.isSecretAdmirer = false,
+    this.history = '',
+  });
+
+  factory InterCharInitAttitude.fromJson(Map<String, dynamic> json) {
+    return InterCharInitAttitude(
+      fromId: json['from'] ?? '',
+      toId: json['to'] ?? '',
+      affinity: (json['affinity'] as num?)?.toDouble() ?? 0.0,
+      label: json['label'] ?? '',
+      isSecretAdmirer: json['is_secret_admirer'] ?? false,
+      history: json['history'] ?? '',
+    );
+  }
+}
+
+class InterCharRelationConfig {
+  final List<InterCharInitAttitude> initialAttitudes;
+
+  InterCharRelationConfig({
+    List<InterCharInitAttitude>? initialAttitudes,
+  }) : initialAttitudes = initialAttitudes ?? [];
+
+  factory InterCharRelationConfig.fromJson(Map<String, dynamic> json) {
+    return InterCharRelationConfig(
+      initialAttitudes: (json['initial_attitudes'] as List<dynamic>?)
+              ?.map((e) => InterCharInitAttitude.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+    );
+  }
+}
+
+class EncryptionStyleConfig {
+  final double trust;
+  final String desc;
+
+  EncryptionStyleConfig({
+    this.trust = 1.0,
+    this.desc = '',
+  });
+
+  factory EncryptionStyleConfig.fromJson(Map<String, dynamic> json) {
+    return EncryptionStyleConfig(
+      trust: (json['trust'] as num?)?.toDouble() ?? 1.0,
+      desc: json['desc'] ?? '',
+    );
+  }
+}
+
+class InformationSystemConfig {
+  final Map<String, EncryptionStyleConfig> encryptionStyles;
+
+  InformationSystemConfig({
+    Map<String, EncryptionStyleConfig>? encryptionStyles,
+  }) : encryptionStyles = encryptionStyles ?? {};
+
+  factory InformationSystemConfig.fromJson(Map<String, dynamic> json) {
+    final styles = <String, EncryptionStyleConfig>{};
+    final rawStyles = json['encryption_styles'] as Map<String, dynamic>?;
+    if (rawStyles != null) {
+      for (final entry in rawStyles.entries) {
+        styles[entry.key] =
+            EncryptionStyleConfig.fromJson(entry.value as Map<String, dynamic>);
+      }
+    }
+    return InformationSystemConfig(encryptionStyles: styles);
+  }
 }
 
 class InterCharAttitude {

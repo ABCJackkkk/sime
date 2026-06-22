@@ -19,7 +19,13 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   int _latestAiIndex = -1;
-  final Set<int> _animatedMessageIndices = {};
+
+  bool _shouldAnimate(ChatMessage msg, int index) {
+    if (msg.typewriterPlayed) return false;
+    if (msg.senderId == 'player') return false;
+    if (index != _latestAiIndex) return false;
+    return true;
+  }
 
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -34,6 +40,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppProvider>().markCharRead(widget.characterId);
+      _scrollToBottom();
     });
   }
 
@@ -114,9 +121,9 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                               final msg = messages[index];
                               final isPlayer = msg.senderId == 'player';
                               final isRead = isPlayer && app.isPlayerMessageRead(widget.characterId, index);
-                              final animate = !isPlayer && index == _latestAiIndex && !_animatedMessageIndices.contains(index);
+                              final animate = _shouldAnimate(msg, index);
                               if (animate) {
-                                _animatedMessageIndices.add(index);
+                                msg.typewriterPlayed = true;
                               }
                               return _buildBubble(msg, isPlayer, isRead, app, animate: animate);
                             }

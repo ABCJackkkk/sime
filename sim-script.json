@@ -1451,5 +1451,84 @@
       "grade_history": [],
       "last_ranking_day": 0
     }
+  },
+
+  "rhythm_config": {
+    "_comment": "v2.8 节奏调度配置",
+    "narrative_shape_weights": {
+      "dialogue_heavy": 0.3,
+      "montage": 0.2,
+      "reveal": 0.15,
+      "tension_escalation": 0.2,
+      "quiet": 0.1,
+      "action_reaction": 0.05
+    },
+    "info_spread_trigger": {
+      "min_depth": 3,
+      "sensitive_keywords": ["分数", "排名", "好感", "绯闻", "秘密"],
+      "high_affection_threshold": 60
+    }
+  },
+
+  "memory_config": {
+    "_comment": "v2.8 记忆系统配置",
+    "tags": ["考试", "暧昧", "吃醋", "共同经历", "第三方提及", "冲突", "日常", "核心记忆"],
+    "tag_match_boost": 2.0
+  },
+
+  "action_rules": {
+    "_comment": "玩家自定义行动的合法性校验规则。输出格式要求 v2.8：场景描写放（）里，对话单独成行，不要替玩家写意图。",
+    "narrative_format_hint": "场景放在（括号）里，每个角色对白占一行。可以写玩家动作的后果（如'你的脚步踩在落叶上沙沙响'），但不要写'你决定…'。篇幅由情境决定，宁短不凑。",
+    "boundary_checks": [
+      {
+        "_comment": "物理亲密行为需要好感度 >= min_affection",
+        "keywords": ["抱", "亲", "吻", "牵手", "摸", "碰", "睡"],
+        "min_affection": 70,
+        "rejection_narrative": "{char_name}往后退了一步，眼神冷了下来。\"……不要这样。\"",
+        "affection_penalty": -5
+      },
+      {
+        "_comment": "表白相关需要好感度 >= min_affection",
+        "keywords": ["表白", "喜欢", "爱", "在一起", "交往"],
+        "min_affection": 65,
+        "rejection_narrative": "{char_name}愣了一下，随即移开了视线。\"……现在说这个，太早了。\"",
+        "affection_penalty": -3
+      },
+      {
+        "_comment": "约请需要好感度 >= min_affection",
+        "keywords": ["约会", "单独", "陪", "出去"],
+        "min_affection": 55,
+        "rejection_narrative": "{char_name}犹豫了一下，摇了摇头。\"……改天吧。\"",
+        "affection_penalty": -1
+      }
+    ],
+    "topic_taboo_penalty": -3,
+    "topic_taboo_rejection": "{char_name}的表情僵了一下，没有接话。"
+  },
+
+  "fallback_narratives": {
+    "_comment": "AI生成失败时的兜底叙事模板，v2.8格式：场景描写在（）里，对话单独成行。支持 {char_name}/{location}/{weather}/{phase}/{season} 占位符",
+    "_pool_names": "daily/sweet_minor/sweet_major/plot/boundary/reversal/custom_action/scene_event/chat_reply",
+    "daily": [
+      "（{weather}的{phase}，{location}里一切如常。）\n\n{char_name}在做自己的事。",
+      "（{location}里的{phase}。）\n\n{char_name}从你身边经过，{weather}的风吹起了她的发梢。"
+    ],
+    "sweet_minor": [
+      "（{weather}的光线落下来。）\n\n{char_name}朝你笑了一下。\n\n那笑容很短。",
+      "（{location}的{phase}。）\n\n{char_name}递给你一瓶水。\n\n\"顺手拿的。\"\n\n但你知道不是。"
+    ],
+    "plot": [
+      "（{weather}的{phase}，{location}里气氛不太寻常。）\n\n{char_name}的表情比平时严肃了几分。",
+      "（{location}，窗边。）\n\n{char_name}站在那里，像是在等什么人。\n\n{weather}的光线在地板上拉出长长的影子。"
+    ],
+    "custom_action": [
+      "（{location}里，{weather}的光线照进来。）\n\n{char_name}看了你一眼，没说什么。"
+    ],
+    "scene_event": [
+      "（{location}。）\n\n{char_name}在做自己的事。\n\n{weather}的光线透过窗户洒进来。"
+    ],
+    "chat_reply": [
+      "\"嗯。\"\n\n{char_name}简单地应了一声，低头看了看手机。"
+    ]
   }
 }
