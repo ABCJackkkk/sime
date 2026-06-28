@@ -27,7 +27,7 @@ class ReactiveAvatar extends StatefulWidget {
   State<ReactiveAvatar> createState() => _ReactiveAvatarState();
 }
 
-class _ReactiveAvatarState extends State<ReactiveAvatar> with SingleTickerProviderStateMixin {
+class _ReactiveAvatarState extends State<ReactiveAvatar> with TickerProviderStateMixin {
   late AnimationController _pulseCtrl;
   late AnimationController _redGlowCtrl;
   late AnimationController _dimCtrl;

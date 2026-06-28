@@ -60,20 +60,35 @@ class LoveSimApp extends StatelessWidget {
 
 extension GlassBox on Widget {
   Widget glass({double opacity = 0.04, double borderRadius = 16, EdgeInsets padding = const EdgeInsets.all(16)}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: Color.fromRGBO(255, 255, 255, opacity),
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: const Color(0x12FFFFFF), width: 0.5),
+    return Builder(
+      builder: (context) {
+        final isLight = CupertinoTheme.of(context).brightness == Brightness.light;
+        final bgColor = isLight
+            ? Color.fromRGBO(255, 255, 255, opacity + 0.75)
+            : Color.fromRGBO(255, 255, 255, opacity);
+        final borderColor = isLight
+            ? Color.fromRGBO(0, 0, 0, 0.06)
+            : const Color(0x12FFFFFF);
+        final boxShadow = isLight
+            ? [BoxShadow(color: const Color(0x0A000000), blurRadius: 10, offset: const Offset(0, 2))]
+            : const <BoxShadow>[];
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              padding: padding,
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(borderRadius),
+                border: Border.all(color: borderColor, width: 0.5),
+                boxShadow: boxShadow,
+              ),
+              child: this,
+            ),
           ),
-          child: this,
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -98,6 +113,33 @@ class AppColors {
   static const success = Color(0xFF30D158);
   static const warning = Color(0xFFFF9F0A);
   static const error = Color(0xFFFF453A);
+
+  static Color surfaceBg(BuildContext context, {double opacity = 0.04}) {
+    final brightness = CupertinoTheme.of(context).brightness;
+    if (brightness == Brightness.dark) {
+      return Color.fromRGBO(255, 255, 255, opacity);
+    } else {
+      return Color.fromRGBO(255, 255, 255, opacity + 0.6);
+    }
+  }
+
+  static Color borderColor(BuildContext context, {double opacity = 0.07}) {
+    final brightness = CupertinoTheme.of(context).brightness;
+    if (brightness == Brightness.dark) {
+      return const Color(0x12FFFFFF);
+    } else {
+      return Color.fromRGBO(0, 0, 0, opacity);
+    }
+  }
+
+  static Color cardShadow(BuildContext context) {
+    final brightness = CupertinoTheme.of(context).brightness;
+    if (brightness == Brightness.dark) {
+      return const Color(0x00000000);
+    } else {
+      return const Color(0x0A000000);
+    }
+  }
 }
 
 class GlassContainer extends StatelessWidget {
@@ -122,6 +164,17 @@ class GlassContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = CupertinoTheme.of(context).brightness == Brightness.light;
+    final bgColor = isLight
+        ? Color.fromRGBO(255, 255, 255, opacity + 0.75)
+        : Color.fromRGBO(255, 255, 255, opacity);
+    final borderColor = isLight
+        ? Color.fromRGBO(0, 0, 0, 0.06)
+        : const Color(0x12FFFFFF);
+    final boxShadow = isLight
+        ? [BoxShadow(color: const Color(0x0A000000), blurRadius: 10, offset: const Offset(0, 2))]
+        : const <BoxShadow>[];
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
@@ -131,9 +184,10 @@ class GlassContainer extends StatelessWidget {
           height: height,
           padding: padding,
           decoration: BoxDecoration(
-            color: Color.fromRGBO(255, 255, 255, opacity),
+            color: bgColor,
             borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: const Color(0x12FFFFFF), width: 0.5),
+            border: Border.all(color: borderColor, width: 0.5),
+            boxShadow: boxShadow,
           ),
           child: child,
         ),

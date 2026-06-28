@@ -30,8 +30,8 @@ class _SceneScreenState extends State<SceneScreen> {
           final script = app.script;
           final locations = script?.events?.sceneLocations ?? [];
           return SafeArea(
+            top: false,
             child: Column(children: [
-              _buildHeader(app),
               if (locations.isEmpty)
                 Expanded(child: Center(child: Text('暂无场景数据', style: TextStyle(color: AppColors.textTertiary.withAlpha(180), fontSize: 15))))
               else
@@ -70,6 +70,11 @@ class _SceneScreenState extends State<SceneScreen> {
     final chars = app.worldEngine?.getCharactersAtLocation(loc.id) ?? [];
     final currentPhase = app.currentPhase;
     final isAvailable = loc.availablePhases.isEmpty || loc.availablePhases.contains(currentPhase);
+    final isLight = CupertinoTheme.of(context).brightness == Brightness.light;
+    final cardColor = isLight ? const Color(0xCCFFFFFF) : const Color(0x08FFFFFF);
+    final borderC = isLight
+        ? (isAvailable ? const Color(0x0F000000) : const Color(0x08000000))
+        : (isAvailable ? AppColors.border : AppColors.border.withAlpha(80));
 
     return GestureDetector(
       onTap: isAvailable ? () => _enterSceneInteraction(context, app, loc) : null,
@@ -78,8 +83,9 @@ class _SceneScreenState extends State<SceneScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: const Color(0x08FFFFFF),
-        border: Border.all(color: isAvailable ? AppColors.border : AppColors.border.withAlpha(80), width: 0.5),
+        color: cardColor,
+        border: Border.all(color: borderC, width: 0.5),
+        boxShadow: isLight ? [BoxShadow(color: const Color(0x0A000000), blurRadius: 8, offset: const Offset(0, 2))] : [],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [

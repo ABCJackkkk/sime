@@ -45,13 +45,16 @@ class _WorldScreenState extends State<WorldScreen> {
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
       builder: (context, app, _) {
-        return Column(children: [
-          Expanded(child: _showHistory ? _buildHistoryList(app) : _buildNarrativeArea(app)),
-          if (app.pendingChoices.isNotEmpty)
-            ChoiceSlidePanel(child: _buildChoicePanel(app)),
-          if (app.pendingInvitation.isNotEmpty) _buildInvitationBanner(app),
-          _buildActionBar(app),
-        ]);
+        return SafeArea(
+          top: false,
+          child: Column(children: [
+            Expanded(child: _showHistory ? _buildHistoryList(app) : _buildNarrativeArea(app)),
+            if (app.pendingChoices.isNotEmpty)
+              ChoiceSlidePanel(child: _buildChoicePanel(app)),
+            if (app.pendingInvitation.isNotEmpty) _buildInvitationBanner(app),
+            _buildActionBar(app),
+          ]),
+        );
       },
     );
   }

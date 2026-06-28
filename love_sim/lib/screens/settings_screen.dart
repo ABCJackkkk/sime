@@ -14,6 +14,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _apiKeyController = TextEditingController();
   final TextEditingController _corsProxyController = TextEditingController();
+  final TextEditingController _updateUrlController = TextEditingController();
   bool _isInitializing = true;
 
   @override
@@ -27,6 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final savedKey = prefs.getString('api_key') ?? '';
     _apiKeyController.text = savedKey;
     _corsProxyController.text = prefs.getString('cors_proxy') ?? '';
+    _updateUrlController.text = prefs.getString('update_config_url') ?? '';
     if (savedKey.isNotEmpty) {
       context.read<AppProvider>().setApiKey(savedKey);
     }
@@ -47,6 +49,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void dispose() {
     _apiKeyController.dispose();
     _corsProxyController.dispose();
+    _updateUrlController.dispose();
     super.dispose();
   }
 
@@ -75,7 +78,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 16),
                   _buildGlobalBgSection(app),
                   const SizedBox(height: 16),
-                  _buildAboutSection(),
+                  _buildUpdateSection(app),
+                  const SizedBox(height: 16),
+                  _buildAboutSection(app),
                 ],
               ),
             );
@@ -191,7 +196,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildAboutSection() {
+  Widget _buildUpdateSection(AppProvider app) {
+    return GlassContainer(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0xFF30D158).withAlpha(30)), child: const Icon(CupertinoIcons.down_arrow, size: 16, color: Color(0xFF30D158))),
+              const SizedBox(width: 10),
+              const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('自动更新', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)), Text('配置更新服务器地址', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(height: 44, child: CupertinoTextField(
+            controller: _updateUrlController,
+            placeholder: '更新配置 JSON 地址（如 Gitee/GitHub Raw 链接）',
+            placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)),
+            style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontFamily: 'SF Mono'),
+            onChanged: (value) { app.setUpdateConfigUrl(value.trim()); },
+          )),
+          const SizedBox(height: 10),
+          const Text('提示：将版本信息 JSON 上传到 Gitee/GitHub 等平台，填入 Raw 链接即可启用自动更新、公告和打赏功能。', style: TextStyle(fontSize: 11, color: AppColors.textTertiary, height: 1.5)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAboutSection(AppProvider app) {
     return GlassContainer(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -205,9 +240,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          const Text('基于 DeepSeek V4 Pro 百万字上下文的 AI 恋爱模拟引擎。\n加载 .sim 格式剧本，角色卡驱动 AI 生成动态叙事。', style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.6)),
+          const Text('基于 DeepSeek V4 Pro 百万字上下文的 AI 恋爱模拟引擎。\n加载 .json 格式剧本，角色卡驱动 AI 生成动态叙事。', style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.6)),
           const SizedBox(height: 12),
-          Text('v1.0.0 · Flutter', style: TextStyle(fontSize: 12, color: AppColors.textTertiary.withAlpha(180))),
+          Text('v${app.updateService.currentVersion} (build ${app.updateService.currentBuildNumber}) · Flutter', style: TextStyle(fontSize: 12, color: AppColors.textTertiary.withAlpha(180))),
         ],
       ),
     );
