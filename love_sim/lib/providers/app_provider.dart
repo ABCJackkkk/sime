@@ -20,6 +20,8 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:love_sim/services/phase_action_service.dart';
+import 'package:love_sim/services/update_service.dart';
+import 'package:love_sim/models/update_info.dart';
 
 class AppProvider extends ChangeNotifier {
   DeepSeekClient? _deepSeekClient;
@@ -27,17 +29,21 @@ class AppProvider extends ChangeNotifier {
   SaveService? _saveService;
   NarrativeCompressor? _narrativeCompressor;
   final ScriptLoader _scriptLoader = ScriptLoader();
+  final UpdateService _updateService = UpdateService(configUrl: '');
 
   final UserSettings _userSettings = UserSettings();
   final CharacterDisplayState _charDisplay = CharacterDisplayState();
   GameSession? _session;
+  PhaseActionService? _phaseActionService;
 
   UserSettings get userSettings => _userSettings;
   CharacterDisplayState get charDisplay => _charDisplay;
   GameSession? get session => _session;
+  UpdateService get updateService => _updateService;
+  UpdateInfo? get updateInfo => _updateService.cachedInfo;
 
-  bool isDiscovered(String charId) => _session?.discoveredChars.contains(charId) ?? true;
-  List<Character> get discoveredCharacters => _session?.script?.characters.where((c) => c.fullCharacter).toList() ?? [];
+  bool isDiscovered(String charId) => _session?.discoveredChars.contains(charId) ?? false;
+  List<Character> get discoveredCharacters => _session?.script?.characters.where((c) => c.fullCharacter && _session!.discoveredChars.contains(c.basic.id)).toList() ?? [];
 
   int _currentTabIndex = 0;
   int _simTabIndex = 0;
@@ -81,7 +87,45 @@ class AppProvider extends ChangeNotifier {
       _narrativeCompressor!.attach(_deepSeekClient!);
     }
     await _loadSaveSlots();
+    await _updateService.init();
+    _loadUpdateConfig(prefs);
+    _loadCharDisplay(prefs);
     notifyListeners();
+  }
+
+  void _loadCharDisplay(SharedPreferences prefs) {
+    final dataStr = prefs.getString('char_display_state');
+    if (dataStr != null && dataStr.isNotEmpty) {
+      try {
+        final json = jsonDecode(dataStr) as Map<String, dynamic>;
+        _charDisplay.fromJson(json);
+      } catch (_) {}
+    }
+  }
+
+  Future<void> _saveCharDisplay() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonStr = jsonEncode(_charDisplay.toJson());
+    await prefs.setString('char_display_state', jsonStr);
+  }
+
+  void _loadUpdateConfig(SharedPreferences prefs) {
+    final url = prefs.getString('update_config_url') ?? '';
+    if (url.isNotEmpty) {
+      _updateService.configUrl = url;
+    }
+  }
+
+  Future<void> setUpdateConfigUrl(String url) async {
+    _updateService.configUrl = url;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('update_config_url', url);
+    notifyListeners();
+  }
+
+  Future<UpdateInfo?> checkUpdate({bool force = false}) async {
+    if (_updateService.configUrl.isEmpty) return null;
+    return await _updateService.checkUpdate(force: force);
   }
 
   String? get corsProxy => _corsProxy.isNotEmpty ? _corsProxy : null;
@@ -95,6 +139,7 @@ class AppProvider extends ChangeNotifier {
       if (_session?.script != null) {
         _worldEngine = WorldEngine(script: _session!.script!, client: _deepSeekClient!);
         _worldEngine!.initFromScript();
+        _session?.worldEngine = _worldEngine;
       }
     }
     notifyListeners();
@@ -131,7 +176,15 @@ class AppProvider extends ChangeNotifier {
       tensionVectorData: s.tensionVectorData,
     );
     try {
-      final result = await _saveService!.save(data, s.script!, slotIndex: slotIndex);
+      String? scriptJson;
+      final scriptName = s.script!.meta.name;
+      for (final cs in _customScripts) {
+        if (cs['name'] == scriptName) {
+          scriptJson = cs['json'] as String?;
+          break;
+        }
+      }
+      final result = await _saveService!.save(data, s.script!, slotIndex: slotIndex, scriptJson: scriptJson);
       notifyListeners(); return result;
     } catch (e) { return '存档失败: $e'; }
   }
@@ -165,6 +218,7 @@ class AppProvider extends ChangeNotifier {
     _session!.onChanged = () => notifyListeners();
 
     _session!.initFromScript(userName: _userSettings.name);
+    _phaseActionService = PhaseActionService(_session!);
     if (_deepSeekClient != null && loadedScript != null) {
       _worldEngine = WorldEngine(script: loadedScript, client: _deepSeekClient!);
       _worldEngine!.initFromScript();
@@ -234,22 +288,24 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> resetSaveSlot(int slotIndex) async {
-    await _saveService?.init(); notifyListeners();
+    await _saveService?.delete(slotIndex);
+    notifyListeners();
   }
 
   // ─── Script management ───
 
   Future<void> loadScriptFromJsonString(String jsonString, {String? displayName}) async {
-    _isLoading(true);
+    _setLoading(true);
     try {
-      final jsonMap = json.decode(jsonString) as Map<String, dynamic>;
-      final loadedScript = GameScript.fromJson(jsonMap);
+      final loadedScript = _scriptLoader.loadFromJsonString(jsonString);
       _hasScript = true;
+      _simActive = false;
       _initSession(loadedScript);
       final name = displayName ?? loadedScript.meta.name;
       addCustomScript(name, jsonString);
-    } catch (e) { rethrow; }
-    _isLoading(false);
+    } finally {
+      _setLoading(false);
+    }
   }
 
   Future<void> loadCustomScript(int index) async {
@@ -259,7 +315,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<String?> loadScript(String assetPath) async {
-    _isLoading(true);
+    _setLoading(true);
     GameScript? loadedScript;
     try {
       loadedScript = await _scriptLoader.loadFromAsset(assetPath);
@@ -268,12 +324,13 @@ class AppProvider extends ChangeNotifier {
         assetPath: assetPath, type: loadedScript.meta.type, description: loadedScript.meta.description,
         script: loadedScript,
       ));
-    } catch (e) { _hasScript = false; _isLoading(false); return '解析失败: $e'; }
+    } catch (e) { _setLoading(false); return '解析失败: $e'; }
     try {
       _hasScript = true;
+      _simActive = false;
       _initSession(loadedScript);
-    } catch (e) { _hasScript = false; _isLoading(false); return '初始化失败: $e'; }
-    _isLoading(false);
+    } catch (e) { _setLoading(false); return '初始化失败: $e'; }
+    _setLoading(false);
     return null;
   }
 
@@ -284,6 +341,7 @@ class AppProvider extends ChangeNotifier {
     if (_narrativeCompressor != null) _session!.narrativeCompressor = _narrativeCompressor;
     _session!.onChanged = () => notifyListeners();
     _session!.initFromScript(userName: _userSettings.name);
+    _phaseActionService = PhaseActionService(_session!);
 
     if (_deepSeekClient != null) {
       _worldEngine = WorldEngine(script: loadedScript, client: _deepSeekClient!);
@@ -303,12 +361,13 @@ class AppProvider extends ChangeNotifier {
         if (_narrativeCompressor != null) _session!.narrativeCompressor = _narrativeCompressor;
         _worldEngine = WorldEngine(script: _session!.script!, client: _deepSeekClient!);
         _worldEngine!.initFromScript();
+        _session?.worldEngine = _worldEngine;
       }
     } else { _deepSeekClient = null; _worldEngine = null; }
     notifyListeners();
   }
 
-  void _isLoading(bool v) { if (_session != null) _session!.setIsLoading(v); notifyListeners(); }
+  void _setLoading(bool v) { if (_session != null) _session!.setIsLoading(v); notifyListeners(); }
 
   // ═══════════════════════════════════════════════
   //  Gameplay delegation (→ GameSession)
@@ -397,7 +456,7 @@ class AppProvider extends ChangeNotifier {
   GameScript? get script => _session?.script;
   DeepSeekClient? get deepSeekClient => _deepSeekClient;
   WorldEngine? get worldEngine => _session?.worldEngine;
-  PhaseActionService? get phaseActions => _session != null ? PhaseActionService(_session!) : null;
+  PhaseActionService? get phaseActions => _phaseActionService;
 
   /// 预览场景
   Future<Map<String, dynamic>> previewLocation(String id) async {
@@ -439,6 +498,7 @@ class AppProvider extends ChangeNotifier {
     final n = await phaseActions?.passPhase() ?? '';
     if (n.isNotEmpty) _session?.appendNarrative(n);
     notifyListeners();
+    autoSave();
   }
 
   int get currentTabIndex => _currentTabIndex;
@@ -510,7 +570,7 @@ class AppProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════
 
   String getCharRemarkName(String charId) => _charDisplay.remarkNames[charId] ?? '';
-  void setCharRemarkName(String charId, String v) { _charDisplay.remarkNames[charId] = v; notifyListeners(); }
+  void setCharRemarkName(String charId, String v) { _charDisplay.remarkNames[charId] = v; _saveCharDisplay(); notifyListeners(); }
 
   String getCharDisplayName(String charId) {
     final remark = _charDisplay.remarkNames[charId];
@@ -519,7 +579,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   Uint8List? getCharImageBytes(String charId) => _charDisplay.imageBytes[charId];
-  void setCharImageBytes(String charId, Uint8List? v) { _charDisplay.imageBytes[charId] = v; notifyListeners(); }
+  void setCharImageBytes(String charId, Uint8List? v) { _charDisplay.imageBytes[charId] = v; _saveCharDisplay(); notifyListeners(); }
 
   String getCharBioOverride(String charId) => _charDisplay.getBioOverride(charId);
   String getCharSignOverride(String charId) => _charDisplay.getSignOverride(charId);
@@ -598,7 +658,11 @@ class AppProvider extends ChangeNotifier {
   bool isChatLoading(String charId) => _session?.isChatLoading(charId) ?? false;
 
   void enterSim() { _simActive = true; notifyListeners(); }
-  void exitSim() { _simActive = false; notifyListeners(); }
+  Future<void> exitSim() async {
+    await autoSave();
+    _simActive = false;
+    notifyListeners();
+  }
 
   void clearInvitation(String charId) => _session?.clearInvitation(charId);
 }
