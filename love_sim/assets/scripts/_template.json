@@ -66,10 +66,10 @@
         "fears": [],
         "secrets": [],
         "values": [],
-        "selfPerception": ""
+        "self_perception": ""
       },
       "soul": {
-        "bigFive": {
+        "big_five": {
           "openness": 0.5,
           "extraversion": 0.5,
           "agreeableness": 0.5,
@@ -78,10 +78,10 @@
         }
       },
       "speech": {
-        "bigFiveProfile": {},
+        "big_five_profile": {},
         "phonetics": {},
         "vocabulary": {},
-        "dualMode": {
+        "dual_mode": {
           "to_stranger": {
             "overview": "",
             "example": ""
@@ -93,17 +93,17 @@
         }
       },
       "humanity": {
-        "emotionalRange": "",
-        "attachmentStyle": "",
-        "socialStrategy": ""
+        "emotional_range": "",
+        "attachment_style": "",
+        "social_strategy": ""
       },
       "agent": {
-        "personalityOverview": "",
-        "chatPersonality": "",
-        "narrativeStyle": "",
-        "emotionalExpression": "",
-        "conflictStrategy": "",
-        "specialBehaviors": []
+        "personality_overview": "",
+        "chat_personality": "",
+        "narrative_style": "",
+        "emotional_expression": "",
+        "conflict_strategy": "",
+        "special_behaviors": []
       },
       "appearance": {
         "body": "",
@@ -115,16 +115,16 @@
         "likes": [],
         "dislikes": [],
         "hobbies": [],
-        "idealType": ""
+        "ideal_type": ""
       },
-      "moodTriggers": {
+      "mood_triggers": {
         "joy": [],
         "annoy": [],
         "shy": [],
         "sad": [],
         "angry": []
       },
-      "giftResponse": {
+      "gift_response": {
         "positive": null,
         "negative": ""
       },
@@ -212,24 +212,82 @@
         "description": ""
       }
     ],
-    "shopItems": []
+    "shop_items": []
   },
   "interaction": {
-    "totalDays": 365,
-    "startDay": 1,
-    "endDay": 365,
     "season": "spring",
-    "phases": [],
-    "advanceModes": {},
+    "phases": [
+      { "id": "lingchen", "name": "凌晨", "hour": "00-06", "mood": "万籁俱寂", "skippable": true },
+      { "id": "qingchen", "name": "清晨", "hour": "06-08", "mood": "日出晨起", "skippable": false },
+      { "id": "shangwu", "name": "上午", "hour": "08-11", "mood": "上午课程", "skippable": false },
+      { "id": "zhongwu", "name": "中午", "hour": "11-13", "mood": "午休午餐", "skippable": false },
+      { "id": "xiawu", "name": "下午", "hour": "13-17", "mood": "下午课程", "skippable": false },
+      { "id": "bangwan", "name": "傍晚", "hour": "17-19", "mood": "黄昏归家", "skippable": false },
+      { "id": "yewan", "name": "夜晚", "hour": "19-24", "mood": "晚间自由", "skippable": false }
+    ],
+    "advance_modes": {},
     "seasons": [],
-    "weatherSystem": {
+    "weather_system": {
       "probabilities": {}
     },
     "affection": {
       "min": 1,
       "max": 100,
       "precision": 0.01,
-      "tiers": [],
+      "tiers": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+      "boundary_events": {
+        "below_80": { "rule": "59.99/69.99等临界点触发临界好感事件，通过则跨区间" },
+        "at_80": { "rule": "79.99到80必须重要推进+长剧情事件突破" },
+        "above_80": { "80-89": "区间内自由增减，89.99触发临界事件。突破90需重要推进+剧情事件", "90-99": "区间内自由增减，99.99触发终极事件", "100": "终极事件——仅特殊人物可触发，主角终身唯一" }
+      },
+      "tier_breakthrough": {
+        "below_80": "区间内自由增减。到达临界点(59.99等)时停止累积，触发boundary_event。通过则跨入下一区间。",
+        "at_80": "必须通过重要推进+长剧情事件突破。日常推进不可触发。",
+        "above_80": "80-90区间内自由增减，89.99触发临界事件。突破90需重要推进+剧情事件。90-99区间内自由增减。"
+      },
+      "overflow_pool": "日常好感度积累到临界点时暂停累积，溢出值暂存。临界事件通过后释放。连续多次未通过临界事件时溢出值减半。",
+      "difficulty_curve": {
+        "gain_multiplier": {
+          "1-50": { "multiplier": 1.00, "feel": "快速建立好感，新手友好期" },
+          "50-60": { "multiplier": 0.80, "feel": "从陌生人到有好感，需要更多接触" },
+          "60-70": { "multiplier": 0.60, "feel": "好感建立放缓，开始需要走心" },
+          "70-80": { "multiplier": 0.40, "feel": "欣赏到喜欢之间，每一点都需要诚意" },
+          "80-90": { "multiplier": 0.20, "feel": "喜欢到爱，稀缺而珍贵" },
+          "90-99": { "multiplier": 0.05, "feel": "爱到极致，寸步难行但每步都是永恒" }
+        },
+        "decline_multiplier": {
+          "1-50": { "multiplier": 2.00, "feel": "本来就没感情，一点小事就可能崩" },
+          "50-60": { "multiplier": 1.50, "feel": "初识阶段，还经不起折腾" },
+          "60-70": { "multiplier": 1.00, "feel": "正常增减" },
+          "70-80": { "multiplier": 0.70, "feel": "已经有感情基础，小摩擦没那么致命" },
+          "80-90": { "multiplier": 0.30, "feel": "喜欢了就不会轻易放手" },
+          "90-99": { "multiplier": 0.05, "feel": "爱到深处，几乎不可撼动" }
+        }
+      },
+      "decline_rules": {
+        "1-79": "随便掉。任何来源都可以降低。好感度越低越容易继续掉。",
+        "80-89": "只能通过事件掉。聊天冷淡不再扣分。日常负面减半。",
+        "90-99": "只能通过剧情事件掉。仅plot/forced_choice类型可降低。",
+        "100": "不可掉。永恒唯一一旦达成即锁定。"
+      },
+      "tiers_desc": {
+        "1-10": "死敌 — 不共戴天，见面即杀意",
+        "10-20": "仇恨 — 深刻的敌意，主动加害",
+        "20-30": "憎恨 — 强烈的反感，避之不及",
+        "30-40": "厌恶 — 明显不喜欢，不愿接触",
+        "40-50": "轻微厌恶 — 有些不顺眼，保持距离",
+        "50-60": "陌生人 — 无感，点头之交",
+        "60-70": "有好感 — 愿意接触，不排斥",
+        "70-80": "欣赏 — 主动关注，乐意相处",
+        "80-90": "喜欢 — 明显亲近意愿，会吃醋",
+        "90-99": "爱 — 深度依恋与付出",
+        "100": "永恒唯一 — 阴阳合一，灵魂绑定。仅特殊人物终极事件触发，主角终身唯一"
+      },
+      "unique_bond": {
+        "rule": "好感度100具有唯一性——主角只能与一个角色达到100。四选一。",
+        "trigger": "仅终极事件可解锁",
+        "lock": "一旦有人达到100，其他角色最高锁定99.99"
+      },
       "natural_drift": {
         "per_day": 0.02,
         "max_drift": 5,
@@ -237,12 +295,27 @@
         "middle": 50
       }
     },
+    "relationship_stages": [
+      { "state": "none", "label": "死敌", "min": 0, "max": 10 },
+      { "state": "stranger", "label": "仇视", "min": 10, "max": 30 },
+      { "state": "acquaintance", "label": "厌恶", "min": 30, "max": 50 },
+      { "state": "friend", "label": "认识", "min": 50, "max": 70 },
+      { "state": "close_friend", "label": "好友", "min": 70, "max": 80 },
+      { "state": "crush", "label": "暧昧", "min": 80, "max": 90 },
+      { "state": "lover", "label": "恋人", "min": 90, "max": 100 },
+      { "state": "partner", "label": "唯一", "min": 100, "max": 100 }
+    ],
+    "breakthrough_rule": "好感度≥80进入'暧昧'。要变成'恋人'必须触发告白事件。",
+    "multi_lover": { "enabled": true },
     "chat": {},
     "messages": {},
     "pace": "",
-    "contextManagement": {},
+    "context_management": {},
     "memory": {},
     "time_config": {
+      "total_days": 365,
+      "start_day": 1,
+      "end_day": 365,
       "phases": [
         {
           "id": "zi",
@@ -340,10 +413,10 @@
         "desc": "老旧的红砖建筑，书架之间弥漫着旧书和灰尘的味道。",
         "visibility_default": "public",
         "events_hint": "安静的知识堡垒。适合偶遇、学习交流、借书时的擦肩而过。",
-        "available_phases": ["辰时", "巳时", "未时", "申时", "戌时"],
+        "available_phases": ["上午", "下午", "夜晚"],
         "scene_moods": ["静谧", "专注", "旧书的味道"],
         "narrative_profile": {
-          "event_affinity": {"relationshipBeat": 0.8, "worldTexture": 0.6},
+          "event_affinity": {"relationship_beat": 0.8, "world_texture": 0.6},
           "keywords": ["书架", "旧书", "阳光", "灰尘", "翻书声"]
         }
       },
@@ -353,10 +426,10 @@
         "desc": "教学楼最高处。风很大，空旷的混凝土平台上只有几根晾衣绳。",
         "visibility_default": "private",
         "events_hint": "极少有人来的角落。适合独处、谈心、情绪爆发。",
-        "available_phases": ["午时", "酉时", "戌时"],
+        "available_phases": ["中午", "傍晚", "夜晚"],
         "scene_moods": ["自由", "空旷", "风吹"],
         "narrative_profile": {
-          "event_affinity": {"tensionEscalation": 0.9, "relationshipBeat": 0.9},
+          "event_affinity": {"tension_escalation": 0.9, "relationship_beat": 0.9},
           "keywords": ["天空", "风", "远处", "安静", "夕阳"]
         }
       },
@@ -366,10 +439,10 @@
         "desc": "一圈暗红色的跑道围着草坪。放学后永远有人在跑步或打球。",
         "visibility_default": "public",
         "events_hint": "青春活力的集中地。适合运动、观赛、散步聊天。",
-        "available_phases": ["辰时", "未时", "申时", "酉时"],
+        "available_phases": ["上午", "下午", "傍晚"],
         "scene_moods": ["活力", "汗水", "加油声"],
         "narrative_profile": {
-          "event_affinity": {"ensembleScene": 0.7, "worldTexture": 0.5},
+          "event_affinity": {"ensemble_scene": 0.7, "world_texture": 0.5},
           "keywords": ["跑道", "篮球", "汗水", "哨声", "散步"]
         }
       }
@@ -390,13 +463,13 @@
     ]
   },
   "game_events": {
-    "eventPools": {
+    "event_pools": {
       "daily": [],
       "social": [],
       "conflict": [],
       "romantic": []
     },
-    "beatMap": []
+    "beat_map": []
   },
   "data_layer": {
     "player_profile": {

@@ -2671,7 +2671,7 @@
         "desc": "靠窗第三排。午后的阳光会斜斜地切进来，在课桌上画出明确的光影界限。窗外能看到操场一角。",
         "visibility_default": "public",
         "events_hint": "班级日常。课间闲聊、午休趴桌、放学收书包——这四个人的交集多半从这里开始。",
-        "available_phases": ["辰时", "巳时", "午时", "申时"],
+        "available_phases": ["上午", "中午", "下午"],
         "scene_moods": ["日常", "阳光", "安静"],
         "narrative_profile": {
           "event_affinity": {"worldTexture": 0.5, "relationshipBeat": 0.3},
@@ -2684,7 +2684,7 @@
         "desc": "走廊尽头的排练室。白天阳光从高窗照进来，琴上的灰尘会在光里慢慢浮。很少有人来。",
         "visibility_default": "private",
         "events_hint": "温辞常来的地方。适合独处、靠近、安静地一起待着。私密场合的亲密活动在这里自然发生。",
-        "available_phases": ["午时", "酉时", "戌时"],
+        "available_phases": ["中午", "傍晚", "夜晚"],
         "scene_moods": ["私密", "安静", "温柔"],
         "narrative_profile": {
           "event_affinity": {"relationshipBeat": 0.9, "tensionEscalation": 0.5},
@@ -2697,7 +2697,7 @@
         "desc": "操场边上那个水泥地面的篮球场，篮网只剩一半。放学后总有人在这里打球，球砸在地上的声音隔着整条走廊都能听见。",
         "visibility_default": "public",
         "events_hint": "陆迟几乎每天都在。汗水、奔跑、偶尔看过来一眼。适合远远地看、走过去、一起坐台阶。",
-        "available_phases": ["辰时", "申时", "酉时"],
+        "available_phases": ["上午", "下午", "傍晚"],
         "scene_moods": ["汗水", "奔跑", "哨声"],
         "narrative_profile": {
           "event_affinity": {"ensembleScene": 0.6, "worldTexture": 0.5},
@@ -2710,7 +2710,7 @@
         "desc": "教学楼最高处。风很大，只有几根晾衣绳和生锈的栏杆。可以看到很远的山。",
         "visibility_default": "private",
         "events_hint": "极少有人来。适合情绪爆发、摊牌、或者什么也不说就一起看远处。江屿川偶尔逃课躲在这里。",
-        "available_phases": ["午时", "戌时"],
+        "available_phases": ["中午", "夜晚"],
         "scene_moods": ["自由", "空旷", "风吹", "远处"],
         "narrative_profile": {
           "event_affinity": {"tensionEscalation": 0.9, "relationshipBeat": 0.8},
@@ -2723,7 +2723,7 @@
         "desc": "老旧的红砖小楼。书架之间很窄，两个人错身的时候几乎要侧着。苏念晚是图书馆管理员，每周二四在这里。",
         "visibility_default": "public",
         "events_hint": "安静的知识堡垒。苏念晚的据点。闻得到旧书和新复印纸混在一起的味道。",
-        "available_phases": ["辰时", "巳时", "未时", "申时"],
+        "available_phases": ["上午", "下午"],
         "scene_moods": ["静谧", "专注", "旧书"],
         "narrative_profile": {
           "event_affinity": {"relationshipBeat": 0.7, "worldTexture": 0.6},
@@ -2736,7 +2736,7 @@
         "desc": "午间的喧闹高峰过了之后，食堂空下来，只剩几个阿姨在拖地。阳光从大窗户照在塑料桌面上。",
         "visibility_default": "public",
         "events_hint": "午间社交中心。热闹、拥挤、大家一起吃饭。适合群像场景。",
-        "available_phases": ["午时", "申时"],
+        "available_phases": ["中午", "下午"],
         "scene_moods": ["热闹", "烟火气", "午间"],
         "narrative_profile": {
           "event_affinity": {"ensembleScene": 0.8, "worldTexture": 0.7},
@@ -3459,11 +3459,11 @@
       {
         "location": "classroom_2b",
         "phases": [
-          "早自习",
-          "课间",
-          "午休",
+          "清晨",
+          "上午",
+          "中午",
           "下午",
-          "晚自习"
+          "夜晚"
         ],
         "moods": [
           "安静",
@@ -3476,7 +3476,7 @@
       {
         "location": "canteen",
         "phases": [
-          "午休"
+          "中午"
         ],
         "moods": [
           "嘈杂",
@@ -3488,10 +3488,10 @@
       {
         "location": "corridor_2f",
         "phases": [
-          "课间",
-          "午休",
-          "放学",
-          "晚自习"
+          "上午",
+          "中午",
+          "傍晚",
+          "夜晚"
         ],
         "moods": [
           "偶遇",
@@ -3503,9 +3503,9 @@
       {
         "location": "library_3f",
         "phases": [
-          "午休",
-          "放学",
-          "晚自习"
+          "中午",
+          "傍晚",
+          "夜晚"
         ],
         "moods": [
           "安静",
@@ -3517,8 +3517,7 @@
       {
         "location": "rooftop",
         "phases": [
-          "午休",
-          "放学",
+          "中午",
           "傍晚"
         ],
         "moods": [
@@ -3532,7 +3531,6 @@
       {
         "location": "school_gate",
         "phases": [
-          "放学",
           "傍晚"
         ],
         "moods": [
@@ -3546,7 +3544,6 @@
       {
         "location": "neighbor_road",
         "phases": [
-          "放学",
           "傍晚"
         ],
         "moods": [
@@ -3809,87 +3806,52 @@
       "start_descriptor": "高一下学期开学第一天·二月末",
       "phases": [
         {
-          "id": "zi",
-          "name": "子时",
-          "hour": "23-01",
-          "mood": "夜深人静",
-          "skippable": true
-        },
-        {
-          "id": "chou",
-          "name": "丑时",
-          "hour": "01-03",
+          "id": "lingchen",
+          "name": "凌晨",
+          "hour": "00-06",
           "mood": "万籁俱寂",
           "skippable": true
         },
         {
-          "id": "yin",
-          "name": "寅时",
-          "hour": "03-05",
-          "mood": "黎明之前",
-          "skippable": true
-        },
-        {
-          "id": "mao",
-          "name": "卯时",
-          "hour": "05-07",
+          "id": "qingchen",
+          "name": "清晨",
+          "hour": "06-08",
           "mood": "日出晨起",
           "skippable": false
         },
         {
-          "id": "chen",
-          "name": "辰时",
-          "hour": "07-09",
-          "mood": "朝食上学",
-          "skippable": false
-        },
-        {
-          "id": "si",
-          "name": "巳时",
-          "hour": "09-11",
+          "id": "shangwu",
+          "name": "上午",
+          "hour": "08-11",
           "mood": "上午课程",
           "skippable": false
         },
         {
-          "id": "wu",
-          "name": "午时",
+          "id": "zhongwu",
+          "name": "中午",
           "hour": "11-13",
           "mood": "午休午餐",
           "skippable": false
         },
         {
-          "id": "wei",
-          "name": "未时",
-          "hour": "13-15",
+          "id": "xiawu",
+          "name": "下午",
+          "hour": "13-17",
           "mood": "下午课程",
           "skippable": false
         },
         {
-          "id": "shen",
-          "name": "申时",
-          "hour": "15-17",
-          "mood": "放学社团",
-          "skippable": false
-        },
-        {
-          "id": "you",
-          "name": "酉时",
+          "id": "bangwan",
+          "name": "傍晚",
           "hour": "17-19",
           "mood": "黄昏归家",
           "skippable": false
         },
         {
-          "id": "xu",
-          "name": "戌时",
-          "hour": "19-21",
+          "id": "yewan",
+          "name": "夜晚",
+          "hour": "19-24",
           "mood": "晚间自由",
-          "skippable": false
-        },
-        {
-          "id": "hai",
-          "name": "亥时",
-          "hour": "21-23",
-          "mood": "就寝之前",
           "skippable": false
         }
       ],
@@ -4452,17 +4414,17 @@
         "90-99": "只能剧情事件掉——仅plot/forced_choice可减。"
       },
       "tiers_desc": {
-        "100": "唯一",
-        "1-10": "不熟",
-        "10-20": "知道名字",
-        "20-30": "说过几次话",
-        "30-40": "能自然对话",
-        "40-50": "友善",
-        "50-60": "愿意帮助",
-        "60-70": "好感明显",
-        "70-80": "欣赏",
-        "80-90": "心动",
-        "90-99": "深爱"
+        "1-10": "死敌 — 不共戴天，见面即杀意",
+        "10-20": "仇恨 — 深刻的敌意，主动加害",
+        "20-30": "憎恨 — 强烈的反感，避之不及",
+        "30-40": "厌恶 — 明显不喜欢，不愿接触",
+        "40-50": "轻微厌恶 — 有些不顺眼，保持距离",
+        "50-60": "陌生人 — 无感，点头之交",
+        "60-70": "有好感 — 愿意接触，不排斥",
+        "70-80": "欣赏 — 主动关注，乐意相处",
+        "80-90": "喜欢 — 明显亲近意愿，会吃醋",
+        "90-99": "爱 — 深度依恋与付出",
+        "100": "永恒唯一 — 阴阳合一，灵魂绑定。仅特殊人物终极事件触发，主角终身唯一"
       },
       "unique_bond": {
         "rule": "好感度100具有唯一性——主角只能与一个角色达到100。四选一。",
@@ -4476,69 +4438,27 @@
         "middle": 50
       }
     },
-    "relationship_stages": {
-      "stages": [
-        {
-          "state": "none",
-          "label": "无关系",
-          "affection_range": "0-10",
-          "desc": "没有任何互动"
-        },
-        {
-          "state": "stranger",
-          "label": "陌生人",
-          "affection_range": "10-20",
-          "desc": "知道彼此存在但无交集"
-        },
-        {
-          "state": "acquaintance",
-          "label": "认识",
-          "affection_range": "20-40",
-          "desc": "说过话——记得名字。苏念晚/江屿川默认从此层级起步"
-        },
-        {
-          "state": "friend",
-          "label": "朋友",
-          "affection_range": "40-60",
-          "desc": "一起吃饭、聊天"
-        },
-        {
-          "state": "close_friend",
-          "label": "好友",
-          "affection_range": "60-80",
-          "desc": "信任、分享秘密"
-        },
-        {
-          "state": "crush",
-          "label": "暧昧",
-          "affection_range": "70-90",
-          "desc": "有感觉——在等事件变成恋人"
-        },
-        {
-          "state": "lover",
-          "label": "恋人",
-          "affection_range": "80-100",
-          "desc": "确立关系"
-        },
-        {
-          "state": "partner",
-          "label": "伴侣",
-          "affection_range": "90-100",
-          "desc": "深度绑定"
-        }
-      ],
-      "breakthrough_rule": "好感度≥70进入'暧昧'。要变成'恋人'必须触发告白事件。",
-      "multi_lover": {
-        "enabled": true,
-        "jealousy_detection": "两个以上lover且彼此标记为known_by时触发修罗场",
-        "exposure_penalty": "80-90区间:-10~-20, 90+区间:-15~-30",
-        "secrecy": "不认识另一个恋人→保持秘密——除非暴露事件"
-      },
-      "talking_style": {
-        "stranger_mode": "affection<60→dualMode.toStranger",
-        "close_mode": "affection>=60→dualMode.toClose",
-        "lover_mode": "关系=lover/partner→toClose+亲密行为自然性"
-      }
+    "relationship_stages": [
+      { "state": "none", "label": "死敌", "min": 0, "max": 10 },
+      { "state": "stranger", "label": "仇视", "min": 10, "max": 30 },
+      { "state": "acquaintance", "label": "厌恶", "min": 30, "max": 50 },
+      { "state": "friend", "label": "认识", "min": 50, "max": 70 },
+      { "state": "close_friend", "label": "好友", "min": 70, "max": 80 },
+      { "state": "crush", "label": "暧昧", "min": 80, "max": 90 },
+      { "state": "lover", "label": "恋人", "min": 90, "max": 100 },
+      { "state": "partner", "label": "唯一", "min": 100, "max": 100 }
+    ],
+    "breakthrough_rule": "好感度≥80进入'暧昧'。要变成'恋人'必须触发告白事件。",
+    "multi_lover": {
+      "enabled": true,
+      "jealousy_detection": "两个以上lover且彼此标记为known_by时触发修罗场",
+      "exposure_penalty": "80-90区间:-10~-20, 90+区间:-15~-30",
+      "secrecy": "不认识另一个恋人→保持秘密——除非暴露事件"
+    },
+    "talking_style": {
+      "stranger_mode": "affection<60→dualMode.toStranger",
+      "close_mode": "affection>=60→dualMode.toClose",
+      "lover_mode": "关系=lover/partner→toClose+亲密行为自然性"
     },
     "chat": {
       "max_context_messages": 20,
@@ -4722,11 +4642,9 @@
           "target_grade": "chinese",
           "grade_gain": 1,
           "phases": [
-            "辰时",
-            "巳时",
-            "未时",
-            "申时",
-            "戌时"
+            "上午",
+            "下午",
+            "夜晚"
           ],
           "locations": [
             "library_3f"
@@ -4740,11 +4658,10 @@
           "target_grade": "math",
           "grade_gain": 2,
           "phases": [
-            "巳时",
-            "午时",
-            "未时",
-            "戌时",
-            "亥时"
+            "上午",
+            "中午",
+            "下午",
+            "夜晚"
           ],
           "locations": [
             "classroom_2b"
@@ -4756,9 +4673,9 @@
           "target_stat": "athletic",
           "gain": 4,
           "phases": [
-            "卯时",
-            "申时",
-            "酉时"
+            "清晨",
+            "下午",
+            "傍晚"
           ],
           "locations": [
             "playground"
@@ -4772,8 +4689,8 @@
           "target_stat2": "charisma",
           "gain2": 1,
           "phases": [
-            "卯时",
-            "戌时"
+            "清晨",
+            "夜晚"
           ],
           "locations": [
             "dorm_viewpoint"
@@ -4785,10 +4702,10 @@
           "target_stat": "charisma",
           "gain": 3,
           "phases": [
-            "午时",
-            "申时",
-            "酉时",
-            "戌时"
+            "中午",
+            "下午",
+            "傍晚",
+            "夜晚"
           ],
           "locations": [
             "canteen",
@@ -4805,8 +4722,8 @@
           "target_grade": "chinese",
           "grade_gain": 1,
           "phases": [
-            "亥时",
-            "子时"
+            "夜晚",
+            "凌晨"
           ],
           "locations": [
             "dorm_viewpoint",
