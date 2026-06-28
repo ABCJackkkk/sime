@@ -7,7 +7,7 @@ import 'package:love_sim/models/script.dart';
 import 'package:love_sim/providers/app_provider.dart';
 import 'package:love_sim/screens/chat_screen.dart';
 import 'package:love_sim/services/save_service.dart';
-import 'package:love_sim/widgets/crop_screen.dart';
+import 'package:love_sim/screens/crop_screen.dart';
 import 'package:love_sim/widgets/reactive_avatar.dart';
 
 class CharacterProfileScreen extends StatefulWidget {

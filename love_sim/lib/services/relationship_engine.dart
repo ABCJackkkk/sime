@@ -1,14 +1,14 @@
 import 'package:love_sim/services/affection_engine.dart';
 
 enum RelationshipState {
-  none(0, '无关系'),
-  stranger(10, '陌生人'),
-  acquaintance(20, '认识'),
-  friend(40, '朋友'),
-  closeFriend(60, '好友'),
-  crush(70, '暧昧'),
-  lover(80, '恋人'),
-  partner(90, '伴侣');
+  none(0, '死敌'),
+  stranger(10, '仇视'),
+  acquaintance(30, '厌恶'),
+  friend(50, '陌生'),
+  closeFriend(70, '好友'),
+  crush(80, '暧昧'),
+  lover(90, '恋人'),
+  partner(100, '唯一');
 
   final double minAffection;
   final String label;
@@ -16,7 +16,7 @@ enum RelationshipState {
 
   static RelationshipState fromAffection(double affection, RelationshipState? current) {
     if (affection >= 90) return RelationshipState.partner;
-    if (affection >= 80) return current == RelationshipState.lover || current == RelationshipState.partner ? current! : RelationshipState.crush;
+    if (affection >= 80) return (current == RelationshipState.lover || current == RelationshipState.partner) ? RelationshipState.lover : RelationshipState.crush;
     if (affection >= 70) return current == RelationshipState.lover || current == RelationshipState.partner ? current! : RelationshipState.crush;
     if (affection >= 60) return RelationshipState.closeFriend;
     if (affection >= 40) return RelationshipState.friend;
@@ -104,7 +104,7 @@ class RelationshipEngine {
 
     RelationshipState newState;
     if (rel.isConfirmed && (rel.state == RelationshipState.lover || rel.state == RelationshipState.partner)) {
-      newState = aff >= 90 ? RelationshipState.partner : rel.state;
+      newState = aff >= 100 ? RelationshipState.partner : rel.state;
       if (aff < 70) {
         newState = RelationshipState.fromAffection(aff, null);
         rel.isConfirmed = false;

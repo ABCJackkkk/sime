@@ -201,7 +201,7 @@ class SaveService {
     }
   }
 
-  Future<String> save(SaveData data, GameScript script, {int? slotIndex}) async {
+  Future<String> save(SaveData data, GameScript script, {int? slotIndex, String? scriptJson}) async {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
     final slotId = 'slot_${now.millisecondsSinceEpoch}';
@@ -230,11 +230,23 @@ class SaveService {
       );
       _slots.add(meta);
     }
-    if (_slots.length > _maxSlots) _slots = _slots.sublist(0, _maxSlots);
+    if (_slots.length > _maxSlots) {
+      final removed = _slots.sublist(_maxSlots);
+      for (final slot in removed) {
+        await prefs.remove('save_data_${slot.slotId}');
+        await prefs.remove('save_script_${slot.slotId}');
+      }
+      _slots = _slots.sublist(0, _maxSlots);
+    }
 
     await prefs.setString('save_data_$slotId', json.encode(saveMap));
-    final scriptJson = await rootBundle.loadString('assets/scripts/${script.meta.id}.json');
-    await prefs.setString('save_script_$slotId', scriptJson);
+    final String resolvedScriptJson;
+    if (scriptJson != null) {
+      resolvedScriptJson = scriptJson;
+    } else {
+      resolvedScriptJson = await rootBundle.loadString('assets/scripts/${script.meta.id}.json');
+    }
+    await prefs.setString('save_script_$slotId', resolvedScriptJson);
     await _persistSlots(prefs);
     return 'ok';
   }

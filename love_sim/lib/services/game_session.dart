@@ -13,7 +13,6 @@ import 'package:love_sim/services/narrative_validator.dart';
 import 'package:love_sim/services/action_validator.dart';
 import 'package:love_sim/services/rhythm_scheduler.dart';
 import 'package:love_sim/services/tension_vector.dart';
-import 'package:love_sim/services/equipment_service.dart';
 
 class GameSession {
   void Function()? onChanged;
@@ -23,7 +22,6 @@ class GameSession {
   WorldEngine? worldEngine;
   AffectionEngine? affectionEngine;
   RelationshipEngine? relationshipEngine;
-  EquipmentService? equipmentService;
   EventScheduler? eventScheduler;
   CharacterMemoryService? charMemory;
   RhythmScheduler? rhythmScheduler;
@@ -73,7 +71,7 @@ class GameSession {
   void restoreTension(Map<String, dynamic> d) {
     if (rhythmScheduler != null && d.isNotEmpty) {
       rhythmScheduler!.tension.loadFromJson(d);
-      _tensionLevel = (rhythmScheduler!.tension.relational * 0.34 + rhythmScheduler!.tension.narrative * 0.33 + rhythmScheduler!.tension.emotional * 0.33);
+      _tensionLevel = _calculateTensionLevel(rhythmScheduler!.tension);
       _syncTensionToScript();
     }
   }
@@ -202,7 +200,16 @@ class GameSession {
       final result = _narrativeCompressor!.compressSegments(_narrativeSegments);
       _narrativeHistory = result.history;
       _narrativeSegments = result.segments;
-      _segmentEventTypes = List.generate(result.segments.length, (i) => i < _segmentEventTypes.length ? _segmentEventTypes[i] : '');
+      final dropCount = result.replacedCount;
+      final keptEventTypes = _segmentEventTypes.length > dropCount
+          ? _segmentEventTypes.sublist(dropCount)
+          : <String>[];
+      final hasPrefix = result.segments.isNotEmpty && result.segments.first.startsWith('[前略');
+      final newEventTypes = hasPrefix ? <String>['', ...keptEventTypes] : keptEventTypes;
+      while (newEventTypes.length > result.segments.length) {
+        newEventTypes.removeAt(0);
+      }
+      _segmentEventTypes = newEventTypes;
       if (result.replacedCount > 0) {
         onChanged?.call();
       }
@@ -236,7 +243,6 @@ class GameSession {
       worldEngine!.initWorldServices();
     }
     charMemory = CharacterMemoryService();
-    equipmentService = EquipmentService();
     rhythmScheduler = RhythmScheduler();
     discoveredChars.addAll(s.characters.where((c) => c.fullCharacter).map((c) => c.basic.id));
     _narrativeHistory = s.world.memory.worldSummary;
@@ -272,7 +278,6 @@ class GameSession {
     if (chars.isEmpty) return;
     final locations = script!.events?.sceneLocations ?? [];
     if (locations.isEmpty) return;
-    _rng.nextInt(1000);
     for (final loc in locations) {
       final avail = chars.where((c) {
         final aff = getAffection(c.basic.id);
@@ -426,26 +431,38 @@ class GameSession {
     }
   }
 
+  void _applyAffectionDecay(String charId, double delta) {
+    if (affectionEngine != null) {
+      _affectionStates[charId] = affectionEngine!.modifyAffectionByEvent(charId, delta);
+    } else {
+      _affectionStates[charId] = (_affectionStates[charId] ?? 50.0) + delta;
+      _affectionStates[charId] = _affectionStates[charId]!.clamp(0.0, 100.0);
+    }
+    relationshipEngine?.syncFromAffection(charId);
+  }
+
   List<String> _buildCoolingHints(int currentDay) {
     final hints = <String>[];
     if (script == null) return hints;
+    bool changed = false;
     for (final char in script!.characters.where((c) => c.fullCharacter)) {
       final id = char.basic.id;
       final lastDay = _lastInteractionDay[id] ?? 0;
       final gap = currentDay - lastDay;
       final affection = _affectionStates[id] ?? 0;
-      if (affection < 5) continue;
+      if (affection < 1) continue;
 
       if (gap >= 12) {
-        final decay = -0.5;
-        modifyAffectionByEvent(id, decay);
-        hints.add('${char.basic.name}已经太久没有出现在的你的视线里了。你们之间隔了$gap天。');
+        _applyAffectionDecay(id, -0.5);
+        changed = true;
+        hints.add('${char.basic.name}已经太久没有出现在你的视线里了。你们之间隔了$gap天。');
       } else if (gap >= 6) {
-        final decay = -0.3;
-        modifyAffectionByEvent(id, decay);
+        _applyAffectionDecay(id, -0.3);
+        changed = true;
         hints.add('你有$gap天没见过${char.basic.name}了。');
       }
     }
+    if (changed) _notify();
     return hints;
   }
 
@@ -454,6 +471,8 @@ class GameSession {
     if (script == null) return hints;
     final locations = worldEngine?.getCharacterLocations() ?? {};
     final charMap = Map.fromEntries(script!.characters.where((c) => c.fullCharacter).map((c) => MapEntry(c.basic.id, c)));
+    final sceneLocs = script!.events?.sceneLocations ?? [];
+    final locNameMap = Map.fromEntries(sceneLocs.map((l) => MapEntry(l.id, l.name)));
 
     for (final entry in locations.entries) {
       final charId = entry.key;
@@ -468,7 +487,8 @@ class GameSession {
 
       for (final coll in tickReport.collisions) {
         if (coll.locationId == locId && !coll.charIds.contains(charId)) {
-          hints.add('${charMap[charId]?.basic.name ?? charId}也在$locId，但你的注意力在别处。');
+          final locName = locNameMap[locId] ?? locId;
+          hints.add('${charMap[charId]?.basic.name ?? charId}也在$locName，但你的注意力在别处。');
           break;
         }
       }
@@ -521,7 +541,7 @@ class GameSession {
         met = day >= threshold;
       } else if (cond.startsWith('event:')) {
         final eventId = cond.substring(6);
-        met = _triggeredBeats[eventId] == true || _recentEvents.any((e) => e['event_id'] == eventId);
+        met = _triggeredBeats[eventId] == true || _triggeredBeats['event:$eventId'] == true || _recentEvents.any((e) => e['event_id'] == eventId);
       } else if (cond.startsWith('affection:')) {
         final threshold = double.tryParse(cond.substring(10)) ?? 999;
         met = getAffection(c.basic.id) >= threshold;
@@ -630,9 +650,7 @@ class GameSession {
           currentWeather: _currentWeather,
         );
         final allParticipantIds = {...?participants, ...directive.participantIds}.toList();
-        if (participants == null || participants.isEmpty) {
-          participants = allParticipantIds;
-        }
+        participants = allParticipantIds;
         final participantStr = StringBuffer();
         for (final pid in allParticipantIds) {
           final char = getCharacter(pid);
@@ -708,8 +726,9 @@ class GameSession {
       _narrativeSegments.add(err);
       _segmentEventTypes.add(_lastEventType);
       _lastNarrativeSegment = err;
+    } finally {
+      _isLoading = false; _notify();
     }
-    _isLoading = false; _notify();
     final dayNum = int.tryParse(_currentDay) ?? 0;
     if (dayNum > 0) _checkAndProcessExam(dayNum);
     _generateChoices();
@@ -852,6 +871,7 @@ class GameSession {
   // ─── Chat ───
 
   void sendMessage(String charId, String message, {required String userName, required String userDisplayName, required Map<String, String> charRemarkNames}) {
+    if (isChatLoading(charId)) return;
     final char = getCharacter(charId);
     if (char == null) return;
     final senderName = _resolveDisplayName(charId, char.basic.name, charRemarkNames);
@@ -869,6 +889,7 @@ class GameSession {
       _notify();
       return;
     }
+    ChatMessage? charMsg;
     try {
       _loadingChatIds.add(charId);
       _notify();
@@ -883,9 +904,14 @@ class GameSession {
       final worldContext = '第${_currentDay}天 ${_currentSeason}·${_currentWeather}·${_currentPhase}';
       final affection = getAffection(charId);
 
-      final charMsg = ChatMessage(senderId: charId, senderName: senderName, content: '');
+      charMsg = ChatMessage(senderId: charId, senderName: senderName, content: '');
       _chatHistories[charId]!.add(charMsg);
       _notify();
+
+      if (history.length < 2) {
+        _loadingChatIds.remove(charId);
+        return;
+      }
 
       final stream = deepSeekClient!.generateChatReplyStreaming(
         userMessage: history[history.length - 2].content, character: char,
@@ -930,8 +956,11 @@ class GameSession {
         'phase': _currentPhase,
         'season': _currentSeason,
       });
-      final charMsg = ChatMessage(senderId: charId, senderName: senderName, content: reply);
-      _chatHistories[charId]!.add(charMsg);
+      if (charMsg != null) {
+        charMsg.content = reply;
+      } else {
+        _chatHistories[charId]!.add(ChatMessage(senderId: charId, senderName: senderName, content: reply));
+      }
       modifyAffectionByChat(charId, -0.01);
       _notify();
     }
@@ -950,11 +979,9 @@ class GameSession {
     _recordInteraction(charId);
     _notify();
 
-    Future.delayed(const Duration(milliseconds: 500), () {
-      final reply = ChatMessage(senderId: charId, senderName: senderName, content: '谢谢你送的${item.name}！我很喜欢～');
-      _chatHistories[charId]!.add(reply);
-      _notify();
-    });
+    final reply = ChatMessage(senderId: charId, senderName: senderName, content: '谢谢你送的${item.name}！我很喜欢～');
+    _chatHistories[charId]!.add(reply);
+    _notify();
   }
 
   String _resolveDisplayName(String charId, String fallback, Map<String, String> remarkNames) {
@@ -1058,6 +1085,7 @@ class GameSession {
         phase: _currentPhase,
         script: script!,
         playerCard: playerCard,
+        charMemory: charMemory,
       );
       _sceneInteractionNarrative = atmosphere;
       await _generateChoices();
@@ -1131,12 +1159,13 @@ class GameSession {
         totalDelta += e.value;
       }
       if (deltas.isEmpty && _sceneInteractionChars.isNotEmpty) {
-        final pid = _sceneInteractionChars.first;
-        final naturalDelta = affectionEngine != null
-            ? affectionEngine!.modifyAffectionByEvent(pid, 0.2)
-            : (_affectionStates[pid] ?? 50.0) + 0.2;
-        _affectionStates[pid] = naturalDelta;
-        relationshipEngine?.syncFromAffection(pid);
+        for (final pid in _sceneInteractionChars) {
+          final naturalDelta = affectionEngine != null
+              ? affectionEngine!.modifyAffectionByEvent(pid, 0.2)
+              : (_affectionStates[pid] ?? 50.0) + 0.2;
+          _affectionStates[pid] = naturalDelta;
+          relationshipEngine?.syncFromAffection(pid);
+        }
         totalDelta = 0.2;
       }
 
@@ -1159,6 +1188,7 @@ class GameSession {
   }
 
   void leaveScene() {
+    if (worldEngine == null) return;
     if (!_sceneInteractionActive) return;
     worldEngine?.advancePhase();
     _currentDay = worldEngine!.currentDay.toString();
@@ -1175,6 +1205,10 @@ class GameSession {
 
   // ─── Tension ───
 
+  double _calculateTensionLevel(TensionVector t) {
+    return t.relational * 0.34 + t.narrative * 0.33 + t.emotional * 0.33;
+  }
+
   void _rhythmTick() {
     if (rhythmScheduler == null) {
       final inc = (_rng.nextInt(30)) / 10.0;
@@ -1186,12 +1220,8 @@ class GameSession {
     t.decayRelational(0.5);
     t.decayNarrative(0.5);
     t.decayEmotional(0.5);
-    _tensionLevel = (t.relational * 0.34 + t.narrative * 0.33 + t.emotional * 0.33);
+    _tensionLevel = _calculateTensionLevel(t);
     _syncTensionToScript();
-  }
-
-  void _tickTension() {
-    _rhythmTick();
   }
 
   void _tickTensionAfterEvent(String eventSeverity) {
@@ -1204,7 +1234,7 @@ class GameSession {
     final t = rhythmScheduler!.tension;
     final nd = eventSeverity == 'high' ? 15.0 : (eventSeverity == 'medium' ? 8.0 : 3.0);
     t.tickNarrative(nd);
-    _tensionLevel = (t.relational * 0.34 + t.narrative * 0.33 + t.emotional * 0.33);
+    _tensionLevel = _calculateTensionLevel(t);
     _syncTensionToScript();
   }
 
@@ -1326,12 +1356,12 @@ class GameSession {
   void _checkInvitation() {
     _pendingInvitation = {};
     if (script == null) return;
-    final rng = _rng.nextInt(1000);
     final chars = script!.characters.where((c) => c.fullCharacter).toList();
     for (final c in chars) {
       final aff = getAffection(c.basic.id);
       if (aff < 65) continue;
       final chance = (aff - 60) * 0.01;
+      final rng = _rng.nextInt(1000);
       if (rng / 1000.0 < chance) {
         final locs = script!.events?.sceneLocations ?? [];
         if (locs.isNotEmpty) {

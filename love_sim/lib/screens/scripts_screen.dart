@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io' show File;
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:love_sim/main.dart';
 import 'package:love_sim/providers/app_provider.dart';
+import 'package:love_sim/screens/script_creator_screen.dart';
 
 class ScriptsScreen extends StatefulWidget {
   const ScriptsScreen({super.key});
@@ -37,32 +39,25 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['json', 'sim'],
+        allowedExtensions: ['json'],
+        withData: true,
       );
       if (result == null || result.files.isEmpty) return;
       final file = result.files.first;
-      Uint8List? bytes;
-      if (file.bytes != null) {
-        bytes = file.bytes;
+      Uint8List? bytes = file.bytes;
+      if (bytes == null && file.path != null) {
+        bytes = File(file.path!).readAsBytesSync();
       }
       if (bytes == null) return;
       final jsonString = utf8.decode(bytes);
       final app = context.read<AppProvider>();
       await app.loadScriptFromJsonString(jsonString);
-      showCupertinoDialog(
-        context: context,
-        builder: (_) => CupertinoAlertDialog(
-          title: const Text('导入成功'),
-          content: Text('剧本「${app.script?.meta.name ?? file.name}」已加载'),
-          actions: [CupertinoDialogAction(child: const Text('确定'), onPressed: () => Navigator.pop(context))],
-        ),
-      );
     } catch (e) {
       showCupertinoDialog(
         context: context,
         builder: (_) => CupertinoAlertDialog(
           title: const Text('导入失败'),
-          content: Text('请检查文件是否为有效的 .sim 格式：$e'),
+          content: Text('请检查文件是否为有效的 .json 格式：$e'),
           actions: [CupertinoDialogAction(child: const Text('确定'), onPressed: () => Navigator.pop(context))],
         ),
       );
@@ -84,7 +79,7 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
                   const SizedBox(height: 12),
                   Text('剧本管理', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context), letterSpacing: -0.5)),
                   const SizedBox(height: 6),
-                  Text('加载 .sim 格式剧本包', style: TextStyle(fontSize: 14, color: AppColors.textSecondary.withAlpha(200))),
+                  Text('加载 .json 格式剧本包', style: TextStyle(fontSize: 14, color: AppColors.textSecondary.withAlpha(200))),
                   const SizedBox(height: 28),
                   _buildProtagonistSection(app),
                   const SizedBox(height: 16),
@@ -163,7 +158,7 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
         Row(children: [
           Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.accent.withAlpha(30)), child: const Icon(CupertinoIcons.square_arrow_down_fill, size: 16, color: AppColors.accent)),
           const SizedBox(width: 10),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('导入剧本', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))), const Text('从本地文件加载 .sim 剧本', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('导入剧本', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))), const Text('从本地文件加载 .json 剧本', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
         ]),
         const SizedBox(height: 16),
         CupertinoButton(
@@ -174,7 +169,7 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
           child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             Icon(CupertinoIcons.doc_fill, size: 18, color: CupertinoColors.white),
             SizedBox(width: 8),
-            Text('选择 .sim 文件', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: CupertinoColors.white)),
+            Text('选择 .json 文件', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: CupertinoColors.white)),
           ]),
         ),
       ]),
@@ -187,7 +182,18 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
         Row(children: [
           Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.accent.withAlpha(30)), child: const Icon(CupertinoIcons.square_stack_3d_up_fill, size: 16, color: AppColors.accent)),
           const SizedBox(width: 10),
-          Text('剧本库', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))),
+          Expanded(child: Text('剧本库', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)))),
+          CupertinoButton(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            onPressed: () => Navigator.of(context).push(CupertinoPageRoute(builder: (_) => const ScriptCreatorScreen())),
+            borderRadius: BorderRadius.circular(8),
+            color: AppColors.accent,
+            child: const Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(CupertinoIcons.add_circled, size: 15, color: CupertinoColors.white),
+              SizedBox(width: 4),
+              Text('创作', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: CupertinoColors.white)),
+            ]),
+          ),
         ]),
         const SizedBox(height: 16),
         _buildScriptCard(
@@ -197,6 +203,14 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
           isActive: app.hasScript && app.script?.meta.id == 'campus_love',
           isLoading: _isLoading,
           onTap: () => _loadCampusScript(app),
+        ),
+        _buildScriptCard(
+          name: '被拉黑后，千金大小姐疯了', genre: '现代都市',
+          desc: '追了两年半的富家千金，终于等到她妈拿五百万来赶人。收钱拉黑跑路——然后她疯了。',
+          characters: 6, days: 90, endings: 5,
+          isActive: app.hasScript && app.script?.meta.id == 'blacklist_heiress',
+          isLoading: _isLoading,
+          onTap: () => _loadHeiressScript(app),
         ),
         if (app.customScripts.isNotEmpty) ...[
           const SizedBox(height: 8),
@@ -288,6 +302,24 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
   Future<void> _loadCampusScript(AppProvider app) async {
     setState(() => _isLoading = true);
     final error = await app.loadScript('assets/scripts/campus_love.json');
+    if (mounted) {
+      setState(() => _isLoading = false);
+      if (error != null) {
+        showCupertinoDialog(
+          context: context,
+          builder: (_) => CupertinoAlertDialog(
+            title: const Text('加载失败'),
+            content: Text(error),
+            actions: [CupertinoDialogAction(child: const Text('确定'), onPressed: () => Navigator.pop(context))],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadHeiressScript(AppProvider app) async {
+    setState(() => _isLoading = true);
+    final error = await app.loadScript('assets/scripts/blacklist_heiress.json');
     if (mounted) {
       setState(() => _isLoading = false);
       if (error != null) {

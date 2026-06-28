@@ -3,7 +3,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:love_sim/main.dart';
+import 'package:provider/provider.dart';
+import 'package:love_sim/theme/app_theme.dart';
+import 'package:love_sim/theme/app_theme_provider.dart';
 
 class CropScreen extends StatefulWidget {
   final Uint8List imageBytes;
@@ -52,6 +54,7 @@ class _CropScreenState extends State<CropScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = context.watch<AppThemeProvider>().config;
     final size = MediaQuery.of(context).size;
     final cropW = size.width - 40;
     final cropH = cropW / widget.aspectRatio;
@@ -61,12 +64,12 @@ class _CropScreenState extends State<CropScreen> {
       final adjustedH = size.height - 180;
       final adjustedW = adjustedH * widget.aspectRatio;
       final adjustedSize = Size(adjustedW, adjustedH);
-      return _buildContent(size, adjustedSize);
+      return _buildContent(size, adjustedSize, t);
     }
-    return _buildContent(size, cropSize);
+    return _buildContent(size, cropSize, t);
   }
 
-  Widget _buildContent(Size screenSize, Size cropSize) {
+  Widget _buildContent(Size screenSize, Size cropSize, AppThemeConfig t) {
     return Container(
       color: CupertinoColors.black,
       child: SafeArea(
@@ -78,10 +81,10 @@ class _CropScreenState extends State<CropScreen> {
                 onPressed: () => Navigator.pop(context),
                 padding: EdgeInsets.zero,
                 minSize: 0,
-                child: const Text('取消', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+                child: Text('取消', style: TextStyle(color: t.textSecondary, fontSize: 16)),
               ),
               const Spacer(),
-              const Text('裁剪图片', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)),
+              Text('裁剪图片', style: TextStyle(color: t.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)),
               const Spacer(),
               CupertinoButton(
                 onPressed: () async {
@@ -90,7 +93,7 @@ class _CropScreenState extends State<CropScreen> {
                 },
                 padding: EdgeInsets.zero,
                 minSize: 0,
-                child: const Text('完成', style: TextStyle(color: AppColors.accent, fontSize: 16, fontWeight: FontWeight.w600)),
+                child: Text('完成', style: TextStyle(color: t.accent, fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ]),
           ),
@@ -144,9 +147,9 @@ class _CropScreenState extends State<CropScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              color: const Color(0x15FFFFFF),
+              color: t.bgWarm,
             ),
-            child: const Text('拖动/缩放图片，使主体在框内', style: TextStyle(color: AppColors.textTertiary, fontSize: 13)),
+            child: Text('拖动/缩放图片，使主体在框内', style: TextStyle(color: t.textMuted, fontSize: 13)),
           ),
         ]),
       ),

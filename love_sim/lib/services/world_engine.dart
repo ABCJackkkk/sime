@@ -109,7 +109,7 @@ class WorldEngine {
   bool get canAct {
     if (_phases.isEmpty) return false;
     // 夜晚的最后一个时段只能休息
-    if (currentPhase == '夜晚' && _phaseIndex == _phases.length - 1) return true;
+    if (currentPhase == '夜晚' && _phaseIndex == _phases.length - 1) return false;
     return true;
   }
 
@@ -236,47 +236,6 @@ class WorldEngine {
 
   InteractionAdvanceMode? getAdvanceModeConfig(String mode) {
     return script.gameInteraction?.advanceModes[mode];
-  }
-
-  // ═══════════════════════════════════════
-  // 推进主入口（保留旧接口兼容性）
-  // ═══════════════════════════════════════
-
-  Future<AdvanceResult> advance(String mode) async {
-    final cfg = getAdvanceModeConfig(mode);
-    final dayBefore = _currentDay;
-    String narrative;
-
-    if (cfg != null && cfg.canTriggerMilestone == true) {
-      // 重要推进：跳到下一个 milestone
-      final ms = calendar.getSpecialDay(_currentDay);
-      if (ms != null) {
-        final targetDay = ms['day'] as int;
-        final skip = targetDay - _currentDay;
-        _skipDays(skip);
-      }
-    } else {
-      // 日常推进：跳过 2-4 天
-      int skipDays = 2;
-      final dist = calendar.daysUntilNextSpecialDay(_currentDay);
-      if (dist <= 3 && dist > 0) skipDays = dist - 1;
-      final remaining = totalDays - _currentDay;
-      if (skipDays > remaining) skipDays = remaining;
-      if (skipDays > 0) _skipDays(skipDays);
-    }
-
-    narrative = await client.generateNarrative(
-      prompt: '', mode: mode, context: getTimeContext(),
-      script: script, narrativeHistory: _narrativeHistory,
-    );
-
-    _narrativeHistory += '\n\n$narrative';
-    _narrativeHistory = _narrativeHistory.trim();
-
-    return AdvanceResult(
-      narrative: narrative, dayBefore: dayBefore, dayAfter: _currentDay,
-      daysSkipped: _currentDay - dayBefore,
-    );
   }
 
   // ═══════════════════════════════════════

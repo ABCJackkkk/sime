@@ -102,8 +102,17 @@ class WorldMemory {
   });
 
   factory WorldMemory.fromJson(Map<String, dynamic> json) {
+    final ct = json['current_time'];
+    Map<String, dynamic> ctMap;
+    if (ct is Map) {
+      ctMap = ct.cast<String, dynamic>();
+    } else if (ct is String) {
+      ctMap = {'phase': ct};
+    } else {
+      ctMap = {};
+    }
     return WorldMemory(
-      currentTime: WorldCurrentTime.fromJson(json['current_time'] ?? {}),
+      currentTime: WorldCurrentTime.fromJson(ctMap),
       locationChanges: List<dynamic>.from(json['location_changes'] ?? []),
       worldHistory: json['world_history'] ?? {},
       worldSummary: json['world_summary'] ?? '',
@@ -161,16 +170,17 @@ class CharacterBasic {
     required this.distinctiveMarks,
   });
 
-  factory CharacterBasic.fromJson(Map<String, dynamic> json) {
+  factory CharacterBasic.fromJson(dynamic json) {
+    if (json is! Map) return CharacterBasic(id: '', name: '', gender: '', age: 0, height: '', weight: '', avatarDesc: '', distinctiveMarks: []);
     return CharacterBasic(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      gender: json['gender'] ?? '',
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      gender: (json['gender'] ?? '').toString(),
       age: json['age'] ?? 0,
-      height: json['height'] ?? '',
-      weight: json['weight'] ?? '',
-      avatarDesc: json['avatar_desc'] ?? '',
-      distinctiveMarks: List<String>.from(json['distinctive_marks'] ?? []),
+      height: (json['height'] ?? '').toString(),
+      weight: (json['weight'] ?? '').toString(),
+      avatarDesc: (json['avatar_desc'] ?? '').toString(),
+      distinctiveMarks: _parseStringList(json['distinctive_marks']),
     );
   }
 }
@@ -186,11 +196,12 @@ class CharacterBackground {
     this.currentSituation = '',
   });
 
-  factory CharacterBackground.fromJson(Map<String, dynamic> json) {
+  factory CharacterBackground.fromJson(dynamic json) {
+    if (json is! Map) return CharacterBackground();
     return CharacterBackground(
-      origin: json['origin'] ?? '',
-      history: json['history'] ?? '',
-      currentSituation: json['current_situation'] ?? '',
+      origin: (json['origin'] ?? '').toString(),
+      history: (json['history'] ?? '').toString(),
+      currentSituation: (json['current_situation'] ?? '').toString(),
     );
   }
 }
@@ -229,7 +240,8 @@ class CharacterDetails {
         petPeeve = petPeeve ?? [],
         secretHobby = secretHobby ?? [];
 
-  factory CharacterDetails.fromJson(Map<String, dynamic> json) {
+  factory CharacterDetails.fromJson(dynamic json) {
+    if (json is! Map) return CharacterDetails();
     return CharacterDetails(
       goals: _parseStringList(json['goals']),
       fears: _parseStringList(json['fears']),
@@ -252,7 +264,16 @@ class CharacterSoulDualMode {
     this.toClose = '',
   });
 
-  factory CharacterSoulDualMode.fromJson(Map<String, dynamic> json) {
+  factory CharacterSoulDualMode.fromJson(dynamic json) {
+    if (json is String) {
+      return CharacterSoulDualMode(
+        toStranger: json,
+        toClose: json,
+      );
+    }
+    if (json is! Map) {
+      return CharacterSoulDualMode();
+    }
     return CharacterSoulDualMode(
       toStranger: json['to_stranger'] ?? '',
       toClose: json['to_close'] ?? '',
@@ -277,14 +298,16 @@ class CharacterSoul {
     CharacterSoulDualMode? dualMode,
   }) : dualMode = dualMode ?? CharacterSoulDualMode();
 
-  factory CharacterSoul.fromJson(Map<String, dynamic> json) {
+  factory CharacterSoul.fromJson(dynamic json) {
+    if (json is String) return CharacterSoul(core: json);
+    if (json is! Map) return CharacterSoul();
     return CharacterSoul(
       core: json['core'] ?? '',
       desire: json['desire'] ?? '',
       wound: json['wound'] ?? '',
       fear: json['fear'] ?? '',
       contradiction: json['contradiction'] ?? '',
-      dualMode: CharacterSoulDualMode.fromJson(json['dual_mode'] ?? {}),
+      dualMode: CharacterSoulDualMode.fromJson(json['dual_mode'] ?? json['dualMode'] ?? {}),
     );
   }
 }
@@ -304,14 +327,19 @@ class CharacterSpeechBigFive {
     this.neuroticism = '',
   });
 
-  factory CharacterSpeechBigFive.fromJson(Map<String, dynamic> json) {
-    String _s(dynamic v) => (v ?? '').toString();
+  factory CharacterSpeechBigFive.fromJson(dynamic json) {
+    if (json is String) {
+      return CharacterSpeechBigFive();
+    }
+    if (json is! Map) {
+      return CharacterSpeechBigFive();
+    }
     return CharacterSpeechBigFive(
-      openness: _s(json['openness']),
-      extraversion: _s(json['extraversion']),
-      agreeableness: _s(json['agreeableness']),
-      conscientiousness: _s(json['conscientiousness']),
-      neuroticism: _s(json['neuroticism']),
+      openness: (json['openness'] ?? json['O'] ?? 0.5).toString(),
+      extraversion: (json['extraversion'] ?? json['E'] ?? 0.5).toString(),
+      agreeableness: (json['agreeableness'] ?? json['A'] ?? 0.5).toString(),
+      conscientiousness: (json['conscientiousness'] ?? json['C'] ?? 0.5).toString(),
+      neuroticism: (json['neuroticism'] ?? json['N'] ?? 0.5).toString(),
     );
   }
 }
@@ -329,7 +357,13 @@ class CharacterSpeechPhonetics {
     this.pause = '',
   });
 
-  factory CharacterSpeechPhonetics.fromJson(Map<String, dynamic> json) {
+  factory CharacterSpeechPhonetics.fromJson(dynamic json) {
+    if (json is String) {
+      return CharacterSpeechPhonetics(pitch: json);
+    }
+    if (json is! Map) {
+      return CharacterSpeechPhonetics();
+    }
     return CharacterSpeechPhonetics(
       pitch: json['pitch'] ?? '',
       pace: json['pace'] ?? '',
@@ -352,12 +386,18 @@ class CharacterSpeechVocabulary {
     List<String>? avoid,
   }) : avoid = avoid ?? [];
 
-  factory CharacterSpeechVocabulary.fromJson(Map<String, dynamic> json) {
+  factory CharacterSpeechVocabulary.fromJson(dynamic json) {
+    if (json is String) {
+      return CharacterSpeechVocabulary(style: json);
+    }
+    if (json is! Map) {
+      return CharacterSpeechVocabulary();
+    }
     return CharacterSpeechVocabulary(
       style: json['style'] ?? '',
       sentenceTendency: json['sentence_tendency'] ?? '',
       softener: json['softener'] ?? '',
-      avoid: List<String>.from(json['avoid'] ?? []),
+      avoid: _parseStringList(json['avoid']),
     );
   }
 }
@@ -375,7 +415,13 @@ class CharacterSpeechInteraction {
     this.topicControl = '',
   });
 
-  factory CharacterSpeechInteraction.fromJson(Map<String, dynamic> json) {
+  factory CharacterSpeechInteraction.fromJson(dynamic json) {
+    if (json is String) {
+      return CharacterSpeechInteraction();
+    }
+    if (json is! Map) {
+      return CharacterSpeechInteraction();
+    }
     return CharacterSpeechInteraction(
       turnTaking: json['turn_taking'] ?? '',
       politeness: json['politeness'] ?? '',
@@ -394,7 +440,9 @@ class CharacterSpeechDualDetail {
     this.example = '',
   });
 
-  factory CharacterSpeechDualDetail.fromJson(Map<String, dynamic> json) {
+  factory CharacterSpeechDualDetail.fromJson(dynamic json) {
+    if (json is String) return CharacterSpeechDualDetail(overview: json);
+    if (json is! Map) return CharacterSpeechDualDetail();
     return CharacterSpeechDualDetail(
       overview: json['overview'] ?? '',
       example: json['example'] ?? '',
@@ -412,7 +460,16 @@ class CharacterSpeechDualMode {
   })  : toStranger = toStranger ?? CharacterSpeechDualDetail(),
         toClose = toClose ?? CharacterSpeechDualDetail();
 
-  factory CharacterSpeechDualMode.fromJson(Map<String, dynamic> json) {
+  factory CharacterSpeechDualMode.fromJson(dynamic json) {
+    if (json is String) {
+      return CharacterSpeechDualMode(
+        toStranger: CharacterSpeechDualDetail(overview: json),
+        toClose: CharacterSpeechDualDetail(overview: json),
+      );
+    }
+    if (json is! Map) {
+      return CharacterSpeechDualMode();
+    }
     return CharacterSpeechDualMode(
       toStranger: CharacterSpeechDualDetail.fromJson(json['to_stranger'] ?? {}),
       toClose: CharacterSpeechDualDetail.fromJson(json['to_close'] ?? {}),
@@ -439,17 +496,18 @@ class CharacterSpeech {
         interaction = interaction ?? CharacterSpeechInteraction(),
         dualMode = dualMode ?? CharacterSpeechDualMode();
 
-  factory CharacterSpeech.fromJson(Map<String, dynamic> json) {
+  factory CharacterSpeech.fromJson(dynamic json) {
+    if (json is! Map) return CharacterSpeech();
     return CharacterSpeech(
       bigFiveProfile:
-          CharacterSpeechBigFive.fromJson(json['big_five_profile'] ?? {}),
+          CharacterSpeechBigFive.fromJson(json['big_five_profile'] ?? json['bigFiveProfile'] ?? {}),
       phonetics: CharacterSpeechPhonetics.fromJson(json['phonetics'] ?? {}),
       vocabulary:
           CharacterSpeechVocabulary.fromJson(json['vocabulary'] ?? {}),
       interaction:
           CharacterSpeechInteraction.fromJson(json['interaction'] ?? {}),
       dualMode:
-          CharacterSpeechDualMode.fromJson(json['dual_mode'] ?? {}),
+          CharacterSpeechDualMode.fromJson(json['dual_mode'] ?? json['dualMode'] ?? {}),
     );
   }
 }
@@ -469,7 +527,8 @@ class CharacterHumanityAntiAiRules {
     this.noUniformAttention = '',
   });
 
-  factory CharacterHumanityAntiAiRules.fromJson(Map<String, dynamic> json) {
+  factory CharacterHumanityAntiAiRules.fromJson(dynamic json) {
+    if (json is! Map) return CharacterHumanityAntiAiRules();
     return CharacterHumanityAntiAiRules(
       noSelfExplain: json['no_self_explain'] ?? '',
       noEmotionLabel: json['no_emotion_label'] ?? '',
@@ -493,7 +552,8 @@ class CharacterHumanityWritingPosture {
     this.emotionOverAnalysis = '',
   });
 
-  factory CharacterHumanityWritingPosture.fromJson(Map<String, dynamic> json) {
+  factory CharacterHumanityWritingPosture.fromJson(dynamic json) {
+    if (json is! Map) return CharacterHumanityWritingPosture();
     return CharacterHumanityWritingPosture(
       silenceIsSpeech: json['silence_is_speech'] ?? '',
       allowPrejudice: json['allow_prejudice'] ?? '',
@@ -516,13 +576,14 @@ class CharacterHumanity {
         writingPosture = writingPosture ?? CharacterHumanityWritingPosture(),
         nonVerbal = nonVerbal ?? [];
 
-  factory CharacterHumanity.fromJson(Map<String, dynamic> json) {
+  factory CharacterHumanity.fromJson(dynamic json) {
+    if (json is! Map) return CharacterHumanity();
     return CharacterHumanity(
       antiAiRules:
           CharacterHumanityAntiAiRules.fromJson(json['anti_ai_rules'] ?? {}),
       writingPosture: CharacterHumanityWritingPosture.fromJson(
           json['writing_posture'] ?? {}),
-      nonVerbal: List<String>.from(json['non_verbal'] ?? []),
+      nonVerbal: _parseStringList(json['non_verbal']),
     );
   }
 }
@@ -536,7 +597,16 @@ class CharacterAgentDualMode {
     this.toClose = '',
   });
 
-  factory CharacterAgentDualMode.fromJson(Map<String, dynamic> json) {
+  factory CharacterAgentDualMode.fromJson(dynamic json) {
+    if (json is String) {
+      return CharacterAgentDualMode(
+        toStranger: json,
+        toClose: json,
+      );
+    }
+    if (json is! Map) {
+      return CharacterAgentDualMode();
+    }
     return CharacterAgentDualMode(
       toStranger: json['to_stranger'] ?? '',
       toClose: json['to_close'] ?? '',
@@ -555,11 +625,12 @@ class CharacterAgent {
     CharacterAgentDualMode? dualMode,
   }) : dualMode = dualMode ?? CharacterAgentDualMode();
 
-  factory CharacterAgent.fromJson(Map<String, dynamic> json) {
+  factory CharacterAgent.fromJson(dynamic json) {
+    if (json is! Map) return CharacterAgent();
     return CharacterAgent(
       role: json['role'] ?? '',
       agenda: json['agenda'] ?? '',
-      dualMode: CharacterAgentDualMode.fromJson(json['dual_mode'] ?? {}),
+      dualMode: CharacterAgentDualMode.fromJson(json['dual_mode'] ?? json['dualMode'] ?? {}),
     );
   }
 }
@@ -589,7 +660,9 @@ class CharacterAppearance {
     this.styleDesc = '',
   }) : distinctiveFeatures = distinctiveFeatures ?? [];
 
-  factory CharacterAppearance.fromJson(Map<String, dynamic> json) {
+  factory CharacterAppearance.fromJson(dynamic json) {
+    if (json is String) return CharacterAppearance(styleDesc: json);
+    if (json is! Map) return CharacterAppearance();
     return CharacterAppearance(
       body: json['body'] ?? '',
       face: json['face'] ?? '',
@@ -617,10 +690,31 @@ class CharacterPreferences {
   })  : likes = likes ?? [],
         dislikes = dislikes ?? [];
 
-  factory CharacterPreferences.fromJson(Map<String, dynamic> json) {
+  factory CharacterPreferences.fromJson(dynamic json) {
+    if (json is! Map) {
+      return CharacterPreferences();
+    }
+    dynamic rawLikes = json['likes'];
+    dynamic rawDislikes = json['dislikes'];
+    List<String> likesList;
+    List<String> dislikesList;
+    if (rawLikes is List) {
+      likesList = List<String>.from(rawLikes);
+    } else if (rawLikes is String) {
+      likesList = [rawLikes];
+    } else {
+      likesList = [];
+    }
+    if (rawDislikes is List) {
+      dislikesList = List<String>.from(rawDislikes);
+    } else if (rawDislikes is String) {
+      dislikesList = [rawDislikes];
+    } else {
+      dislikesList = [];
+    }
     return CharacterPreferences(
-      likes: List<String>.from(json['likes'] ?? []),
-      dislikes: List<String>.from(json['dislikes'] ?? []),
+      likes: likesList,
+      dislikes: dislikesList,
       talent: json['talent'] ?? '',
     );
   }
@@ -645,13 +739,19 @@ class CharacterMoodTriggers {
         nervous = nervous ?? [],
         jealous = jealous ?? [];
 
-  factory CharacterMoodTriggers.fromJson(Map<String, dynamic> json) {
+  factory CharacterMoodTriggers.fromJson(dynamic json) {
+    if (json is String) {
+      return CharacterMoodTriggers();
+    }
+    if (json is! Map) {
+      return CharacterMoodTriggers();
+    }
     return CharacterMoodTriggers(
-      joy: List<String>.from(json['joy'] ?? []),
-      anger: List<String>.from(json['anger'] ?? []),
-      sadness: List<String>.from(json['sadness'] ?? []),
-      nervous: List<String>.from(json['nervous'] ?? []),
-      jealous: List<String>.from(json['jealous'] ?? []),
+      joy: _parseStringList(json['joy']),
+      anger: _parseStringList(json['anger']),
+      sadness: _parseStringList(json['sadness']),
+      nervous: _parseStringList(json['nervous']),
+      jealous: _parseStringList(json['jealous']),
     );
   }
 }
@@ -665,7 +765,9 @@ class CharacterGiftResponseEntry {
     this.reaction = '',
   });
 
-  factory CharacterGiftResponseEntry.fromJson(Map<String, dynamic> json) {
+  factory CharacterGiftResponseEntry.fromJson(dynamic json) {
+    if (json is String) return CharacterGiftResponseEntry(input: json);
+    if (json is! Map) return CharacterGiftResponseEntry();
     return CharacterGiftResponseEntry(
       input: json['input'] ?? '',
       reaction: json['reaction'] ?? '',
@@ -692,7 +794,8 @@ class CharacterGiftResponse {
         dislike = dislike ?? CharacterGiftResponseEntry(),
         hate = hate ?? CharacterGiftResponseEntry();
 
-  factory CharacterGiftResponse.fromJson(Map<String, dynamic> json) {
+  factory CharacterGiftResponse.fromJson(dynamic json) {
+    if (json is! Map) return CharacterGiftResponse();
     return CharacterGiftResponse(
       love: CharacterGiftResponseEntry.fromJson(json['love'] ?? {}),
       like: CharacterGiftResponseEntry.fromJson(json['like'] ?? {}),
@@ -716,12 +819,18 @@ class CharacterBoundary {
     List<String>? topicTaboo,
   }) : topicTaboo = topicTaboo ?? [];
 
-  factory CharacterBoundary.fromJson(Map<String, dynamic> json) {
+  factory CharacterBoundary.fromJson(dynamic json) {
+    if (json is String) {
+      return CharacterBoundary(physical: json);
+    }
+    if (json is! Map) {
+      return CharacterBoundary();
+    }
     return CharacterBoundary(
       physical: json['physical'] ?? '',
       emotional: json['emotional'] ?? '',
       paceHint: json['pace_hint'] ?? '',
-      topicTaboo: List<String>.from(json['topic_taboo'] ?? []),
+      topicTaboo: _parseStringList(json['topic_taboo']),
     );
   }
 }
@@ -737,7 +846,9 @@ class CharacterEvolutionStageEntry {
     this.narrativeHint = '',
   });
 
-  factory CharacterEvolutionStageEntry.fromJson(Map<String, dynamic> json) {
+  factory CharacterEvolutionStageEntry.fromJson(dynamic json) {
+    if (json is String) return CharacterEvolutionStageEntry(stage: json);
+    if (json is! Map) return CharacterEvolutionStageEntry();
     return CharacterEvolutionStageEntry(
       stage: json['stage']?.toString() ?? '',
       range: json['range']?.toString() ?? '',
@@ -755,7 +866,8 @@ class CharacterEvolution {
     this.specialItems,
   }) : affectionStages = affectionStages ?? [];
 
-  factory CharacterEvolution.fromJson(Map<String, dynamic> json) {
+  factory CharacterEvolution.fromJson(dynamic json) {
+    if (json is! Map) return CharacterEvolution();
     List<CharacterEvolutionStageEntry> stages = [];
     final raw = json['affection_stages'];
     if (raw is List) {
@@ -780,9 +892,10 @@ class CharacterMemoryImpression {
     this.trend = '',
   }) : keywords = keywords ?? [];
 
-  factory CharacterMemoryImpression.fromJson(Map<String, dynamic> json) {
+  factory CharacterMemoryImpression.fromJson(dynamic json) {
+    if (json is! Map) return CharacterMemoryImpression();
     return CharacterMemoryImpression(
-      keywords: List<String>.from(json['keywords'] ?? []),
+      keywords: _parseStringList(json['keywords']),
       lastUpdated: json['last_updated'] ?? '',
       trend: json['trend'] ?? '',
     );
@@ -802,7 +915,8 @@ class CharacterMemory {
         chatLog = chatLog ?? [],
         impression = impression ?? CharacterMemoryImpression();
 
-  factory CharacterMemory.fromJson(Map<String, dynamic> json) {
+  factory CharacterMemory.fromJson(dynamic json) {
+    if (json is! Map) return CharacterMemory();
     return CharacterMemory(
       episodic: List<dynamic>.from(json['episodic'] ?? []),
       chatLog: List<dynamic>.from(json['chat_log'] ?? []),
@@ -822,7 +936,8 @@ class CharacterRelations {
   })  : flat = flat ?? [],
         dimensional = dimensional ?? [];
 
-  factory CharacterRelations.fromJson(Map<String, dynamic> json) {
+  factory CharacterRelations.fromJson(dynamic json) {
+    if (json is! Map) return CharacterRelations();
     final flatList = (json['flat'] as List<dynamic>?)
             ?.map((e) => Map<String, dynamic>.from(e as Map))
             .toList() ??
@@ -891,7 +1006,8 @@ class Character {
     this.memoryTags,
   });
 
-  factory Character.fromJson(Map<String, dynamic> json) {
+  factory Character.fromJson(dynamic json) {
+    if (json is! Map) return Character(fullCharacter: false, summary: '', basic: CharacterBasic(id: '', name: '', gender: '', age: 0, height: '', weight: '', avatarDesc: '', distinctiveMarks: []));
     CharacterBasic _b; try { _b = CharacterBasic.fromJson(json['basic'] ?? {}); } catch(e) { throw Exception('basic: $e'); }
     final initialAff = (json['basic'] as Map<String, dynamic>?)?['initial_affection'] ?? 50.0;
     CharacterBackground? _bg; try { _bg = json['background'] != null ? CharacterBackground.fromJson(json['background']) : null; } catch(e) { throw Exception('background: $e'); }
@@ -1029,7 +1145,11 @@ class InteractionConfig {
       startDay: timeConfig['start_day'] ?? 1,
       endDay: timeConfig['end_day'] ?? 60,
       season: timeConfig['season'] ?? 'spring',
-      phases: List<String>.from(timeConfig['phases'] ?? []),
+      phases: (timeConfig['phases'] as List<dynamic>?)
+              ?.map((e) => e is String ? e : (e is Map ? (e['id']?.toString() ?? '') : ''))
+              .where((s) => s.isNotEmpty)
+              .toList() ??
+          [],
     );
   }
 }
@@ -1256,10 +1376,7 @@ class GameScript {
       meta: ScriptMeta.fromJson(json['meta'] ?? {}),
       player: ScriptPlayer.fromJson(json['player'] ?? {}),
       world: ScriptWorld.fromJson(worldJson),
-      characters: (json['characters'] as List<dynamic>?)
-              ?.map((e) => Character.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+      characters: _parseCharacters(json['characters']),
       items: _safeParseTop(json, 'items', (v) => ScriptItems.fromJson(v)) ?? ScriptItems(gifts: [], shopItems: []),
       interaction: _safeParseTop(json, 'interaction', (v) => InteractionConfig.fromJson(v)) ?? InteractionConfig(totalDays: 60, startDay: 1, endDay: 60, season: 'spring', phases: []),
       events: json['events'] != null
@@ -1278,6 +1395,19 @@ class GameScript {
       interCharRelationConfig: _safeParseTop(json, 'inter_character_relationships', (v) => InterCharRelationConfig.fromJson(v)),
       informationSystemConfig: _safeParseTop(json, 'information_system', (v) => InformationSystemConfig.fromJson(v)),
     );
+  }
+  static List<Character> _parseCharacters(dynamic list) {
+    if (list is! List) return [];
+    final result = <Character>[];
+    for (int i = 0; i < list.length; i++) {
+      try {
+        final e = list[i];
+        if (e is Map) {
+          result.add(Character.fromJson(Map<String, dynamic>.from(e)));
+        }
+      } catch (_) {}
+    }
+    return result;
   }
   static T? _safeParse<T>(Map<String,dynamic> json, String key, T? Function(Map<String,dynamic>) parser) {
     if (json[key] == null) return null;
@@ -1536,7 +1666,11 @@ class EventTemplate {
   final String duration;
   final int maxSteps;
   EventTemplate({this.id='',this.name='',this.aiHint='',this.aiRule='fixed',this.weight=1.0,this.severity='medium',this.mood='',List<String>? contextTags,List<String>? locationReq,List<String>? requiredChars,this.alwaysMemory=false,this.duration='short',this.maxSteps=3}):contextTags=contextTags??[],locationReq=locationReq??[],requiredChars=requiredChars??[];
-  factory EventTemplate.fromJson(Map<String, dynamic> json) => EventTemplate(id: json['id']??'',name: json['name']??'',aiHint: json['ai_hint']??'',aiRule: json['ai_rule']??'fixed',weight: (json['weight'] as num?)?.toDouble()??1.0,severity: json['severity']??'medium',mood: json['mood']??'',contextTags: List<String>.from(json['context_tags']??[]),locationReq: List<String>.from(json['location_req']??[]),requiredChars: List<String>.from(json['required_chars']??[]),alwaysMemory: json['always_memory']??false,duration: json['duration']??'short',maxSteps: (json['max_steps'] as num?)?.toInt()??3);
+  factory EventTemplate.fromJson(dynamic json) {
+    if (json is String) return EventTemplate(id: json);
+    if (json is! Map) return EventTemplate();
+    return EventTemplate(id: (json['id'] ?? '').toString(),name: (json['name'] ?? '').toString(),aiHint: (json['ai_hint'] ?? '').toString(),aiRule: (json['ai_rule'] ?? 'fixed').toString(),weight: (json['weight'] as num?)?.toDouble()??1.0,severity: (json['severity'] ?? 'medium').toString(),mood: (json['mood'] ?? '').toString(),contextTags: _parseStringList(json['context_tags']),locationReq: _parseStringList(json['location_req']),requiredChars: _parseStringList(json['required_chars']),alwaysMemory: json['always_memory']??false,duration: (json['duration'] ?? 'short').toString(),maxSteps: (json['max_steps'] as num?)?.toInt()??3);
+  }
 }
 
 class DailyScene {
@@ -1545,7 +1679,11 @@ class DailyScene {
   final List<String> moods;
   final String hintTemplate;
   DailyScene({this.locationId='',List<String>? phases,List<String>? moods,this.hintTemplate=''}):phases=phases??[],moods=moods??[];
-  factory DailyScene.fromJson(Map<String,dynamic> json)=>DailyScene(locationId: json['location']??'',phases: List<String>.from(json['phases']??[]),moods: List<String>.from(json['moods']??[]),hintTemplate: json['hint_template']??'');
+  factory DailyScene.fromJson(dynamic json) {
+    if (json is String) return DailyScene(locationId: json);
+    if (json is! Map) return DailyScene();
+    return DailyScene(locationId: (json['location']??'').toString(),phases: _parseStringList(json['phases']),moods: _parseStringList(json['moods']),hintTemplate: (json['hint_template']??'').toString());
+  }
 }
 
 class ForcedChoiceOption {
@@ -1566,7 +1704,10 @@ class EventCondition {
   final List<String> eventRefs;
   final double weightBoost;
   EventCondition({this.id='',Map<String,dynamic>? when,List<String>? eventRefs,this.weightBoost=1.0}):when=when??{},eventRefs=eventRefs??[];
-  factory EventCondition.fromJson(Map<String,dynamic> json)=>EventCondition(id: json['id']??'',when: json['when']??{},eventRefs: List<String>.from(json['event_refs']??[]),weightBoost: (json['weight_boost'] as num?)?.toDouble()??1.0);
+  factory EventCondition.fromJson(dynamic json) {
+    if (json is! Map) return EventCondition();
+    return EventCondition(id: (json['id']??'').toString(),when: json['when'] is Map ? Map<String,dynamic>.from(json['when']) : <String,dynamic>{},eventRefs: _parseStringList(json['event_refs']),weightBoost: (json['weight_boost'] as num?)?.toDouble()??1.0);
+  }
 }
 
 class EventChain {
@@ -1574,7 +1715,10 @@ class EventChain {
   final List<String> sequence;
   final String unlockCondition;
   EventChain({this.id='',List<String>? sequence,this.unlockCondition=''}):sequence=sequence??[];
-  factory EventChain.fromJson(Map<String,dynamic> json)=>EventChain(id: json['id']??'',sequence: List<String>.from(json['sequence']??[]),unlockCondition: json['unlock_condition']??'');
+  factory EventChain.fromJson(dynamic json) {
+    if (json is! Map) return EventChain();
+    return EventChain(id: (json['id']??'').toString(),sequence: _parseStringList(json['sequence']),unlockCondition: (json['unlock_condition']??'').toString());
+  }
 }
 
 class EventButterfly {
@@ -1582,7 +1726,10 @@ class EventButterfly {
   final int maxSeeds;
   final double bloomChance;
   EventButterfly({List<Map<String,dynamic>>? seeds,this.maxSeeds=5,this.bloomChance=0.2}):seeds=seeds??[];
-  factory EventButterfly.fromJson(Map<String,dynamic> json)=>EventButterfly(seeds: List<Map<String,dynamic>>.from(json['seeds']??[]),maxSeeds: json['max_seeds']??5,bloomChance: (json['bloom_chance'] as num?)?.toDouble()??0.2);
+  factory EventButterfly.fromJson(dynamic json) {
+    if (json is! Map) return EventButterfly();
+    return EventButterfly(seeds: json['seeds'] is List ? List<Map<String,dynamic>>.from(json['seeds']) : [],maxSeeds: json['max_seeds']??5,bloomChance: (json['bloom_chance'] as num?)?.toDouble()??0.2);
+  }
 }
 
 class EventMemory {
@@ -1590,7 +1737,10 @@ class EventMemory {
   final List<Map<String,dynamic>> compressed;
   int eventCounter;
   EventMemory({List<Map<String,dynamic>>? recentEvents,List<Map<String,dynamic>>? compressed,this.eventCounter=0}):recentEvents=recentEvents??[],compressed=compressed??[];
-  factory EventMemory.fromJson(Map<String,dynamic> json)=>EventMemory(recentEvents: List<Map<String,dynamic>>.from(json['recent_events']??[]),compressed: List<Map<String,dynamic>>.from(json['compressed']??[]),eventCounter: json['event_counter']??0);
+  factory EventMemory.fromJson(dynamic json) {
+    if (json is! Map) return EventMemory();
+    return EventMemory(recentEvents: json['recent_events'] is List ? List<Map<String,dynamic>>.from(json['recent_events']) : [],compressed: json['compressed'] is List ? List<Map<String,dynamic>>.from(json['compressed']) : [],eventCounter: json['event_counter']??0);
+  }
 }
 
 class GameEvents {
@@ -1619,14 +1769,24 @@ class GameEvents {
   final EventMemory memory;
   GameEvents({this.summary='',Map<String,dynamic>? generationRules,List<EventTemplate>? plotEvents,List<EventTemplate>? boundaryEvents,List<EventTemplate>? dailyEvents,List<EventTemplate>? sweetMinor,List<EventTemplate>? sweetMajor,List<EventTemplate>? loveTriangle,List<EventTemplate>? reversal,List<EventTemplate>? echo,List<EventTemplate>? misunderstanding,List<EventTemplate>? ensemble,List<EventTemplate>? worldShift,List<Map<String,dynamic>>? forcedChoice,List<EventTemplate>? resource,List<EventTemplate>? dialogueTrigger,EventButterfly? butterflySystem,Map<String,double>? tensionField,List<EventCondition>? conditions,List<EventChain>? chains,List<EventTemplate>? postEndingPool,List<DailyScene>? dailyScenes,EventMemory? memory}):generationRules=generationRules??{},plotEvents=plotEvents??[],boundaryEvents=boundaryEvents??[],dailyEvents=dailyEvents??[],sweetMinor=sweetMinor??[],sweetMajor=sweetMajor??[],loveTriangle=loveTriangle??[],reversal=reversal??[],echo=echo??[],misunderstanding=misunderstanding??[],ensemble=ensemble??[],worldShift=worldShift??[],forcedChoice=forcedChoice??[],resource=resource??[],dialogueTrigger=dialogueTrigger??[],butterflySystem=butterflySystem??EventButterfly(),tensionField=tensionField??{},conditions=conditions??[],chains=chains??[],postEndingPool=postEndingPool??[],dailyScenes=dailyScenes??[],memory=memory??EventMemory();
 
-  factory GameEvents.fromJson(Map<String,dynamic> json) {
+  factory GameEvents.fromJson(dynamic json) {
+    if (json is! Map) return GameEvents();
     final tf = <String,double>{};
     (json['tension_field'] as Map<String,dynamic>?)?.forEach((k,v)=>tf[k]=(v is Map)?(v['value']??0.0):(v as num).toDouble());
+    final sweet = json['sweet'];
+    List<EventTemplate> sweetMinor = [];
+    List<EventTemplate> sweetMajor = [];
+    if (sweet is Map<String, dynamic>) {
+      sweetMinor = _parseEvents(sweet['minor']);
+      sweetMajor = _parseEvents(sweet['major']);
+    } else if (sweet is List) {
+      sweetMinor = _parseEvents(sweet);
+    }
     return GameEvents(
       summary: json['summary']??'',generationRules: json['generation_rules']??{},
       plotEvents: _parseEvents(json['plot']),boundaryEvents: _parseEvents(json['boundary']),
-      dailyEvents: _parseEvents(json['daily']),sweetMinor: _parseEvents(json['sweet']?['minor']),
-      sweetMajor: _parseEvents(json['sweet']?['major']),loveTriangle: _parseEvents(json['love_triangle']),
+      dailyEvents: _parseEvents(json['daily']),sweetMinor: sweetMinor,
+      sweetMajor: sweetMajor,loveTriangle: _parseEvents(json['love_triangle']),
       reversal: _parseEvents(json['reversal']),echo: _parseEvents(json['echo']),
       misunderstanding: _parseEvents(json['misunderstanding']),ensemble: _parseEvents(json['ensemble']),
       worldShift: _parseEvents(json['world_shift']),
@@ -1642,7 +1802,8 @@ class GameEvents {
   }
   static List<EventTemplate> _parseEvents(dynamic list) {
     if (list==null) return [];
-    return (list as List<dynamic>).map((e)=>EventTemplate.fromJson(e)).toList();
+    if (list is! List) return [];
+    return list.map((e)=>EventTemplate.fromJson(e)).toList();
   }
 }
 
@@ -2006,14 +2167,20 @@ class CharacterScheduleSlot {
   final int priority;
   final List<String> conditions;
   CharacterScheduleSlot({this.phase='',this.locationId='',this.activity='',this.priority=50,List<String>? conditions}):conditions=conditions??[];
-  factory CharacterScheduleSlot.fromJson(Map<String,dynamic> json)=>CharacterScheduleSlot(phase: json['phase']??'',locationId: json['location']??'',activity: json['activity']??'',priority: json['priority']??50,conditions: List<String>.from(json['conditions']??[]));
+  factory CharacterScheduleSlot.fromJson(dynamic json) {
+    if (json is! Map) return CharacterScheduleSlot();
+    return CharacterScheduleSlot(phase: (json['phase']??'').toString(),locationId: (json['location']??'').toString(),activity: (json['activity']??'').toString(),priority: json['priority']??50,conditions: _parseStringList(json['conditions']));
+  }
 }
 
 class CharacterSchedule {
   final List<CharacterScheduleSlot> weekday;
   final List<CharacterScheduleSlot> weekend;
   CharacterSchedule({List<CharacterScheduleSlot>? weekday,List<CharacterScheduleSlot>? weekend}):weekday=weekday??[],weekend=weekend??[];
-  factory CharacterSchedule.fromJson(Map<String,dynamic> json)=>CharacterSchedule(weekday: (json['weekday'] as List<dynamic>?)?.map((e)=>CharacterScheduleSlot.fromJson(e)).toList()??[],weekend: (json['weekend'] as List<dynamic>?)?.map((e)=>CharacterScheduleSlot.fromJson(e)).toList()??[]);
+  factory CharacterSchedule.fromJson(dynamic json) {
+    if (json is! Map) return CharacterSchedule();
+    return CharacterSchedule(weekday: (json['weekday'] is List ? (json['weekday'] as List).map((e)=>CharacterScheduleSlot.fromJson(e)).toList() : <CharacterScheduleSlot>[]),weekend: (json['weekend'] is List ? (json['weekend'] as List).map((e)=>CharacterScheduleSlot.fromJson(e)).toList() : <CharacterScheduleSlot>[]));
+  }
 }
 
 class CharacterStat {
@@ -2022,7 +2189,10 @@ class CharacterStat {
   final double value;
   final double max;
   CharacterStat({this.id='',this.name='',this.value=50,this.max=100});
-  factory CharacterStat.fromJson(Map<String,dynamic> json)=>CharacterStat(id: json['id']??'',name: json['name']??'',value: (json['value'] as num?)?.toDouble()??50,max: (json['max'] as num?)?.toDouble()??100);
+  factory CharacterStat.fromJson(dynamic json) {
+    if (json is! Map) return CharacterStat();
+    return CharacterStat(id: (json['id']??'').toString(),name: (json['name']??'').toString(),value: (json['value'] as num?)?.toDouble()??50,max: (json['max'] as num?)?.toDouble()??100);
+  }
   Map<String,dynamic> toJson()=>{'id':id,'name':name,'value':value,'max':max};
 }
 
@@ -2032,7 +2202,10 @@ class CharacterGrade {
   final double value;
   final double max;
   CharacterGrade({this.id='',this.name='',this.value=100,this.max=150});
-  factory CharacterGrade.fromJson(Map<String,dynamic> json)=>CharacterGrade(id: json['id']??'',name: json['name']??'',value: (json['value'] as num?)?.toDouble()??100,max: (json['max'] as num?)?.toDouble()??150);
+  factory CharacterGrade.fromJson(dynamic json) {
+    if (json is! Map) return CharacterGrade();
+    return CharacterGrade(id: (json['id']??'').toString(),name: (json['name']??'').toString(),value: (json['value'] as num?)?.toDouble()??100,max: (json['max'] as num?)?.toDouble()??150);
+  }
   Map<String,dynamic> toJson()=>{'id':id,'name':name,'value':value,'max':max};
 }
 

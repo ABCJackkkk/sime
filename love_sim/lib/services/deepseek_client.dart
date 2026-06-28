@@ -107,7 +107,7 @@ class DeepSeekClient {
         if (attempt >= _maxRetries) throw Exception('API 超时，已重试 $_maxRetries 次');
         final delay = (_baseDelayMs * pow(2, attempt - 1)).toInt();
         await Future.delayed(Duration(milliseconds: delay));
-      } on Exception {
+      } on Exception catch (e) {
         if (attempt >= _maxRetries || !(e.toString().contains('Connection') || e.toString().contains('Socket') || e.toString().contains('reset'))) rethrow;
         final delay = (_baseDelayMs * pow(2, attempt - 1)).toInt();
         await Future.delayed(Duration(milliseconds: delay));
@@ -441,14 +441,13 @@ class DeepSeekClient {
     }
     // phase_pass / daily
     final phaseHints = {
-      '清晨': '天刚亮。角色应该在起床、晨练、上学路上。',
+      '凌晨': '夜深人静，大多数人都在睡觉。只有少数夜猫子还在活动。',
+      '清晨': '天刚亮。角色应该在起床、晨练、上学/上班路上。',
       '上午': '上午的课程/工作刚开始。',
-      '课间': '下课时分，走廊热闹。',
-      '午休': '午餐时间。食堂、天台、树下。',
+      '中午': '午餐时间。食堂、天台、树下。',
       '下午': '下午的课程/活动。',
-      '放学': '放学了。社团活动、回家路上、操场。',
-      '傍晚': '天色渐暗。晚饭前后。${isWeekend ? "周末的傍晚" : ""}',
-      '夜晚': '夜晚了。在学校的话该离开了。${isWeekend ? "周末的夜晚" : "该回家了，或者在家看书休息。"}',
+      '傍晚': '天色渐暗。晚饭前后，社团活动结束。${isWeekend ? "周末的傍晚" : ""}',
+      '夜晚': '夜晚了。${isWeekend ? "周末的夜晚，可以外出或在家休息。" : "该回家了，或者在家看书休息。"}',
     };
     final hint = phaseHints[phase] ?? '';
     final weekendNote = isWeekend ? '今天是周末，不用上学。' : '';
@@ -1051,7 +1050,7 @@ class DeepSeekClient {
         final m = cd as Map<String, dynamic>;
         final char = script.characters.where((c) => c.basic.id == m['id']).firstOrNull;
         final name = char?.basic.name ?? m['id'];
-        buf.writeln('$name: 好感${m['affection']} ${m['tier']}${m['relation'].toString().isNotEmpty ? ' 关系:${m['relation']}' : ''}');
+        buf.writeln('$name: 好感${m['affection']} ${m['tier']}${(m['relation'] != null && m['relation'].toString().isNotEmpty ? ' 关系:${m['relation']}' : '')}');
       }
       buf.writeln();
       buf.writeln('这是自由叙事事件。请根据在场角色的好感度、关系和性格设定，自然生成一段场景叙事。篇幅由情境决定，不强行凑字。');
@@ -1368,6 +1367,122 @@ class DeepSeekClient {
       default:
         return '以对话为主，动作描写辅助。';
     }
+  }
+
+  Future<String> createScript(String userDescription) async {
+    final systemPrompt = '''你是一个恋爱模拟游戏剧本生成器。根据用户的自然语言描述，生成完整的 JSON 剧本。
+
+你必须严格按照下方模板生成 JSON。输出必须是纯 JSON，不要包含 markdown 代码块标记。
+
+=== 模板开始 ===
+{
+  "meta": {
+    "id": "简短英文id",
+    "name": "中文剧本名",
+    "version": "1.0.0",
+    "author": "",
+    "genre": "风格",
+    "tone": "基调描述",
+    "mode": "endings",
+    "summary": "一句话简介"
+  },
+  "player": {
+    "background": "主角背景故事，第三人称",
+    "current_state": "主角当前状态和处境"
+  },
+  "world": {
+    "summary": "世界观概述",
+    "setting": "场景设定",
+    "atmosphere": {"time_sense": "时间感","tone": "气氛","interaction_quality": "互动质感"},
+    "locations": [{"id":"地点id","name":"中文名","desc":"描述","trigger_tags":["标签"],"narrative_profile":{"event_affinity":{"事件":0.5},"keywords":["关键词"]}}],
+    "special_rules": {},
+    "memory": {"current_time":{"day":1,"season":"spring","weather":"晴","phase":"上午"},"location_changes":[],"world_history":{},"world_summary":""}
+  },
+  "characters": [
+    {
+      "full_character": true,
+      "summary": "角色概括",
+      "basic": {"id":"角色id","name":"中文名","gender":"男/女","age":20,"height":"170cm","initial_affection":15},
+      "background": {"origin":"出身","history":"经历","current_situation":"现状"},
+      "details": {"goals":["目标"],"fears":["恐惧"],"secrets":["秘密"],"quirks":["怪癖"]},
+      "soul": {"core":"性格核心","desire":"欲望","wound":"创伤","fear":"恐惧","contradiction":"矛盾","dualMode":"to_stranger: 态度\\nto_close: 态度"},
+      "speech": {
+        "bigFiveProfile":{"O":0.5,"E":0.5,"A":0.7,"C":0.6,"N":0.4},
+        "phonetics":{"pitch":"音色","pace":"语速","stress":"重音","pause":"停顿"},
+        "vocabulary":{"style":"风格","signature_phrases":["口头禅"],"avoid":["不说的词"]},
+        "dualMode":{"to_stranger":{"overview":"方式"},"to_close":{"overview":"方式"}}
+      },
+      "humanity":{"non_verbal":["行为"]},
+      "agent":{"role":"定位","agenda":"动机"},
+      "appearance":{"body":"","face":"","hair":"","eyes":"","clothing":"","accessory":"","distinctive_features":""},
+      "preferences":{"likes":["喜欢"],"dislikes":["讨厌"]},
+      "mood_triggers":{"joy":["开心"],"anger":["愤怒"],"sadness":["悲伤"],"jealous":["嫉妒"]},
+      "gift_response":{"love":{"input":"喜欢的礼物","reaction":"反应"},"hate":{"input":"讨厌的礼物","reaction":"反应"}},
+      "boundary":{"pace_hint":"节奏提示","physical":"物理边界","emotional":"情感边界","topic_taboo":["禁忌话题1","禁忌话题2"]},
+      "evolution":{"affection_stages":[
+        {"stage":"死敌","range":[0,10],"narrative_hint":"..."},
+        {"stage":"仇视","range":[10,30],"narrative_hint":"..."},
+        {"stage":"厌恶","range":[30,50],"narrative_hint":"..."},
+        {"stage":"认识","range":[50,70],"narrative_hint":"..."},
+        {"stage":"好友","range":[70,80],"narrative_hint":"..."},
+        {"stage":"暧昧","range":[80,90],"narrative_hint":"..."},
+        {"stage":"恋人","range":[90,100],"narrative_hint":"..."},
+        {"stage":"唯一","range":[100,999],"narrative_hint":"..."}
+      ]},
+      "schedule":{"weekday":[{"time":"上午","location":"地点id","activity":"活动","priority":50}],"weekend":[{"time":"上午","location":"地点id","activity":"活动","priority":50}]},
+      "memory_tags":{"default":["日常"],"affection_breakthrough":["暧昧"],"conflict":["冲突"],"triangular":["吃醋"]},
+      "stats":[{"id":"intelligence","name":"智力","category":"mental","min":0,"max":100,"value":70}],
+      "grades":[{"id":"chinese","name":"语文","min":0,"max":100,"value":80}],
+      "discovery_condition":"如何解锁","relations":{"flat":[],"dimensional":[]},"memory":{"episodic_memory":[]}
+    }
+  ],
+  "events": {
+    "scene_locations": [{"id":"地点id","name":"中文名","desc":"描述","visibility_default":"public","events_hint":"可能事件","available_phases":["上午","中午","下午","傍晚","夜晚"],"scene_moods":["情绪"],"narrative_profile":{"event_affinity":{"事件":0.5},"keywords":["关键词"]}}],
+    "scene_events":[],"plot":[],"daily":[],"boundary":[],"sweet":[],"tension":[],"beat_map":{},"event_pools":{},"tension_field":{}
+  },
+  "items": {"currency":[{"id":"coin","name":"金币","initial":100}],"list":[{"id":"item_1","name":"礼物","type":"gift","can_buy":true,"price":20,"currency":"coin","gift_value":5,"target_id":"角色id","desc":"描述"}],"memory":{}},
+  "interaction": {
+    "time_config": {"total_days":180,"start_day":1,"end_day":180,"phases":[{"id":"lingchen","name":"凌晨","hour":"00-06","mood":"万籁俱寂","skippable":true},{"id":"qingchen","name":"清晨","hour":"06-08","mood":"日出晨起","skippable":false},{"id":"shangwu","name":"上午","hour":"08-11","mood":"上午课程","skippable":false},{"id":"zhongwu","name":"中午","hour":"11-13","mood":"午休午餐","skippable":false},{"id":"xiawu","name":"下午","hour":"13-17","mood":"下午课程","skippable":false},{"id":"bangwan","name":"傍晚","hour":"17-19","mood":"黄昏归家","skippable":false},{"id":"yewan","name":"夜晚","hour":"19-24","mood":"晚间自由","skippable":false}]},
+    "relationship_stages": [{"state":"none","label":"死敌","min":0,"max":10},{"state":"stranger","label":"仇视","min":10,"max":30},{"state":"acquaintance","label":"厌恶","min":30,"max":50},{"state":"friend","label":"认识","min":50,"max":70},{"state":"close_friend","label":"好友","min":70,"max":80},{"state":"crush","label":"暧昧","min":80,"max":90},{"state":"lover","label":"恋人","min":90,"max":100},{"state":"partner","label":"唯一","min":100,"max":100}],
+    "breakthrough_rule":"好感度>=80进入暧昧",
+    "multi_lover":{"enabled":true},
+    "affection":{"min":1,"max":100,"precision":0.01,"tiers":[10,20,30,40,50,60,70,80,90,100],"difficulty_curve":{"gain_multiplier":{"1-50":{"multiplier":1.0},"50-70":{"multiplier":0.6},"70-80":{"multiplier":0.4},"80-90":{"multiplier":0.2},"90-100":{"multiplier":0.05}}},"natural_drift":{"per_day":0.02,"max_drift":5,"direction":"toward_middle","middle":50}},
+    "advance_modes":{"daily":{"time_advance":{"phases":1},"enabled":true},"major":{"time_advance":{"phases":1},"enabled":true}}
+  },
+  "data_layer":{"ranking":{"total_students":100,"events":[]}},
+  "rhythm_config":{},"memory_config":{},"action_rules":{},"fallback_narratives":{}
+}
+=== 模板结束 ===
+
+重要规则：
+1. 所有字段都填入有意义的内容，不要留空字符串或空数组。
+2. characters 至少 2 个 full_character=true 的可攻略角色。
+3. locations 至少 5 个，scene_locations 至少 3 个。
+4. 所有 id 用英文小写+下划线。
+5. phases 固定七时段（凌晨/清晨/上午/中午/下午/傍晚/夜晚）。
+6. relationship_stages 固定 8 级不修改。
+7. 输出纯 JSON，不要 markdown 标记。
+8. bigFiveProfile 用 O/E/A/C/N 大写缩写，值 0-1。
+9. preferences likes/dislikes 和 mood_triggers 使用数组格式。''';
+
+    final userPrompt = '请根据以下描述生成完整的恋爱模拟剧本 JSON：\n\n$userDescription';
+
+    final raw = await _callApi(
+      systemPrompt: systemPrompt,
+      userPrompt: userPrompt,
+      maxTokens: 8192,
+      temperature: 0.9,
+    );
+
+    String cleaned = raw.trim();
+    if (cleaned.startsWith('```')) {
+      final start = cleaned.indexOf('\n');
+      if (start >= 0) cleaned = cleaned.substring(start + 1);
+      if (cleaned.endsWith('```')) cleaned = cleaned.substring(0, cleaned.length - 3);
+    }
+    cleaned = cleaned.trim();
+
+    return cleaned;
   }
 }
 

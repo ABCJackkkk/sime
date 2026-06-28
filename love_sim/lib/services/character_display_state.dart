@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 class CharacterDisplayState {
@@ -28,6 +29,8 @@ class CharacterDisplayState {
     'signOverrides': signOverrides,
     'avatarColors': avatarColors,
     'illustrations': illustrations,
+    'imageBytes': imageBytes.map((k, v) => MapEntry(k, v != null ? base64Encode(v) : null)),
+    'unreadFlags': unreadFlags,
   };
 
   void fromJson(Map<String, dynamic> json) {
@@ -36,5 +39,8 @@ class CharacterDisplayState {
     signOverrides = Map<String, String>.from(json['signOverrides'] ?? {});
     avatarColors = Map<String, String>.from(json['avatarColors'] ?? {});
     illustrations = Map<String, String>.from(json['illustrations'] ?? {});
+    final ib = json['imageBytes'] as Map<String, dynamic>?;
+    imageBytes = ib?.map((k, v) => MapEntry(k, v != null ? Uint8List.fromList(base64Decode(v as String)) : null)) ?? {};
+    unreadFlags = Map<String, bool>.from(json['unreadFlags'] ?? {});
   }
 }

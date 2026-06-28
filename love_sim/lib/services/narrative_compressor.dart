@@ -58,25 +58,6 @@ class NarrativeCompressor {
     return CompressResult(history: truncatedHistory, segments: segments, replacedCount: dropCount);
   }
 
-  Future<CompressResult> maybeAiCompress(String recentPrefix, {String? playerName}) async {
-    _aiCompressCount++;
-    if (_aiCompressCount < _aiCompressInterval) {
-      return CompressResult(history: recentPrefix, segments: [], replacedCount: 0);
-    }
-    _aiCompressCount = 0;
-
-    final client = _client;
-    if (client == null) return CompressResult(history: recentPrefix, segments: [], replacedCount: 0);
-
-    try {
-      final summary = await _summarize(client, recentPrefix, playerName: playerName);
-      _compressedPrefix = summary;
-      return CompressResult(history: summary, segments: [], replacedCount: 0);
-    } catch (_) {
-      return CompressResult(history: recentPrefix, segments: [], replacedCount: 0);
-    }
-  }
-
   Future<String> compress(String narrative, {String? playerName}) async {
     if (narrative.length <= _softLimit) return narrative;
     return _hardTruncate(narrative);

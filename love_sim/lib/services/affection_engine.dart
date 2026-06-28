@@ -20,16 +20,16 @@ class AffectionTier {
   });
 
   String get label {
-    if (lower >= 100) return '永恒唯一';
-    if (lower >= 90) return '爱';
-    if (lower >= 80) return '喜欢';
-    if (lower >= 70) return '欣赏';
-    if (lower >= 60) return '有好感';
-    if (lower >= 50) return '陌生人';
-    if (lower >= 40) return '轻微厌恶';
+    if (lower >= 100) return '唯一';
+    if (lower >= 90) return '恋人';
+    if (lower >= 80) return '暧昧';
+    if (lower >= 70) return '好友';
+    if (lower >= 60) return '认识';
+    if (lower >= 50) return '陌生';
+    if (lower >= 40) return '冷淡';
     if (lower >= 30) return '厌恶';
-    if (lower >= 20) return '憎恨';
-    if (lower >= 10) return '仇恨';
+    if (lower >= 20) return '憎恶';
+    if (lower >= 10) return '仇视';
     return '死敌';
   }
 }

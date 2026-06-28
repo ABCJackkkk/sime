@@ -34,20 +34,14 @@ class CalendarService {
       }
     }
     if (_phases.isEmpty) {
-      // 兜底：十二时辰
       _phases = [
-        {'id':'zi','name':'子时','hour':'23-01','mood':'夜深人静','skippable':true},
-        {'id':'chou','name':'丑时','hour':'01-03','mood':'万籁俱寂','skippable':true},
-        {'id':'yin','name':'寅时','hour':'03-05','mood':'黎明之前','skippable':true},
-        {'id':'mao','name':'卯时','hour':'05-07','mood':'日出晨起','skippable':false},
-        {'id':'chen','name':'辰时','hour':'07-09','mood':'朝食上学','skippable':false},
-        {'id':'si','name':'巳时','hour':'09-11','mood':'上午课程','skippable':false},
-        {'id':'wu','name':'午时','hour':'11-13','mood':'午休午餐','skippable':false},
-        {'id':'wei','name':'未时','hour':'13-15','mood':'下午课程','skippable':false},
-        {'id':'shen','name':'申时','hour':'15-17','mood':'放学社团','skippable':false},
-        {'id':'you','name':'酉时','hour':'17-19','mood':'黄昏归家','skippable':false},
-        {'id':'xu','name':'戌时','hour':'19-21','mood':'晚间自由','skippable':false},
-        {'id':'hai','name':'亥时','hour':'21-23','mood':'就寝之前','skippable':false},
+        {'id':'lingchen','name':'凌晨','hour':'00-06','mood':'万籁俱寂','skippable':true},
+        {'id':'qingchen','name':'清晨','hour':'06-08','mood':'日出晨起','skippable':false},
+        {'id':'shangwu','name':'上午','hour':'08-11','mood':'上午课程','skippable':false},
+        {'id':'zhongwu','name':'中午','hour':'11-13','mood':'午休午餐','skippable':false},
+        {'id':'xiawu','name':'下午','hour':'13-17','mood':'下午课程','skippable':false},
+        {'id':'bangwan','name':'傍晚','hour':'17-19','mood':'黄昏归家','skippable':false},
+        {'id':'yewan','name':'夜晚','hour':'19-24','mood':'晚间自由','skippable':false},
       ];
     }
     final ranking = script.dataLayer?.ranking;
@@ -113,7 +107,7 @@ class CalendarService {
   }
 
   List<String> getPhaseNames(int day) {
-    if (_phases.isEmpty) return ['子时','丑时','寅时','卯时','辰时','巳时','午时','未时','申时','酉时','戌时','亥时'];
+    if (_phases.isEmpty) return ['凌晨','清晨','上午','中午','下午','傍晚','夜晚'];
     return _phases.map((p) => p['name']?.toString() ?? '').where((n) => n.isNotEmpty).toList();
   }
 

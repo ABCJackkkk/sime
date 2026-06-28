@@ -22,8 +22,9 @@ class ScriptLoader {
       final chars = json['characters'];
       if (chars is List) {
         for (int i = 0; i < chars.length; i++) {
-          final c = chars[i] as Map<String, dynamic>;
-          final id = c['id'] ?? c['name'] ?? 'index_$i';
+          final c = chars[i];
+          if (c is! Map) continue;
+          final id = c['id']?.toString() ?? c['name']?.toString() ?? 'index_$i';
           try { Character.fromJson(c); } catch (e) { throw Exception('characters[$i]($id)解析失败: $e'); }
         }
       }
