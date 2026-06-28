@@ -43,3 +43,17 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Custom caches
+gradle_cache/
+pub_cache/
+
+# Screenshots
+screenshot_*.png
+
+# Temp scripts
+compare_chars.dart
+build_apk.ps1
+serve.ps1
+serve3.ps1
+构建APK.bat

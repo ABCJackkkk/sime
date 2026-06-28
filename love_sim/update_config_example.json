@@ -1,0 +1,11 @@
+{
+  "latestVersion": "1.0.0",
+  "latestBuildNumber": 1,
+  "downloadUrl": "https://你的下载地址/app-debug.apk",
+  "changelog": "1. 修复了一些已知问题\n2. 优化了用户体验\n3. 新增自动更新功能",
+  "forceUpdate": false,
+  "announcementTitle": "欢迎使用恋爱模拟器",
+  "announcement": "大家好！\n\n这是公告内容，可以写一些重要通知、更新说明或活动信息。\n\n支持多行文本，用 \n 换行。\n\n祝大家玩得开心！",
+  "donateQrUrl": "https://你的收款码图片地址/qrcode.png",
+  "donateTip": "你的支持是我持续更新的动力 ❤️"
+}

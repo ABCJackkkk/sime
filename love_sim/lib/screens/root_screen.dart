@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:love_sim/main.dart';
 import 'package:love_sim/providers/app_provider.dart';
@@ -8,8 +7,72 @@ import 'package:love_sim/screens/settings_screen.dart';
 import 'package:love_sim/screens/simulation_screen.dart';
 import 'package:love_sim/screens/profile_screen.dart';
 
-class RootScreen extends StatelessWidget {
+class RootScreen extends StatefulWidget {
   const RootScreen({super.key});
+
+  @override
+  State<RootScreen> createState() => _RootScreenState();
+}
+
+class _RootScreenState extends State<RootScreen> {
+  bool _checkedUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _autoCheckUpdate();
+    });
+  }
+
+  Future<void> _autoCheckUpdate() async {
+    if (_checkedUpdate) return;
+    _checkedUpdate = true;
+    final app = context.read<AppProvider>();
+    if (app.updateService.configUrl.isEmpty) return;
+
+    try {
+      final info = await app.checkUpdate();
+      if (!mounted) return;
+      if (info != null && app.updateService.hasNewVersion(info)) {
+        _showUpdateDialog(info);
+      }
+    } catch (_) {}
+  }
+
+  void _showUpdateDialog(dynamic info) {
+    final app = context.read<AppProvider>();
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('发现新版本'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('v${info.latestVersion}'),
+            const SizedBox(height: 8),
+            if (info.changelog != null && info.changelog.isNotEmpty)
+              Text(info.changelog, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          ],
+        ),
+        actions: [
+          if (!info.forceUpdate)
+            CupertinoDialogAction(
+              child: const Text('稍后'),
+              onPressed: () => Navigator.pop(ctx),
+            ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: const Text('去更新'),
+            onPressed: () {
+              Navigator.pop(ctx);
+              app.updateService.openDownloadPage(info.downloadUrl);
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +88,7 @@ class RootScreen extends StatelessWidget {
             switch (index) {
               case 0: return const ScriptsScreen();
               case 1: return const SettingsScreen();
-              case 2: return SimSlotsScreen();
+              case 2: return const SimSlotsScreen();
               case 3: return const ProfileScreen();
               default: return const ScriptsScreen();
             }
