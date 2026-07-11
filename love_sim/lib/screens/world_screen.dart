@@ -121,7 +121,13 @@ class _WorldScreenState extends State<WorldScreen> {
     }
   }
 
+  String _cleanText(String s) {
+    return s.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F]'), '');
+  }
+
   Widget _buildNarrativeCard(String segment, bool isLatest, int index, AppProvider app) {
+    final cleanSegment = _cleanText(segment);
+    if (cleanSegment.isEmpty) return const SizedBox.shrink();
     final eventType = app.segmentEventTypes.length > index - 1 ? app.segmentEventTypes[index - 1] : '';
     final glowColor = _eventGlowColor(eventType);
     final isKeyEvent = eventType == 'sweet_major' || eventType == 'sweet.major' || eventType == 'boundary' || eventType == 'conflict' || eventType == 'forced_choice' || eventType == 'plot' || eventType == 'reversal';
@@ -149,13 +155,13 @@ class _WorldScreenState extends State<WorldScreen> {
         const SizedBox(height: 8),
         if (isLatest)
           TypewriterText(
-            text: segment,
+            text: cleanSegment,
             style: TextStyle(fontSize: 14, height: 2.2, color: AppColors.textPrimaryDark, letterSpacing: 0.3),
             speed: const Duration(milliseconds: 18),
             enabled: true,
           )
         else
-          Text(segment, style: TextStyle(fontSize: 14, height: 2.2, color: AppColors.textPrimaryDark.withAlpha(200), letterSpacing: 0.3)),
+          Text(cleanSegment, style: TextStyle(fontSize: 14, height: 2.2, color: AppColors.textPrimaryDark.withAlpha(200), letterSpacing: 0.3)),
       ]),
     );
 
@@ -269,7 +275,7 @@ class _WorldScreenState extends State<WorldScreen> {
         Padding(padding: const EdgeInsets.only(bottom: 6), child: Row(children: [
           Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: AppColors.accent.withAlpha(20)), child: Text(weekday, style: const TextStyle(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.w600))),
           const SizedBox(width: 6),
-          Text(phase, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.w500)),
+          Expanded(child: Text(phase, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis, maxLines: 1)),
           if (isWeekend) ...[const SizedBox(width: 4), Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: const Color(0xFFFFD60A).withAlpha(25)), child: const Text('休', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 10, fontWeight: FontWeight.w600)))],
           const SizedBox(width: 6),
           Text(weather, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),

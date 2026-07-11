@@ -18,12 +18,13 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  int _latestAiIndex = -1;
+  // 用 Set 追踪正在播放动画的消息索引，避免打字机重启
+  final Set<int> _animatingIndices = {};
 
   bool _shouldAnimate(ChatMessage msg, int index) {
     if (msg.typewriterPlayed) return false;
     if (msg.senderId == 'player') return false;
-    if (index != _latestAiIndex) return false;
+    if (_animatingIndices.contains(index)) return false;
     return true;
   }
 
@@ -63,22 +64,33 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
             final char = app.getCharacter(widget.characterId);
             final unread = app.hasUnread(widget.characterId);
             final img = app.getCharImageBytes(widget.characterId);
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (img != null) ...[
-                  Hero(
-                    tag: 'chat_avatar_${widget.characterId}',
-                    child: ClipRRect(borderRadius: BorderRadius.circular(8), child: Image.memory(img, width: 28, height: 28, fit: BoxFit.cover)),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                Text(char?.basic.name ?? '聊天', style: const TextStyle(color: AppColors.textPrimaryDark)),
-                if (unread) ...[
-                  const SizedBox(width: 6),
-                  Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.error)),
-                ],
-              ],
+            final name = char?.basic.name ?? '聊天';
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final maxWidth = constraints.maxWidth;
+                final hasAvatar = img != null;
+                final nameMaxWidth = maxWidth - (hasAvatar ? 36.0 : 0.0) - (unread ? 14.0 : 0.0);
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (img != null) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.memory(img, width: 28, height: 28, fit: BoxFit.cover),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: nameMaxWidth > 0 ? nameMaxWidth : 100),
+                      child: Text(name, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 17), overflow: TextOverflow.ellipsis, maxLines: 1),
+                    ),
+                    if (unread) ...[
+                      const SizedBox(width: 6),
+                      Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.error)),
+                    ],
+                  ],
+                );
+              },
             );
           },
         ),
@@ -98,24 +110,26 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
         child: Consumer<AppProvider>(
           builder: (context, app, _) {
             final messages = app.getChatHistory(widget.characterId);
-            
-            // Detect new AI messages to animate
-            if (messages.isNotEmpty) {
-              final lastMsg = messages.last;
-              if (lastMsg.senderId != 'player' && lastMsg.senderId == widget.characterId) {
-                _latestAiIndex = messages.length - 1;
+            final isLoading = app.isChatLoading(widget.characterId);
+
+            // 找到最近一条未播放动画的 AI 消息并触发动画
+            for (int i = messages.length - 1; i >= 0; i--) {
+              final msg = messages[i];
+              if (msg.senderId != 'player' && !msg.typewriterPlayed && !_animatingIndices.contains(i)) {
+                _animatingIndices.add(i);
+                break;
               }
             }
 
             return Column(
               children: [
                 Expanded(
-                  child: messages.isEmpty && !app.isChatLoading(widget.characterId)
+                  child: messages.isEmpty && !isLoading
                       ? Center(child: Text('开始对话吧', style: TextStyle(color: AppColors.textTertiary.withAlpha(180), fontSize: 15)))
                       : ListView.builder(
                           controller: _scrollController,
                           padding: const EdgeInsets.all(16),
-                          itemCount: messages.length + (app.isChatLoading(widget.characterId) ? 1 : 0),
+                          itemCount: messages.length + (isLoading ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index < messages.length) {
                               final msg = messages[index];
@@ -125,7 +139,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                               if (animate) {
                                 msg.typewriterPlayed = true;
                               }
-                              return _buildBubble(msg, isPlayer, isRead, app, animate: animate);
+                              return _buildBubble(msg, isPlayer, isRead, app, animate: animate, animKey: ValueKey('bubble_$index'));
                             }
                             return _buildTypingIndicator();
                           },
@@ -140,10 +154,11 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildBubble(ChatMessage msg, bool isPlayer, bool isRead, AppProvider app, {bool animate = false}) {
+  Widget _buildBubble(ChatMessage msg, bool isPlayer, bool isRead, AppProvider app, {bool animate = false, Key? animKey}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
+        key: animKey,
         crossAxisAlignment: isPlayer ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           Row(

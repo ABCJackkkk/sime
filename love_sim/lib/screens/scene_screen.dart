@@ -99,18 +99,18 @@ class _SceneScreenState extends State<SceneScreen> {
             )),
           ),
           const SizedBox(width: 12),
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Text(loc.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: isAvailable ? AppColors.textPrimaryDark : AppColors.textTertiary)),
+              Expanded(child: Text(loc.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: isAvailable ? AppColors.textPrimaryDark : AppColors.textTertiary), overflow: TextOverflow.ellipsis, maxLines: 1)),
               if (!isAvailable) ...[
                 const SizedBox(width: 6),
                 Text('（${currentPhase}不可达）', style: const TextStyle(fontSize: 10, color: AppColors.textTertiary)),
               ],
             ]),
             const SizedBox(height: 2),
-            Text(loc.desc.length > 40 ? '${loc.desc.substring(0, 40)}...' : loc.desc, style: const TextStyle(fontSize: 11, color: AppColors.textTertiary)),
-          ]),
-          const Spacer(),
+            Text(loc.desc.length > 40 ? '${loc.desc.substring(0, 40)}...' : loc.desc, style: const TextStyle(fontSize: 11, color: AppColors.textTertiary), maxLines: 1, overflow: TextOverflow.ellipsis),
+          ])),
+          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: loc.visibilityDefault == 'private' ? AppColors.warning.withAlpha(15) : AppColors.success.withAlpha(15)),

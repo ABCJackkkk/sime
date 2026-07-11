@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:love_sim/models/script.dart';
 import 'package:love_sim/services/script_loader.dart';
@@ -90,6 +91,8 @@ class AppProvider extends ChangeNotifier {
     await _updateService.init();
     _loadUpdateConfig(prefs);
     _loadCharDisplay(prefs);
+    _lastSaveSlotIndex = prefs.getInt('last_save_slot') ?? -1;
+    if (_lastSaveSlotIndex >= _saveService!.slots.length) _lastSaveSlotIndex = -1;
     notifyListeners();
   }
 
@@ -152,7 +155,7 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> _loadSaveSlots() async { await _saveService?.init(); }
 
-  Future<String> saveCurrentToSlot({int? slotIndex}) async {
+  Future<String> saveCurrentToSlot({int? slotIndex, String? customName}) async {
     final s = _session;
     if (s == null || s.script == null || _saveService == null) return '无法存档';
     final data = SaveData(
@@ -174,6 +177,7 @@ class AppProvider extends ChangeNotifier {
       userSettingsData: _userSettings.toJson(),
       charDisplayData: _charDisplay.toJson(),
       tensionVectorData: s.tensionVectorData,
+      customName: customName ?? _activeSaveCustomName,
     );
     try {
       String? scriptJson;
@@ -184,16 +188,71 @@ class AppProvider extends ChangeNotifier {
           break;
         }
       }
-      final result = await _saveService!.save(data, s.script!, slotIndex: slotIndex, scriptJson: scriptJson);
+      final result = await _saveService!.save(data, s.script!, slotIndex: slotIndex, scriptJson: scriptJson, customName: customName ?? _activeSaveCustomName);
       notifyListeners(); return result;
     } catch (e) { return '存档失败: $e'; }
   }
 
+  int _lastSaveSlotIndex = -1;
+  int get lastSaveSlotIndex => _lastSaveSlotIndex;
+
+  /// 当前活动的存档槽位索引（用于autoSave）
+  int _activeSaveSlotIndex = -1;
+  String _activeSaveCustomName = '';
+
+  /// 是否有正在进行的游戏会话
+  bool get hasActiveSession => _session?.script != null;
+
+  /// 获取当前存档的自定义名称
+  String get activeSaveName => _activeSaveCustomName;
+
+  int get activeSaveSlotIndex => _activeSaveSlotIndex;
+
+  Timer? _saveDebounceTimer;
+  DateTime? _lastSaveTime;
+
+  /// 节流自动保存（2秒内合并一次）
+  void requestAutoSave() {
+    if (_session?.script == null) return;
+    final now = DateTime.now();
+    if (_lastSaveTime != null && now.difference(_lastSaveTime!).inSeconds < 2) return;
+    _lastSaveTime = now;
+    _doAutoSave();
+  }
+
+  /// 立即保存（不节流，用于退出/后台）
   Future<String> autoSave() async {
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = null;
+    _lastSaveTime = DateTime.now();
+    return _doAutoSave();
+  }
+
+  Future<String> _doAutoSave() async {
     if (_session?.script == null || _saveService == null) return 'ok';
-    final slots = _saveService!.slots;
-    final existing = slots.indexWhere((s) => s.scriptId == _session!.script!.meta.id && s.scriptName == _session!.script!.meta.name);
-    return saveCurrentToSlot(slotIndex: existing >= 0 ? existing : null);
+    // 永远保存到活动槽位，如果活动槽位无效则新建
+    if (_activeSaveSlotIndex < 0 || _activeSaveSlotIndex >= _saveService!.slots.length) {
+      final slots = _saveService!.slots;
+      final existing = slots.indexWhere((s) => s.scriptId == _session!.script!.meta.id && s.scriptName == _session!.script!.meta.name);
+      _activeSaveSlotIndex = existing >= 0 ? existing : slots.length;
+    }
+    _lastSaveSlotIndex = _activeSaveSlotIndex;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('last_save_slot', _activeSaveSlotIndex);
+    return saveCurrentToSlot(slotIndex: _activeSaveSlotIndex, customName: _activeSaveCustomName);
+  }
+
+  /// 开始新游戏（命名存档）
+  Future<String> startNewNamedGame(String customName) async {
+    if (_session?.script == null) return '无剧本';
+    _activeSaveCustomName = customName;
+    // 新建一个槽位
+    _activeSaveSlotIndex = _saveService!.slots.length;
+    final result = await saveCurrentToSlot(slotIndex: null, customName: customName);
+    _lastSaveSlotIndex = _activeSaveSlotIndex;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('last_save_slot', _activeSaveSlotIndex);
+    return result;
   }
 
   Future<String> loadSaveSlot(int slotIndex) async {
@@ -216,6 +275,8 @@ class AppProvider extends ChangeNotifier {
     _session!.deepSeekClient = _deepSeekClient;
     if (_narrativeCompressor != null) _session!.narrativeCompressor = _narrativeCompressor;
     _session!.onChanged = () => notifyListeners();
+    _session!.onChatCompleted = () => requestAutoSave();
+    _session!.onGiftSent = () => requestAutoSave();
 
     _session!.initFromScript(userName: _userSettings.name);
     _phaseActionService = PhaseActionService(_session!);
@@ -278,6 +339,9 @@ class AppProvider extends ChangeNotifier {
       if (data.eventSchedulerData != null) _session!.eventScheduler!.fromJson(data.eventSchedulerData!);
     }
     _session!.refreshSceneChars();
+    // 更新活动存档信息
+    _activeSaveSlotIndex = slotIndex;
+    _activeSaveCustomName = data.customName;
     _simActive = true;
     notifyListeners();
     return 'ok';
@@ -340,6 +404,11 @@ class AppProvider extends ChangeNotifier {
     _session!.deepSeekClient = _deepSeekClient;
     if (_narrativeCompressor != null) _session!.narrativeCompressor = _narrativeCompressor;
     _session!.onChanged = () => notifyListeners();
+    _session!.onChatCompleted = () => requestAutoSave();
+    _session!.onGiftSent = () => requestAutoSave();
+    // 清空活动存档（等用户开始新游戏或加载存档时重新设置）
+    _activeSaveSlotIndex = -1;
+    _activeSaveCustomName = '';
     _session!.initFromScript(userName: _userSettings.name);
     _phaseActionService = PhaseActionService(_session!);
 
@@ -380,7 +449,7 @@ class AppProvider extends ChangeNotifier {
       userPersonality: _userSettings.personality, userBio: _userSettings.bio,
       charRemarkNames: _charDisplay.remarkNames,
     );
-    autoSave();
+    requestAutoSave();
   }
 
   Future<void> customAction(String action) async {
@@ -389,7 +458,7 @@ class AppProvider extends ChangeNotifier {
       userBirthday: _userSettings.birthday, userAppearance: _userSettings.appearance,
       userPersonality: _userSettings.personality, userBio: _userSettings.bio,
     );
-    autoSave();
+    requestAutoSave();
   }
 
   Future<void> pickChoice(int index) async {
@@ -398,7 +467,7 @@ class AppProvider extends ChangeNotifier {
       userBirthday: _userSettings.birthday, userAppearance: _userSettings.appearance,
       userPersonality: _userSettings.personality, userBio: _userSettings.bio,
     );
-    autoSave();
+    requestAutoSave();
   }
 
   void sendMessage(String charId, String message) {
@@ -498,7 +567,7 @@ class AppProvider extends ChangeNotifier {
     final n = await phaseActions?.passPhase() ?? '';
     if (n.isNotEmpty) _session?.appendNarrative(n);
     notifyListeners();
-    autoSave();
+    requestAutoSave();
   }
 
   int get currentTabIndex => _currentTabIndex;
@@ -658,8 +727,13 @@ class AppProvider extends ChangeNotifier {
   bool isChatLoading(String charId) => _session?.isChatLoading(charId) ?? false;
 
   void enterSim() { _simActive = true; notifyListeners(); }
-  Future<void> exitSim() async {
-    await autoSave();
+  Future<void> exitSim({bool save = true}) async {
+    if (save) {
+      await autoSave();
+    } else {
+      _saveDebounceTimer?.cancel();
+      _saveDebounceTimer = null;
+    }
     _simActive = false;
     notifyListeners();
   }

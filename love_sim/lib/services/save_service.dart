@@ -27,6 +27,7 @@ class SaveSlotMeta {
   final String currentDay;
   final String savedAt;
   final String createdAt;
+  final String customName;
 
   SaveSlotMeta({
     required this.slotId,
@@ -36,12 +37,14 @@ class SaveSlotMeta {
     required this.currentDay,
     required this.savedAt,
     required this.createdAt,
+    this.customName = '',
   });
 
   Map<String, dynamic> toJson() => {
         'slotId': slotId, 'index': index, 'scriptName': scriptName,
         'scriptId': scriptId, 'currentDay': currentDay,
         'savedAt': savedAt, 'createdAt': createdAt,
+        'customName': customName,
       };
 
   factory SaveSlotMeta.fromJson(Map<String, dynamic> json) => SaveSlotMeta(
@@ -49,6 +52,7 @@ class SaveSlotMeta {
         scriptName: json['scriptName'] ?? '', scriptId: json['scriptId'] ?? '',
         currentDay: json['currentDay'] ?? '1', savedAt: json['savedAt'] ?? '',
         createdAt: json['createdAt'] ?? '',
+        customName: json['customName'] ?? '',
       );
 }
 
@@ -88,6 +92,7 @@ class SaveData {
   final Map<String, dynamic>? userSettingsData;
   final Map<String, dynamic>? charDisplayData;
   final Map<String, dynamic>? tensionVectorData;
+  final String customName;
 
   SaveData({
     required this.scriptId, required this.scriptName,
@@ -111,6 +116,7 @@ class SaveData {
     this.userSettingsData,
     this.charDisplayData,
     this.tensionVectorData,
+    this.customName = '',
   });
 
   Map<String, dynamic> toJson() => {
@@ -137,6 +143,7 @@ class SaveData {
         'userSettingsData': userSettingsData,
         'charDisplayData': charDisplayData,
         'tensionVectorData': tensionVectorData,
+        'customName': customName,
       };
 
   factory SaveData.fromJson(Map<String, dynamic> json) => SaveData(
@@ -175,6 +182,7 @@ class SaveData {
         userSettingsData: json['userSettingsData'] as Map<String, dynamic>?,
         charDisplayData: json['charDisplayData'] as Map<String, dynamic>?,
         tensionVectorData: json['tensionVectorData'] as Map<String, dynamic>?,
+        customName: json['customName'] ?? '',
       );
 }
 
@@ -201,13 +209,14 @@ class SaveService {
     }
   }
 
-  Future<String> save(SaveData data, GameScript script, {int? slotIndex, String? scriptJson}) async {
+  Future<String> save(SaveData data, GameScript script, {int? slotIndex, String? scriptJson, String? customName}) async {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
     final slotId = 'slot_${now.millisecondsSinceEpoch}';
 
     final saveMap = data.toJson();
     saveMap['savedAt'] = now.toIso8601String();
+    saveMap['customName'] = customName ?? '';
 
     late final SaveSlotMeta meta;
     if (slotIndex != null && slotIndex < _slots.length) {
@@ -216,6 +225,7 @@ class SaveService {
         scriptName: script.meta.name, scriptId: script.meta.id,
         currentDay: data.currentDay,
         savedAt: now.toIso8601String(), createdAt: _slots[slotIndex].createdAt,
+        customName: customName ?? _slots[slotIndex].customName,
       );
       saveMap['createdAt'] = meta.createdAt;
       _slots[slotIndex] = meta;
@@ -227,6 +237,7 @@ class SaveService {
         scriptName: script.meta.name, scriptId: script.meta.id,
         currentDay: data.currentDay,
         savedAt: now.toIso8601String(), createdAt: now.toIso8601String(),
+        customName: customName ?? '',
       );
       _slots.add(meta);
     }

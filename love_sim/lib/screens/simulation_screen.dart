@@ -12,6 +12,37 @@ import 'package:love_sim/screens/sim_profile_screen.dart';
 class SimulationScreen extends StatelessWidget {
   const SimulationScreen({super.key});
 
+  void _showExitDialog(BuildContext context, AppProvider app) {
+    showCupertinoDialog(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('退出游戏'),
+        content: const Text('确定要退出吗？'),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('取消'),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          CupertinoDialogAction(
+            child: const Text('直接退出'),
+            onPressed: () {
+              Navigator.pop(ctx);
+              app.exitSim(save: false);
+            },
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: const Text('保存并退出'),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await app.exitSim(save: true);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
@@ -46,36 +77,39 @@ class SimulationScreen extends StatelessWidget {
       decoration: simBg != null
           ? BoxDecoration(image: DecorationImage(image: MemoryImage(simBg), fit: BoxFit.cover))
           : BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [app.simBgStartColor, app.simBgEndColor])),
-      child: CupertinoTabScaffold(
-        tabBar: CupertinoTabBar(
-          activeColor: AppColors.accent,
-          inactiveColor: AppColors.textTertiary,
-          backgroundColor: CupertinoColors.black.withAlpha(30),
-          currentIndex: app.simTabIndex,
-          onTap: (index) => app.setSimTab(index),
-          items: const [
-            BottomNavigationBarItem(icon: Icon(CupertinoIcons.person_2, size: 22), activeIcon: Icon(CupertinoIcons.person_2_fill, size: 22), label: '通讯录'),
-            BottomNavigationBarItem(icon: Icon(CupertinoIcons.bag, size: 22), activeIcon: Icon(CupertinoIcons.bag_fill, size: 22), label: '商店'),
-            BottomNavigationBarItem(icon: Icon(CupertinoIcons.location, size: 22), activeIcon: Icon(CupertinoIcons.location_fill, size: 22), label: '场景'),
-            BottomNavigationBarItem(icon: Icon(CupertinoIcons.gear, size: 22), activeIcon: Icon(CupertinoIcons.gear_solid, size: 22), label: '设置'),
-            BottomNavigationBarItem(icon: Icon(CupertinoIcons.person, size: 22), activeIcon: Icon(CupertinoIcons.person_fill, size: 22), label: '我的'),
-          ],
+      child: SafeArea(
+        bottom: false,
+        child: CupertinoTabScaffold(
+          tabBar: CupertinoTabBar(
+            activeColor: AppColors.accent,
+            inactiveColor: AppColors.textTertiary,
+            backgroundColor: CupertinoColors.black.withAlpha(30),
+            currentIndex: app.simTabIndex,
+            onTap: (index) => app.setSimTab(index),
+            items: const [
+              BottomNavigationBarItem(icon: Icon(CupertinoIcons.person_2, size: 22), activeIcon: Icon(CupertinoIcons.person_2_fill, size: 22), label: '通讯录'),
+              BottomNavigationBarItem(icon: Icon(CupertinoIcons.bag, size: 22), activeIcon: Icon(CupertinoIcons.bag_fill, size: 22), label: '商店'),
+              BottomNavigationBarItem(icon: Icon(CupertinoIcons.location, size: 22), activeIcon: Icon(CupertinoIcons.location_fill, size: 22), label: '场景'),
+              BottomNavigationBarItem(icon: Icon(CupertinoIcons.gear, size: 22), activeIcon: Icon(CupertinoIcons.gear_solid, size: 22), label: '设置'),
+              BottomNavigationBarItem(icon: Icon(CupertinoIcons.person, size: 22), activeIcon: Icon(CupertinoIcons.person_fill, size: 22), label: '我的'),
+            ],
+          ),
+          tabBuilder: (context, index) {
+            Widget page;
+            switch (index) {
+              case 0: page = const ContactsScreen(); break;
+              case 1: page = const ShopScreen(); break;
+              case 2: page = const SceneScreen(); break;
+              case 3: page = const SimSettingsScreen(); break;
+              case 4: page = const SimProfileScreen(); break;
+              default: page = const ContactsScreen();
+            }
+            return Column(children: [
+              _buildToolsTopBar(app, context),
+              Expanded(child: page),
+            ]);
+          },
         ),
-        tabBuilder: (context, index) {
-          Widget page;
-          switch (index) {
-            case 0: page = const ContactsScreen(); break;
-            case 1: page = const ShopScreen(); break;
-            case 2: page = const SceneScreen(); break;
-            case 3: page = const SimSettingsScreen(); break;
-            case 4: page = const SimProfileScreen(); break;
-            default: page = const ContactsScreen();
-          }
-          return Column(children: [
-            _buildToolsTopBar(app, context),
-            Expanded(child: page),
-          ]);
-        },
       ),
     );
   }
@@ -118,7 +152,7 @@ class SimulationScreen extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           GestureDetector(
-            onTap: () => app.exitSim(),
+            onTap: () => _showExitDialog(context, app),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(5), border: Border.all(color: AppColors.error.withAlpha(80), width: 0.5)),
@@ -155,7 +189,7 @@ class SimulationScreen extends StatelessWidget {
           Text('第${app.currentDay}天', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 12, fontWeight: FontWeight.w600)),
           const Spacer(),
           GestureDetector(
-            onTap: () => app.exitSim(),
+            onTap: () => _showExitDialog(context, app),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), border: Border.all(color: AppColors.error.withAlpha(80), width: 0.5)),

@@ -1,4 +1,4 @@
-$port = 8765
+$port = 8767
 $root = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "build\web"
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")

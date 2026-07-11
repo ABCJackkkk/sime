@@ -239,15 +239,16 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Expanded(child: Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)), overflow: TextOverflow.ellipsis)),
+            Expanded(child: Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)), overflow: TextOverflow.ellipsis, maxLines: 1)),
+            const SizedBox(width: 4),
             if (isActive) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: AppColors.success.withAlpha(25)), child: const Text('已加载', style: TextStyle(fontSize: 10, color: AppColors.success, fontWeight: FontWeight.w600))),
           ]),
           const SizedBox(height: 2),
-          Text('自定义导入剧本', style: TextStyle(fontSize: 11, color: AppColors.textTertiary.withAlpha(180))),
+          Text('自定义导入剧本', style: TextStyle(fontSize: 11, color: AppColors.textTertiary.withAlpha(180)), overflow: TextOverflow.ellipsis, maxLines: 1),
         ])),
-        const SizedBox(width: 8),
-        CupertinoButton(onPressed: isLoading ? null : () => app.loadCustomScript(index), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), minSize: 0, borderRadius: BorderRadius.circular(6), color: isActive ? null : AppColors.accent.withAlpha(80), child: Text(isActive ? '运行中' : '加载', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isActive ? AppColors.textTertiary : CupertinoColors.white))),
         const SizedBox(width: 6),
+        CupertinoButton(onPressed: isLoading ? null : () => app.loadCustomScript(index), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), minSize: 0, borderRadius: BorderRadius.circular(6), color: isActive ? null : AppColors.accent.withAlpha(80), child: Text(isActive ? '运行中' : '加载', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: isActive ? AppColors.textTertiary : CupertinoColors.white))),
+        const SizedBox(width: 4),
         GestureDetector(
           onTap: () => _confirmDeleteScript(app, index, name),
           child: Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.error.withAlpha(20)), child: const Icon(CupertinoIcons.trash, size: 16, color: AppColors.error)),
@@ -281,13 +282,13 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
             Container(width: 44, height: 44, decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.accent, Color(0xFF64D2FF)])), child: const Icon(CupertinoIcons.heart, size: 22, color: CupertinoColors.white)),
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [Text(name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))), const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: AppColors.accent.withAlpha(30)), child: Text(genre, style: const TextStyle(fontSize: 10, color: AppColors.accent, fontWeight: FontWeight.w600)))]),
+              Row(children: [Expanded(child: Text(name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)), overflow: TextOverflow.ellipsis, maxLines: 1)), const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: AppColors.accent.withAlpha(30)), child: Text(genre, style: const TextStyle(fontSize: 10, color: AppColors.accent, fontWeight: FontWeight.w600)))]),
               const SizedBox(height: 4),
               Text('$characters 个可攻略角色 · $days 天剧情 · $endings 个结局', style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
             ])),
           ]),
           const SizedBox(height: 12),
-          Text(desc, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5)),
+          Text(desc, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5), maxLines: 3, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 12),
           Row(children: [
             if (isActive) Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: AppColors.success.withAlpha(25)), child: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(CupertinoIcons.checkmark_alt, size: 12, color: AppColors.success), SizedBox(width: 4), Text('已加载', style: TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.w600))])),

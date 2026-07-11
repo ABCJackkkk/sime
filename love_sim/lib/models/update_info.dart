@@ -21,6 +21,8 @@ class UpdateInfo {
     this.donateTip,
   });
 
+  bool get hasUpdate => latestBuildNumber > 0;
+
   factory UpdateInfo.fromJson(Map<String, dynamic> json) {
     return UpdateInfo(
       latestVersion: json['latestVersion'] ?? '0.0.0',

@@ -109,7 +109,12 @@ class ContactsScreen extends StatelessWidget {
                                     children: [
                                       Row(
                                         children: [
-                                          Text(displayName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textPrimaryDark)),
+                                          Expanded(
+                                            child: Text(displayName,
+                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textPrimaryDark),
+                                              overflow: TextOverflow.ellipsis, maxLines: 1,
+                                            ),
+                                          ),
                                           if (remark.isNotEmpty) ...[
                                             const SizedBox(width: 6),
                                             Text(char.basic.name, style: const TextStyle(fontSize: 11, color: AppColors.textTertiary)),
@@ -118,7 +123,7 @@ class ContactsScreen extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        lastMsg.isNotEmpty ? lastMsg : char.summary,
+                                        lastMsg.isNotEmpty ? lastMsg : char.charIntro,
                                         style: TextStyle(fontSize: 13, color: hasUnread ? AppColors.textPrimaryDark.withAlpha(200) : AppColors.textTertiary, height: 1.3),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,

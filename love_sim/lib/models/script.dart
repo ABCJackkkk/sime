@@ -956,6 +956,7 @@ class CharacterRelations {
 class Character {
   final bool fullCharacter;
   final String summary;
+  final String charIntro;
   final CharacterBasic basic;
   final double initialAffection;
   final CharacterBackground? background;
@@ -982,6 +983,7 @@ class Character {
   Character({
     required this.fullCharacter,
     required this.summary,
+    this.charIntro = '',
     required this.basic,
     this.initialAffection = 50.0,
     this.background,
@@ -1007,7 +1009,7 @@ class Character {
   });
 
   factory Character.fromJson(dynamic json) {
-    if (json is! Map) return Character(fullCharacter: false, summary: '', basic: CharacterBasic(id: '', name: '', gender: '', age: 0, height: '', weight: '', avatarDesc: '', distinctiveMarks: []));
+    if (json is! Map) return Character(fullCharacter: false, summary: '', charIntro: '', basic: CharacterBasic(id: '', name: '', gender: '', age: 0, height: '', weight: '', avatarDesc: '', distinctiveMarks: []));
     CharacterBasic _b; try { _b = CharacterBasic.fromJson(json['basic'] ?? {}); } catch(e) { throw Exception('basic: $e'); }
     final initialAff = (json['basic'] as Map<String, dynamic>?)?['initial_affection'] ?? 50.0;
     CharacterBackground? _bg; try { _bg = json['background'] != null ? CharacterBackground.fromJson(json['background']) : null; } catch(e) { throw Exception('background: $e'); }
@@ -1034,6 +1036,7 @@ class Character {
     return Character(
       fullCharacter: json['full_character'] ?? false,
       summary: json['summary'] ?? '',
+      charIntro: json['char_intro'] ?? '',
       basic: _b, initialAffection: (initialAff as num).toDouble(), background: _bg, details: _d, soul: _s, speech: _sp,
       humanity: _h, agent: _a, appearance: _ap, preferences: _p,
       moodTriggers: _mt, giftResponse: _gr, boundary: _bo,

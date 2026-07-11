@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:love_sim/main.dart';
 import 'package:love_sim/providers/app_provider.dart';
+import 'package:love_sim/screens/announcement_screen.dart';
+import 'package:love_sim/screens/donate_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,6 +18,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final TextEditingController _corsProxyController = TextEditingController();
   final TextEditingController _updateUrlController = TextEditingController();
   bool _isInitializing = true;
+  bool _checkingUpdate = false;
+  String? _updateStatus;
 
   @override
   void initState() {
@@ -228,23 +232,147 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildAboutSection(AppProvider app) {
     return GlassContainer(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      padding: const EdgeInsets.all(4),
+      child: Column(children: [
+        _buildSettingRow(
+          icon: CupertinoIcons.news,
+          iconColor: AppColors.accent,
+          title: '公告',
+          subtitle: '查看最新消息',
+          onTap: () => Navigator.of(context).push(CupertinoPageRoute(builder: (_) => const AnnouncementScreen())),
+        ),
+        _buildDivider(),
+        _buildSettingRow(
+          icon: CupertinoIcons.down_arrow,
+          iconColor: const Color(0xFF30D158),
+          title: '检查更新',
+          subtitle: _updateStatus ?? '当前版本 v${app.updateService.currentVersion}',
+          subtitleColor: _updateStatus != null ? AppColors.accent : null,
+          onTap: _checkingUpdate ? null : () => _checkUpdate(app),
+          trailing: _checkingUpdate
+              ? const CupertinoActivityIndicator(radius: 10)
+              : const Icon(CupertinoIcons.chevron_right, size: 14, color: AppColors.textTertiary),
+        ),
+        _buildDivider(),
+        _buildSettingRow(
+          icon: CupertinoIcons.heart_fill,
+          iconColor: const Color(0xFFFF453A),
+          title: '支持开发者',
+          subtitle: '请我喝杯奶茶吧~',
+          onTap: () => Navigator.of(context).push(CupertinoPageRoute(builder: (_) => const DonateScreen())),
+        ),
+        _buildDivider(),
+        _buildSettingRow(
+          icon: CupertinoIcons.info_circle,
+          iconColor: AppColors.textTertiary,
+          title: '关于',
+          subtitle: 'v${app.updateService.currentVersion} (build ${app.updateService.currentBuildNumber})',
+          onTap: null,
+          showChevron: false,
+        ),
+      ]),
+    );
+  }
+
+  Future<void> _checkUpdate(AppProvider app) async {
+    setState(() {
+      _checkingUpdate = true;
+      _updateStatus = null;
+    });
+    final info = await app.checkUpdate(force: true);
+    if (!mounted) return;
+    setState(() { _checkingUpdate = false; });
+    if (info == null) {
+      setState(() { _updateStatus = '检查失败，请稍后再试'; });
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _updateStatus = null);
+      });
+      return;
+    }
+    if (info.hasUpdate) {
+      setState(() { _updateStatus = '发现新版本 v${info.latestVersion}'; });
+      showCupertinoDialog(
+        context: context,
+        builder: (ctx) => CupertinoAlertDialog(
+          title: const Text('发现新版本'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0xFF64D2FF).withAlpha(30)), child: const Icon(CupertinoIcons.info, size: 16, color: Color(0xFF64D2FF))),
-              const SizedBox(width: 10),
-              Text('关于', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))),
+              Text('v${info.latestVersion}'),
+              const SizedBox(height: 8),
+              if (info.changelog != null && info.changelog!.isNotEmpty)
+                Text(info.changelog!, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
             ],
           ),
-          const SizedBox(height: 16),
-          const Text('基于 DeepSeek V4 Pro 百万字上下文的 AI 恋爱模拟引擎。\n加载 .json 格式剧本，角色卡驱动 AI 生成动态叙事。', style: TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.6)),
-          const SizedBox(height: 12),
-          Text('v${app.updateService.currentVersion} (build ${app.updateService.currentBuildNumber}) · Flutter', style: TextStyle(fontSize: 12, color: AppColors.textTertiary.withAlpha(180))),
-        ],
+          actions: [
+            if (!info.forceUpdate)
+              CupertinoDialogAction(
+                child: const Text('稍后'),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            CupertinoDialogAction(
+              isDefaultAction: true,
+              child: const Text('去更新'),
+              onPressed: () {
+                Navigator.pop(ctx);
+                app.updateService.openDownloadPage(info.downloadUrl);
+              },
+            ),
+          ],
+        ),
+      );
+    } else {
+      setState(() { _updateStatus = '已是最新版本'; });
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() => _updateStatus = null);
+      });
+    }
+  }
+
+  Widget _buildSettingRow({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    String? subtitle,
+    Color? subtitleColor,
+    VoidCallback? onTap,
+    Widget? trailing,
+    bool showChevron = true,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(children: [
+          Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: iconColor.withAlpha(25)), child: Icon(icon, size: 16, color: iconColor)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary(context))),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: TextStyle(fontSize: 12, color: subtitleColor ?? AppColors.textSecondary)),
+                ],
+              ],
+            ),
+          ),
+          if (trailing != null)
+            trailing
+          else if (showChevron)
+            const Icon(CupertinoIcons.chevron_right, size: 14, color: AppColors.textTertiary),
+        ]),
       ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      height: 0.5,
+      margin: const EdgeInsets.only(left: 60),
+      color: AppColors.border,
     );
   }
 }

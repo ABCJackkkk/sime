@@ -14,15 +14,32 @@ class RootScreen extends StatefulWidget {
   State<RootScreen> createState() => _RootScreenState();
 }
 
-class _RootScreenState extends State<RootScreen> {
+class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
   bool _checkedUpdate = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _autoCheckUpdate();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive || state == AppLifecycleState.detached) {
+      final app = context.read<AppProvider>();
+      if (app.simActive) {
+        app.autoSave();
+      }
+    }
   }
 
   Future<void> _autoCheckUpdate() async {
@@ -125,15 +142,52 @@ class _SimSlotsScreenState extends State<SimSlotsScreen> {
   int _deleteConfirmIndex = -1;
   int _resetConfirmIndex = -1;
 
+  /// 开始新游戏（先命名存档）
   Future<void> _newGame(AppProvider app) async {
     if (!app.hasScript) {
       app.setTab(0);
       return;
     }
-    final result = await app.saveCurrentToSlot();
-    if (result == 'ok') {
+    // 如果已经有活动存档，直接进入（不重建Session）
+    if (app.hasActiveSession) {
       app.enterSim();
+      return;
     }
+    // 弹出命名对话框
+    final name = await _showNameDialog();
+    if (name == null || name.isEmpty) return;
+    await app.startNewNamedGame(name);
+    app.enterSim();
+  }
+
+  Future<String?> _showNameDialog() async {
+    String name = '';
+    return showCupertinoDialog<String>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('命名存档'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: CupertinoTextField(
+            autofocus: true,
+            placeholder: '给你的存档起个名字',
+            onChanged: (v) => name = v,
+            onSubmitted: (v) => name = v,
+          ),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text('取消'),
+            onPressed: () => Navigator.pop(ctx),
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: const Text('开始'),
+            onPressed: () => Navigator.pop(ctx, name.isEmpty ? '存档1' : name),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _loadSlot(AppProvider app, int index) async {
@@ -186,7 +240,7 @@ class _SimSlotsScreenState extends State<SimSlotsScreen> {
           child: SafeArea(
             child: Column(children: [
               _buildHeader(context, app),
-              Expanded(child: app.saveSlots.isEmpty ? _buildEmptyState(context, app) : _buildSlotList(context, app)),
+              Expanded(child: (!app.saveSlots.isEmpty || app.hasActiveSession) ? _buildSlotList(context, app) : _buildEmptyState(context, app)),
             ]),
           ),
         );
@@ -239,16 +293,172 @@ class _SimSlotsScreenState extends State<SimSlotsScreen> {
   }
 
   Widget _buildSlotList(BuildContext context, AppProvider app) {
+    final lastIdx = app.lastSaveSlotIndex;
+    final hasLastSlot = lastIdx >= 0 && lastIdx < app.saveSlots.length;
+    final hasActive = app.hasActiveSession;
+
+    // 活动存档卡片数量：最多1个（当前活动）
+    final activeCardCount = hasActive ? 1 : 0;
+    final showLastSlot = hasLastSlot && lastIdx != app.activeSaveSlotIndex;
+
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      itemCount: app.saveSlots.length,
-      itemBuilder: (context, index) => _buildSlotCard(context, app, index),
+      itemCount: app.saveSlots.length + (showLastSlot ? 1 : 0) + activeCardCount,
+      itemBuilder: (context, index) {
+        // 第一个：当前活动存档
+        if (activeCardCount > 0 && index == 0) {
+          return _buildActiveSessionCard(context, app);
+        }
+        final baseIndex = activeCardCount;
+        // 第二个：上次游玩的存档（如果不同于活动存档）
+        if (showLastSlot && index == baseIndex) {
+          return _buildContinueCard(context, app, lastIdx);
+        }
+        final slotBase = baseIndex + (showLastSlot ? 1 : 0);
+        final slotIndex = index - slotBase;
+        if (slotIndex < 0 || slotIndex >= app.saveSlots.length) return const SizedBox.shrink();
+        return _buildSlotCard(context, app, slotIndex, isLastSlot: slotIndex == lastIdx);
+      },
     );
   }
 
-  Widget _buildSlotCard(BuildContext context, AppProvider app, int index) {
+  /// 当前活动存档卡片（Session常驻内存，直接继续）
+  Widget _buildActiveSessionCard(BuildContext context, AppProvider app) {
+    final name = app.activeSaveName.isNotEmpty ? app.activeSaveName : (app.script?.meta.name ?? '当前游戏');
+    final day = app.currentDay;
+    return Column(children: [
+      Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF5B6FCE)]),
+          boxShadow: [BoxShadow(color: AppColors.accent.withAlpha(60), blurRadius: 16, offset: const Offset(0, 6))],
+        ),
+        child: CupertinoButton(
+          onPressed: () => app.enterSim(),
+          padding: EdgeInsets.zero,
+          minSize: 0,
+          child: Row(children: [
+            const Icon(CupertinoIcons.play_fill, size: 28, color: CupertinoColors.white),
+            const SizedBox(width: 14),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Flexible(child: Text('继续「$name」', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: CupertinoColors.white), overflow: TextOverflow.ellipsis)),
+                const SizedBox(width: 8),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: const Color(0x30FFFFFF)), child: const Text('进行中', style: TextStyle(fontSize: 9, color: CupertinoColors.white))),
+              ]),
+              const SizedBox(height: 4),
+              Text('第$day天 · 点击继续', style: const TextStyle(fontSize: 13, color: Color(0xB3FFFFFF))),
+            ])),
+            const Icon(CupertinoIcons.chevron_right, size: 20, color: CupertinoColors.white),
+          ]),
+        ),
+      ),
+      Row(children: [
+        Expanded(
+          child: CupertinoButton(
+            onPressed: () => app.setTab(0),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.textTertiary.withAlpha(30),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(CupertinoIcons.doc_text, size: 16, color: AppColors.textPrimary(context)),
+              const SizedBox(width: 6),
+              Text('选择其他剧本', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))),
+            ]),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: CupertinoButton(
+            onPressed: app.hasScript ? () => _newGame(app) : null,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            borderRadius: BorderRadius.circular(12),
+            color: app.hasScript ? const Color(0xFF2D2D32) : AppColors.textTertiary.withAlpha(30),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(CupertinoIcons.add, size: 16, color: app.hasScript ? CupertinoColors.white : AppColors.textTertiary),
+              const SizedBox(width: 6),
+              Text('开新存档', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: app.hasScript ? CupertinoColors.white : AppColors.textTertiary)),
+            ]),
+          ),
+        ),
+      ]),
+      const SizedBox(height: 16),
+    ]);
+  }
+
+  Widget _buildContinueCard(BuildContext context, AppProvider app, int slotIndex) {
+    final slot = app.saveSlots[slotIndex];
+    final customName = slot['customName'] as String? ?? '';
+    final name = customName.isNotEmpty ? customName : (slot['scriptName'] ?? '');
+    final day = slot['currentDay'] ?? '1';
+    return Column(children: [
+      Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF5B6FCE)]),
+          boxShadow: [BoxShadow(color: AppColors.accent.withAlpha(60), blurRadius: 16, offset: const Offset(0, 6))],
+        ),
+        child: CupertinoButton(
+          onPressed: () => _loadSlot(app, slotIndex),
+          padding: EdgeInsets.zero,
+          minSize: 0,
+          child: Row(children: [
+            const Icon(CupertinoIcons.play_fill, size: 28, color: CupertinoColors.white),
+            const SizedBox(width: 14),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Flexible(child: Text('继续「$name」', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: CupertinoColors.white), overflow: TextOverflow.ellipsis)),
+                const SizedBox(width: 8),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: const Color(0x30FFFFFF)), child: const Text('上次游玩', style: TextStyle(fontSize: 9, color: CupertinoColors.white))),
+              ]),
+              const SizedBox(height: 4),
+              Text('第$day天', style: const TextStyle(fontSize: 13, color: Color(0xB3FFFFFF))),
+            ])),
+            const Icon(CupertinoIcons.chevron_right, size: 20, color: CupertinoColors.white),
+          ]),
+        ),
+      ),
+      Row(children: [
+        Expanded(
+          child: CupertinoButton(
+            onPressed: () => app.setTab(0),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            borderRadius: BorderRadius.circular(12),
+            color: AppColors.textTertiary.withAlpha(30),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(CupertinoIcons.doc_text, size: 16, color: AppColors.textPrimary(context)),
+              const SizedBox(width: 6),
+              Text('选择其他剧本', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))),
+            ]),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: CupertinoButton(
+            onPressed: app.hasScript ? () => _newGame(app) : null,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            borderRadius: BorderRadius.circular(12),
+            color: app.hasScript ? const Color(0xFF2D2D32) : AppColors.textTertiary.withAlpha(30),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(CupertinoIcons.add, size: 16, color: app.hasScript ? CupertinoColors.white : AppColors.textTertiary),
+              const SizedBox(width: 6),
+              Text('开新存档', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: app.hasScript ? CupertinoColors.white : AppColors.textTertiary)),
+            ]),
+          ),
+        ),
+      ]),
+      const SizedBox(height: 16),
+    ]);
+  }
+
+  Widget _buildSlotCard(BuildContext context, AppProvider app, int index, {bool isLastSlot = false}) {
     final slot = app.saveSlots[index];
-    final name = slot['scriptName'] ?? '未知剧本';
+    final customName = slot['customName'] as String? ?? '';
+    final name = customName.isNotEmpty ? customName : (slot['scriptName'] ?? '未知剧本');
     final day = slot['currentDay'] ?? '1';
     final savedAt = slot['savedAt'] as String?;
     final deleting = _deleteConfirmIndex == index;
@@ -263,8 +473,8 @@ class _SimSlotsScreenState extends State<SimSlotsScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        color: const Color(0x0AFFFFFF),
-        border: Border.all(color: AppColors.border, width: 0.5),
+        color: isLastSlot ? AppColors.accent.withAlpha(15) : const Color(0x0AFFFFFF),
+        border: Border.all(color: isLastSlot ? AppColors.accent.withAlpha(60) : AppColors.border, width: isLastSlot ? 1.0 : 0.5),
       ),
       child: Column(children: [
         CupertinoButton(

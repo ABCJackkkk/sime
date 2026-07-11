@@ -87,6 +87,54 @@
         "name": "留学中心",
         "desc": "滨海大学的留学服务中心，位于行政楼二楼。墙上贴满了常春藤盟校的海报和往届优秀学子的照片。",
         "trigger_tags": ["申请", "出路", "未来规划"]
+      },
+      {
+        "id": "gu_qingli_room",
+        "name": "顾清漓的房间",
+        "desc": "顾家别墅二楼尽头的主卧，落地窗外是整片海湾。书桌上有一只手工风铃——你送的，她说没收好。",
+        "trigger_tags": ["私密", "卧室", "顾清漓的领地"]
+      },
+      {
+        "id": "song_kexin_apartment",
+        "name": "宋可欣的小公寓",
+        "desc": "商业街后面的老小区，五十平米的小两居。客厅堆满毛绒玩偶，阳台种了很多多肉。她说都是别人送的。",
+        "trigger_tags": ["私密", "温馨", "宋可欣的家"]
+      },
+      {
+        "id": "meng_wanci_penthouse",
+        "name": "孟晚瓷的顶层公寓",
+        "desc": "滨海最高端的江景大平层，整面墙的落地窗对着入海口。装修极简冷调——但书房有一整面墙的手办。",
+        "trigger_tags": ["私密", "江景", "孟晚瓷的家"]
+      },
+      {
+        "id": "gu_qingyue_room",
+        "name": "顾清悦的房间",
+        "desc": "顾家别墅一楼客房改装，墙上贴满偶像海报，桌上堆着零食和盲盒。有张你和顾清漓的合照——她说是做比较用的。",
+        "trigger_tags": ["私密", "青春", "顾清悦的房间"]
+      },
+      {
+        "id": "jiang_ci_office",
+        "name": "姜辞的47楼办公室",
+        "desc": "恒玺大厦47层，整层私人领地。落地窗外是滨海CBD天际线。桌上永远有一杯没喝完的黑咖啡。",
+        "trigger_tags": ["私密", "权力", "姜辞的领地"]
+      },
+      {
+        "id": "su_rose_garden",
+        "name": "苏婉清的玫瑰园",
+        "desc": "顾家别墅后花园，苏婉清亲手打理的白色玫瑰园。她说这些玫瑰不卖——但你来的时候她摘了一朵给你。",
+        "trigger_tags": ["私密", "花园", "苏婉清的角落"]
+      },
+      {
+        "id": "bai_ningxi_studio",
+        "name": "白凝溪的艺术工作室",
+        "desc": "白鹭集艺术馆顶层，面海的小工作室。画架上有半幅未完成的油画，窗台上有一排贴了名字的陶瓷杯。",
+        "trigger_tags": ["私密", "艺术", "白凝溪的工作室"]
+      },
+      {
+        "id": "male_lead_room",
+        "name": "你的出租屋",
+        "desc": "滨海大学附近老小区，二十平米的单间。一张床、一张桌子、一个衣柜——和一个海边捡的贝壳。桌上放着留学申请表。",
+        "trigger_tags": ["私密", "家", "独处"]
       }
     ],
     "special_rules": {},
@@ -106,6 +154,7 @@
     {
       "full_character": true,
       "summary": "顾清漓——澜庭酒店集团千金大小姐，大三，21岁。她是全校最漂亮的人——也是最冷的人。高岭之花，外冷内热，高冷傲娇，口嫌体正直。她家有钱——但她从来不提。她爸不在了，她妈苏婉清一个人撑起酒店集团和两个女儿。她习惯了被人仰望——不习惯被人靠近。男主是例外。两年半，她嘴上说不要但身体很诚实——手机备注写的「那个白痴」。",
+      "char_intro": "顾清漓，21岁，滨海大学酒店管理专业大三，澜庭酒店集团大小姐。全校公认的高岭之花——长得极好看，脾气极冷。不爱说话、不爱笑、不爱跟人多来往。你追了她两年半，风雨无阻在梧桐树下等她下课。她从第一天的翻白眼到后来会在离开前多站几秒。嘴上永远说「别烦我」，但你去食堂她会帮你留座位。手机给你备注「那个白痴」——至今没改。父亲早逝，母亲苏婉清独撑家业，下面有个什么都跟她抢的妹妹顾清悦。唯一的朋友是高中同学宋可欣。",
       "basic": {
         "id": "gu_qing_li",
         "name": "顾清漓",
@@ -443,6 +492,7 @@
     {
       "full_character": true,
       "summary": "宋可欣——女主的闺蜜，大三，21岁。普通双职工家庭长大，温软大家闺秀的表象，温柔绿茶的里子。她从高中就认识顾清漓了——从校服到大学，从第一排到最后一排，她永远在顾清漓旁边。但那个位置有阴影——顾清漓的光太亮了，她只能是旁边。她嫉妒顾清漓——嫉妒了好久。但她从来不表现出来。她笑得甜，甜到顾清漓从来没怀疑过。",
+      "char_intro": "宋可欣，21岁，顾清漓的高中同班兼大学闺蜜。普通双职工家庭，温软乖巧、永远笑着跟你说话。你追顾清漓那两年，她是你的军师——帮你递过情书、通风报信、告诉你顾清漓今天穿什么心情好不好。但你有时候也纳闷：她的「助攻」好像总能让顾清漓不太高兴。她不追你，但她看你的时间越来越长。",
       "basic": {
         "id": "song_ke_xin",
         "name": "宋可欣",
@@ -676,6 +726,7 @@
     {
       "full_character": true,
       "summary": "孟晚瓷——寰庭酒店集团少东家兼执行副总裁，24岁。比顾清漓大三岁，已经出来接管家族生意。她和顾家的澜庭酒店是死对头——两家争同一个城市的同一块蛋糕。她对顾清漓有病态执念——什么都要抢，包括顾清漓的追求者。",
+      "char_intro": "孟晚瓷，24岁，寰庭酒店集团执行副总裁。孟家与顾家的澜庭酒店是本城最大的竞争对手——从两个爷爷那辈就开始打了。她研究生毕业就直接进董事会，管三百多号人，签过九位数的合同。你从顾清漓那边脱身之后，她主动找上门——说是商业合作。但她从不谈商务条款，只想问顾清漓最近在做什么、穿什么、和谁在一起。",
       "basic": {"id": "meng_wan_ci", "name": "孟晚瓷", "gender": "女", "age": 24, "height": "177cm", "initial_affection": 45},
       "background": {
         "origin": "滨海市本地人，寰庭酒店集团大小姐。孟家和顾家世代竞争——从爷爷辈开始。她研究生一毕业就直接进了董事会——不是实习，是实权。",
@@ -789,6 +840,7 @@
     {
       "full_character": true,
       "summary": "姜辞——恒玺资本集团副总裁兼投委会成员，26岁，男主的继姐。哈佛MBA。对外是冰冷的女总裁——对内心是正在编织一张大网的病娇。她从男主被姜家领回来那天起就开始了她的计划：等够强了就撕破脸把弟弟抢回来。她对他的感情不是简单的姐弟——但每次触碰到边界她就退回来用「这是弟弟」的壳把自己裹好。",
+      "char_intro": "姜辞，26岁，恒玺资本集团副总裁，你的继姐。你是被姜家领回来的养子——恒玺是本城真正的顶级财团，但姜家一直刻意穷养你，让你住普通公寓、上普通学校。她跟你没有血缘关系，是你名义上的姐姐。哈佛MBA，在商界以冷酷精准闻名——别人跟她汇报工作她最多回五个字。只有对你不一样：她给你发「吃了没」、给你买过冬的衣服放在门口不说谁放的、在你的对话框打了一行字删掉又打。你不确定她把你当弟弟还是别的什么——但你知道你对她来说不是别人。",
       "basic": {"id": "jiang_ci", "name": "姜辞", "gender": "女", "age": 26, "height": "175cm", "initial_affection": 60},
       "background": {
         "origin": "恒玺资本集团大小姐——本城真正顶层。姜家产业横跨金融、地产、能源。从小被培养成继承人——但她的弟弟被刻意穷养在另一个世界。",
@@ -902,6 +954,7 @@
     {
       "full_character": true,
       "summary": "顾清悦——大一，19岁，顾清漓的亲妹妹。澜庭酒店集团二小姐——但所有人叫她「顾清漓的妹妹」。她恨这个称呼。她从初中开始和姐姐抢一切——不是因为想要那些东西，是因为想知道把姐姐有的全拿走之后姐姐还能不能继续用那种俯视的眼神看她。",
+      "char_intro": "顾清悦，19岁，滨海大学大一新生，顾清漓的亲妹妹，澜庭酒店集团二小姐。元气少女，精力满格，说话永远比脑子快半拍。从小到大所有人都叫她「顾清漓的妹妹」——她烦透了。所以姐姐有什么，她就抢什么。她姐的围巾她要借、她姐的化妆品她要用、她姐被你追了两年半——她也开始在你面前出现的频率越来越高。每次恰好是她姐不在的时候。她会说「我才不是专门来找你的」，但她的马尾甩得比谁都快。",
       "basic": {
         "id": "gu_qing_yue",
         "name": "顾清悦",
@@ -1030,6 +1083,7 @@
     {
       "full_character": true,
       "summary": "苏婉清——澜庭酒店集团董事长，44岁。霸总女强人+成熟贵妇，白手起家从一间三十八间房的招待所做起。前夫出轨人渣——她拿二十万补偿金和两个女儿自己造了一座酒店帝国。她爱女儿但不会表达——她的胳膊从抱砖头改抱文件，已经忘了怎么抱人。她嫉妒女儿——嫉妒女儿能被男主那样不顾一切地追——但她自己不知道。",
+      "char_intro": "苏婉清，44岁，澜庭酒店集团董事长，顾清漓她妈。白手起家——拿二十万补偿金带两个女儿，从一间破招待所做到滨海半壁江山。半岛咖啡见过一次——你屁股没坐热她就推了张五百万的支票过来。一直微笑，一句废话没有。但你接支票的时候看见她手在桌上敲了两下，节奏不对。",
       "basic": {"id": "su_wan_qing", "name": "苏婉清", "gender": "女", "age": 44, "height": "168cm", "initial_affection": 30},
       "background": {
         "origin": "滨海市本地人。二十五年前——她是酒店管理专业拿全奖的大学生。现在——她是澜庭酒店集团的创始人兼董事长。中间隔着一个出轨的人渣前夫和二十万补偿金。",
@@ -1143,6 +1197,7 @@
     {
       "full_character": true,
       "summary": "白凝溪——白鹭集文创集团副总裁，26岁，姜辞的闺蜜，男主的青梅竹马。温柔霸气母御——外暖内定。从男主被姜家领回那天就认识他——是第一个认真问他名字的人。她从小喜欢男主——看着他追别人看了两年半。她没催——她在等。",
+      "char_intro": "白凝溪，26岁，白鹭集文创集团副总裁，姜辞的闺蜜。白家做文化生意——艺术馆、设计师店、手工定制。你被姜家领回来那天，一堆人围着看新来的养子——她蹲下来问了你叫什么。这么多年没追你也没走远。你在滨海大学，她的艺术馆就开在旁边。你说喜欢什么，下次去准有。嘴上一句「等你」都没说过——但人一直没走。",
       "basic": {"id": "bai_ning_xi", "name": "白凝溪", "gender": "女", "age": 26, "height": "170cm", "initial_affection": 65},
       "background": {
         "origin": "滨海市本地人，白鹭集文创集团大小姐。白家做文化产业起家——艺术馆、设计师集合店、高端手工定制，不是最大但最有品。",
@@ -1278,28 +1333,204 @@
     }
   },
   "items": {
-    "gifts": [
-      {"id": "rose_bouquet", "name": "玫瑰花束", "desc": "一束精心包装的红玫瑰，99朵，每一朵都经过挑选。花语不言而喻。", "type": "gift", "cost": 399, "currency": "元", "obtain": "花店购买", "target_char": "", "value": "经典浪漫"},
-      {"id": "luxury_chocolate", "name": "精致巧克力", "desc": "比利时进口手工巧克力，24颗不同口味装在一个深蓝色的丝绒盒子里。甜而不腻。", "type": "gift", "cost": 298, "currency": "元", "obtain": "进口食品店购买", "target_char": "", "value": "精致品味"},
-      {"id": "limited_perfume", "name": "限量香水", "desc": "法国小众品牌的限量香水，前调是柑橘和海洋，后调是雪松和琥珀。全世界只有300瓶。", "type": "gift", "cost": 1888, "currency": "元", "obtain": "高端商场购买", "target_char": "", "value": "独特珍贵"},
-      {"id": "handwritten_letter", "name": "手写情书", "desc": "一封工整的手写信，信纸是烫金边的奶白色棉纸。每一个字都经过了草稿纸上的三次修改。", "type": "gift", "cost": 0, "currency": "元", "obtain": "亲手书写", "target_char": "", "value": "真心无价"},
-      {"id": "custom_jewelry", "name": "定制首饰", "desc": "根据她的星座和性格定制的项链，吊坠是一颗小星星——因为你第一次见到她的时候，她身边的人太多，只有她让你觉得像是在看一颗星星。", "type": "gift", "cost": 5200, "currency": "元", "obtain": "珠宝定制店购买", "target_char": "", "value": "独一无二"}
+    "currency": [
+      { "id": "gold", "name": "零花钱", "initial": 500 }
     ],
-    "shop_items": []
+    "list": [
+      {
+        "item_id": "white_rose",
+        "name": "白玫瑰",
+        "type": "gift",
+        "rarity": "common",
+        "desc": "一朵白色的玫瑰——和顾清漓手腕上那条手链一样干净。她可能不会收——但她会把你的借口听得很清楚。",
+        "price": 50,
+        "can_sell": false,
+        "sell_price": 0,
+        "stackable": true,
+        "max_stack": 99,
+        "obtain": "商业街花店",
+        "gift_meta": { "category": "neutral", "hint": "送给她的时候别说话——让她自己看。她不太听得懂话——但花看得懂。" }
+      },
+      {
+        "item_id": "handmade_bracelet",
+        "name": "手编绳",
+        "type": "gift",
+        "rarity": "uncommon",
+        "desc": "一条手工编织的细绳——和顾清悦手腕上那条不一样——但刚好可以和她的放在一起比较。她会说「这什么老土的东西」然后当天就戴了。",
+        "price": 30,
+        "can_sell": false,
+        "sell_price": 0,
+        "stackable": false,
+        "max_stack": 1,
+        "obtain": "商业街手工摊位",
+        "gift_meta": { "category": "neutral", "hint": "顾清悦会假装嫌弃但睡觉不摘。" }
+      },
+      {
+        "item_id": "coffee_cup_white",
+        "name": "素白陶瓷咖啡杯",
+        "type": "gift",
+        "rarity": "uncommon",
+        "desc": "一只纯白色陶瓷杯——白凝溪会放在她艺术馆顶楼那个专门留给你的位置。她说「刚好还剩一个」——其实那一箱有六个，她只送了你一个。",
+        "price": 80,
+        "can_sell": false,
+        "sell_price": 0,
+        "stackable": false,
+        "max_stack": 1,
+        "obtain": "白鹭集艺术馆",
+        "gift_meta": { "category": "neutral", "hint": "白凝溪不会说谢谢——她会在第二天多放了一杯咖啡。" }
+      },
+      {
+        "item_id": "vintage_watch",
+        "name": "老式腕表",
+        "type": "gift",
+        "rarity": "rare",
+        "desc": "一块有磨损痕迹的老式腕表——和孟晚瓷手腕上那只是同一个牌子。她会说「品位不错」——这是孟晚瓷的最高表扬。然后她会告诉你这块表的历史——不是你需要，是她想跟你说点什么。",
+        "price": 500,
+        "can_sell": false,
+        "sell_price": 0,
+        "stackable": false,
+        "max_stack": 1,
+        "obtain": "高端买手店",
+        "gift_meta": { "category": "positive", "hint": "孟晚瓷看腕表比看人久。这块会被她放在办公桌能看到的位置。" }
+      },
+      {
+        "item_id": "rose_seed",
+        "name": "玫瑰种子",
+        "type": "gift",
+        "rarity": "uncommon",
+        "desc": "一小包玫瑰种子——苏婉清看到的时候会的想起自己种的那片白玫瑰。她不会说谢谢——但她会在下一季种下去。然后她会问「你来不来。」——这句话的意思是她的院子开始有了第二个人。",
+        "price": 40,
+        "can_sell": false,
+        "sell_price": 0,
+        "stackable": true,
+        "max_stack": 10,
+        "obtain": "商业街花店",
+        "gift_meta": { "category": "positive", "hint": "苏婉清收下后会在院子里给你留一个位置。" }
+      },
+      {
+        "item_id": "chocolate_box",
+        "name": "手工巧克力",
+        "type": "gift",
+        "rarity": "common",
+        "desc": "一盒包装好看的手工巧克力。宋可欣会拍照——发朋友圈的时候会裁掉盒子只放一颗在掌心里。你问她剩下的——她说吃完了。但你没看到任何包装纸。",
+        "price": 60,
+        "can_sell": false,
+        "sell_price": 0,
+        "stackable": true,
+        "max_stack": 99,
+        "obtain": "商业街甜品店",
+        "gift_meta": { "category": "neutral", "hint": "她会留很久。" }
+      },
+      {
+        "item_id": "red_wine",
+        "name": "红酒",
+        "type": "gift",
+        "rarity": "uncommon",
+        "desc": "一瓶有年份的红酒——姜辞不会喝。她会放在恒玺四十七楼的酒柜里——不是她不喜欢，是她需要留到某一天。那一天是什么她不说——但酒标上的年份是你出生的那年。",
+        "price": 300,
+        "can_sell": false,
+        "sell_price": 0,
+        "stackable": false,
+        "max_stack": 1,
+        "obtain": "高端酒庄",
+        "gift_meta": { "category": "positive", "hint": "她会在那瓶酒旁边放你的照片。" }
+      }
+    ],
+    "memory": {
+      "owned_items": {}
+    }
   },
   "interaction": {
     "season": "autumn",
-    "phases": [
-      { "id": "lingchen", "name": "凌晨", "hour": "00-06", "mood": "万籁俱寂", "skippable": true },
-      { "id": "qingchen", "name": "清晨", "hour": "06-08", "mood": "日出晨起", "skippable": false },
-      { "id": "shangwu", "name": "上午", "hour": "08-11", "mood": "上午课程", "skippable": false },
-      { "id": "zhongwu", "name": "中午", "hour": "11-13", "mood": "午休午餐", "skippable": false },
-      { "id": "xiawu", "name": "下午", "hour": "13-17", "mood": "下午课程", "skippable": false },
-      { "id": "bangwan", "name": "傍晚", "hour": "17-19", "mood": "黄昏归家", "skippable": false },
-      { "id": "yewan", "name": "夜晚", "hour": "19-24", "mood": "晚间自由", "skippable": false }
+    "advance_modes": {
+      "daily": {
+        "label": "日常推进",
+        "description": "跳过2-4天——生成日常片段。好感度在区间内自由浮动——临界点暂停→触发boundary。适合刷好感度和日常互动。",
+        "time_advance": {
+          "skip_days": { "min": 2, "max": 4 },
+          "hint": "每次跳过2-4天。距下一个milestone不足3天时自动跳到milestone前一天。"
+        },
+        "events_pool": ["daily", "boundary", "sweet_minor", "echo", "misunderstanding"],
+        "events_count": { "min": 0, "max": 1, "hint": "日常推进可能不生成事件——仅更新时间和属性。" },
+        "cooldown_seconds": 0,
+        "can_trigger_milestone": false,
+        "affection_rule": "区间内自由浮动。临界点暂停累积→触发boundary→通过则跨区间。80边界需要重要推进。"
+      },
+      "major": {
+        "label": "重要推进",
+        "description": "直接跳到下一个特殊日/里程碑。触发关键事件。好感度突破80/90必须走此模式。",
+        "time_advance": {
+          "to_milestone": true,
+          "hint": "跳到下一个special_day。事件型：触发多轮选择长事件。"
+        },
+        "events_pool": ["plot", "boundary", "forced_choice", "reversal", "echo", "sweet_major"],
+        "events_count": { "min": 1, "max": 2, "hint": "重要推进必定生成事件。" },
+        "can_trigger_milestone": true,
+        "affection_rule": "80边界需要长剧情事件。90边界需要剧情事件。每次附带1个boundary处理累积的临界点。",
+        "writes_world_history": true
+      },
+      "free": {
+        "label": "自定义行动",
+        "description": "玩家自由输入行动内容。你想做什么，去哪里，找谁——主动权在你。",
+        "time_advance": {
+          "phases": "0-1",
+          "hint": "简单行动不推时间，重大行动推1个时段。"
+        },
+        "events_pool": [],
+        "events_count": { "min": 1, "max": 1 },
+        "cooldown_seconds": 0,
+        "can_trigger_milestone": false,
+        "affection_rule": "AI根据行动内容和角色性格裁定好感度变化。",
+        "ruling_engine": {
+          "allowed_action_types": ["社交", "探索", "学习", "留学准备", "投资理财"],
+          "violence_policy": "严禁任何程度的暴力、伤害、血腥。所有冲突都必须通过对白和沉默解决。这是一个关于人心的世界。",
+          "reasonability_hint": "这是七个人的情感世界。友善和疏离、靠近和远离、说和不说——都是合理的。玩家可以对角色冷淡、拒绝、拉黑，AI不应因为'恋爱模拟'标签而拒绝裁决这些行动。",
+          "output_rules": [
+            "所有行动都必须生成后果叙事——即使不合理也要解释为什么无法执行，而不是拒绝生成",
+            "好感度变化以 [affection:角色id:+或-数字] 标记在叙事末尾",
+            "不否定玩家意图——用角色视角和世界逻辑来回应，而不是说教",
+            "篇幅由情境决定。场景描写放在（）里，对话单独成行。可以描写玩家动作的后果，但不替玩家做决定。宁短不凑"
+          ]
+        }
+      }
+    },
+    "seasons": [
+      {
+        "name": "初秋",
+        "day_range": [1, 60],
+        "weather_patterns": { "阴": 0.35, "雨": 0.25, "多云": 0.2, "晴": 0.2 },
+        "temp_hint": "二十度出头——刚好穿衬衫。梧桐叶开始变黄但还没落。",
+        "mood": "故事开始。你收了五百万——拉黑了她女儿。秋天不知道这是开始还是结束。"
+      },
+      {
+        "name": "深秋",
+        "day_range": [61, 120],
+        "weather_patterns": { "雨": 0.3, "阴": 0.25, "多云": 0.25, "晴": 0.2 },
+        "temp_hint": "十五度——风开始有季节感。加一件外套吧。梧桐叶掉了一半。",
+        "mood": "追夫火葬场进入深水区。顾清漓开始主动找你——不是每天，但开始。其他五条线也在各自的季节中苏醒。"
+      },
+      {
+        "name": "冬季",
+        "day_range": [121, 210],
+        "weather_patterns": { "阴": 0.25, "多云": 0.3, "晴": 0.2, "雨": 0.15, "雪": 0.1 },
+        "temp_hint": "五到十度——滨海的风带着海水咸味比北方更冷。有人换了围巾——不是因为你——但她看到你的时候会碰一下围巾的尾端。",
+        "mood": "情感深冬期。姜辞的投票权在冬天慢慢往百分之五十一靠近。苏婉清的院子里没有玫瑰。白凝溪在艺术馆多放了一台咖啡机——她想学会做你喜欢的温度。"
+      },
+      {
+        "name": "初春",
+        "day_range": [211, 300],
+        "weather_patterns": { "多云": 0.3, "晴": 0.25, "雨": 0.25, "阴": 0.2 },
+        "temp_hint": "十三度——解冻的温度。玫瑰要醒了。梧桐树开始长新叶子。",
+        "mood": "转折季节。有人等了一整个冬天要说话。不是表白——是一种刚好比表白轻一个字的靠近。姜辞的提案在春天——不是董事会提案，是另一份。"
+      },
+      {
+        "name": "春深至夏",
+        "day_range": [301, 9999],
+        "weather_patterns": { "晴": 0.35, "多云": 0.25, "雨": 0.2, "阴": 0.2 },
+        "temp_hint": "二十到二十八度——什么都在开。校门口的海比去年蓝了一点。",
+        "mood": "无结局的世界。说了的人站在一起。没说的人还在等下一年的玫瑰。顾清悦把粉色发带解了——不是因为长大了——是因为有另外一个东西可以系住她。"
+      }
     ],
-    "advance_modes": {},
-    "seasons": [],
     "weather_system": {
       "probabilities": {}
     },
@@ -1384,97 +1615,44 @@
     "messages": {},
     "pace": "",
     "context_management": {},
-    "memory": {},
+    "memory": {
+      "current_day": 1,
+      "current_season": "初秋",
+      "advance_count": 0,
+      "choice_log": [],
+      "stat_history": []
+    },
     "time_config": {
       "total_days": 9999,
       "start_day": 1,
       "end_day": 9999,
       "phases": [
-        {
-          "id": "zi",
-          "name": "子时",
-          "hour": "23-01",
-          "mood": "夜深人静",
-          "skippable": true
-        },
-        {
-          "id": "chou",
-          "name": "丑时",
-          "hour": "01-03",
-          "mood": "万籁俱寂",
-          "skippable": true
-        },
-        {
-          "id": "yin",
-          "name": "寅时",
-          "hour": "03-05",
-          "mood": "黎明之前",
-          "skippable": true
-        },
-        {
-          "id": "mao",
-          "name": "卯时",
-          "hour": "05-07",
-          "mood": "日出晨起",
-          "skippable": false
-        },
-        {
-          "id": "chen",
-          "name": "辰时",
-          "hour": "07-09",
-          "mood": "朝食上学",
-          "skippable": false
-        },
-        {
-          "id": "si",
-          "name": "巳时",
-          "hour": "09-11",
-          "mood": "上午课程",
-          "skippable": false
-        },
-        {
-          "id": "wu",
-          "name": "午时",
-          "hour": "11-13",
-          "mood": "午休午餐",
-          "skippable": false
-        },
-        {
-          "id": "wei",
-          "name": "未时",
-          "hour": "13-15",
-          "mood": "下午课程",
-          "skippable": false
-        },
-        {
-          "id": "shen",
-          "name": "申时",
-          "hour": "15-17",
-          "mood": "放学社团",
-          "skippable": false
-        },
-        {
-          "id": "you",
-          "name": "酉时",
-          "hour": "17-19",
-          "mood": "黄昏归家",
-          "skippable": false
-        },
-        {
-          "id": "xu",
-          "name": "戌时",
-          "hour": "19-21",
-          "mood": "晚间自由",
-          "skippable": false
-        },
-        {
-          "id": "hai",
-          "name": "亥时",
-          "hour": "21-23",
-          "mood": "就寝之前",
-          "skippable": false
-        }
-      ]
+        { "id": "lingchen", "name": "凌晨", "hour": "00-06", "mood": "万籁俱寂", "skippable": true },
+        { "id": "qingchen", "name": "清晨", "hour": "06-08", "mood": "日出晨起", "skippable": false },
+        { "id": "shangwu", "name": "上午", "hour": "08-11", "mood": "上午课程", "skippable": false },
+        { "id": "zhongwu", "name": "中午", "hour": "11-13", "mood": "午休午餐", "skippable": false },
+        { "id": "xiawu", "name": "下午", "hour": "13-17", "mood": "下午课程", "skippable": false },
+        { "id": "bangwan", "name": "傍晚", "hour": "17-19", "mood": "黄昏归家", "skippable": false },
+        { "id": "yewan", "name": "夜晚", "hour": "19-24", "mood": "晚间自由", "skippable": false }
+      ],
+    "special_days": [
+      { "day": 1, "name": "最后一天当舔狗", "type": "transition", "description": "你最后一次在女生宿舍楼下等她。秋天——梧桐叶正在掉。她下来了——和每一天一样——但今天你不知道她会多站几秒。", "duration": "short", "max_steps": 1 },
+      { "day": 2, "name": "半岛咖啡的支票", "type": "event", "description": "苏婉清约你在半岛咖啡见面。她推了一张支票过来——五百万。你等了两年半的这一秒终于来了。", "duration": "long", "max_steps": 3 },
+      { "day": 3, "name": "拉黑", "type": "transition", "description": "全平台拉黑顾清漓。她打了一百通不可能的号码。她坐在床边看着鞋盒里你们的宣传栏照片——她在想这是哪里出错了。", "duration": "short", "max_steps": 1 },
+      { "day": 8, "name": "食堂门口", "type": "event", "description": "顾清漓在食堂门口堵你——她这辈子没堵过任何人。耳朵先红了——然后是颧骨然后是脖子。你从她身边走过去。", "duration": "short", "max_steps": 2 },
+      { "day": 15, "name": "妹妹的捣乱", "type": "event", "description": "顾清悦在商业街撞上你——语速比平时快，马尾晃的角度比平时大。她问你姐怎么样了然后自己骂了自己一顿。", "duration": "short", "max_steps": 2 },
+      { "day": 25, "name": "宋可欣的失言", "type": "event", "description": "宋可欣发了一张夕阳给你——说是发错了。那夕阳她拍了七张——选了最不像故意的一张。", "duration": "short", "max_steps": 1 },
+      { "day": 30, "name": "孟晚瓷的偶遇", "type": "event", "description": "孟晚瓷在澜庭酒店大堂以商业调查的名义出现在你面前——实际上是专程来的。她的问题全是顾清漓——但她点的咖啡和你一样。", "duration": "short", "max_steps": 2 },
+      { "day": 40, "name": "姜辞的进度条", "type": "transition", "description": "姜辞的投票权又推了0.3个百分点。她在抽屉的文件上写了一行字——笔迹比任何合同都轻。然后打开你的对话框——光标停在「在」后面。", "duration": "short", "max_steps": 1 },
+      { "day": 55, "name": "白凝溪的新杯子", "type": "event", "description": "白鹭集艺术馆——白凝溪递给你一个新杯子。她说刚好还剩一个——其实她买了六个，只送了你一个。", "duration": "short", "max_steps": 2 },
+      { "day": 70, "name": "苏婉清的玫瑰", "type": "transition", "description": "苏婉清在院子里看着玫瑰开了。她拿起手机按了很多键——删了。她的包里有一张便签——你的号码贴在和女儿的合照旁边。她没发现这个重复的动作——但玫瑰发现了。", "duration": "short", "max_steps": 1 },
+      { "day": 100, "name": "修罗场第一幕", "type": "event", "description": "白鹭集的酒会——顾清漓和孟晚瓷在同一条沙发上——苏婉清假装看你的方向。姜辞和白凝溪的谈话停了一拍——因为你在看一个空座位。", "duration": "long", "max_steps": 3 },
+      { "day": 120, "name": "留学表格的空白栏", "type": "event", "description": "留学中心——你在紧急联系人那栏写了一个不是血亲的名字。那个人还不知道——但你没改。", "duration": "short", "max_steps": 2 },
+      { "day": 150, "name": "姜辞的抽屉开了", "type": "event", "description": "你的手碰开了姜辞的抽屉——投票权分析文件掉出来。上面有你的名字——在第二页——标的物是你。她站在门口。什么都没说。", "duration": "long", "max_steps": 3 },
+      { "day": 200, "name": "她和她的伞", "type": "event", "description": "下雨——顾清漓没带伞。你把你的给她——她说谢了然后没走。雨停了——她还在你的伞下。不是因为伞有用——是伞下面不冷。", "duration": "long", "max_steps": 3 },
+      { "day": 300, "name": "玫瑰的第二个秋", "type": "transition", "description": "又是一年秋天。苏婉清发了第一条不涉及商业的消息给你——你那边降温了吗。她发了之后把手机扣在桌上。玫瑰已经长到围栏之外了。", "duration": "short", "max_steps": 1 },
+      { "day": 500, "name": "投票权达线前夕", "type": "event", "description": "姜辞离51%投票权还差最后一次投标。她开始写发言稿——删了——改成一条四个字的短信。存了。还没有发送。", "duration": "long", "max_steps": 3 }
+    ]
     }
   },
   "events": {
@@ -1620,6 +1798,110 @@
         "narrative_profile": {
           "event_affinity": {"relationship_beat": 0.5, "world_texture": 0.7},
           "keywords": ["留学", "申请", "海报", "选择", "离开"]
+        }
+      },
+      {
+        "id": "gu_qingli_room",
+        "name": "顾清漓的房间",
+        "desc": "顾家别墅二楼尽头的主卧。落地窗外是整片海湾。房间里意外地整洁——书桌上有一只你送的手工风铃，她说是「没收好」。窗帘是浅灰色的，她说太亮睡不着。",
+        "visibility_default": "private",
+        "events_hint": "最高等级的私密空间，适合边界突破和情绪极限事件。需好感度70+才能进入。",
+        "available_phases": ["傍晚", "夜晚"],
+        "scene_moods": ["冷淡", "海风", "失眠"],
+        "narrative_profile": {
+          "event_affinity": {"tension_escalation": 0.95, "relationship_beat": 0.95},
+          "keywords": ["海湾", "窗帘", "风铃", "失眠", "海浪声"]
+        }
+      },
+      {
+        "id": "song_kexin_apartment",
+        "name": "宋可欣的小公寓",
+        "desc": "商业街后面的老小区，五十平米的小两居。客厅里堆满了毛绒玩偶，阳台种了很多多肉植物。她说这些都是姐姐送的——但多肉的品种明显是她自己挑的。",
+        "visibility_default": "private",
+        "events_hint": "温馨私密空间，适合放松和深度谈心。需好感度40+。",
+        "available_phases": ["中午", "下午", "傍晚", "夜晚"],
+        "scene_moods": ["温馨", "柔软", "多肉"],
+        "narrative_profile": {
+          "event_affinity": {"relationship_beat": 0.9, "world_texture": 0.5},
+          "keywords": ["玩偶", "多肉", "阳台", "暖光", "零食"]
+        }
+      },
+      {
+        "id": "meng_wanci_penthouse",
+        "name": "孟晚瓷的顶层公寓",
+        "desc": "滨海最高端的江景大平层，整面墙的落地窗对着入海口。装修冷调得像样板间——但书房的角落有一整面墙的手办，她说「是小时候的」。那不是小时候的尺寸。",
+        "visibility_default": "private",
+        "events_hint": "高端私密空间，适合商业谈判和个人揭露。需好感度50+。",
+        "available_phases": ["上午", "中午", "下午", "傍晚", "夜晚"],
+        "scene_moods": ["冷调", "江景", "手办"],
+        "narrative_profile": {
+          "event_affinity": {"tension_escalation": 0.7, "relationship_beat": 0.8},
+          "keywords": ["江景", "落地窗", "手办", "冷调", "入海口"]
+        }
+      },
+      {
+        "id": "gu_qingyue_room",
+        "name": "顾清悦的房间",
+        "desc": "顾家别墅一楼客房改装的房间。墙上贴满了偶像海报，书桌上堆着各种小零食和盲盒。手办架子上有你和顾清漓的合照——她说是「做比较用的」。",
+        "visibility_default": "private",
+        "events_hint": "青春躁动的私密空间，适合打闹和意外亲密。需好感度35+。",
+        "available_phases": ["清晨", "中午", "傍晚", "夜晚"],
+        "scene_moods": ["青春", "混乱", "零食"],
+        "narrative_profile": {
+          "event_affinity": {"relationship_beat": 0.85, "tension_escalation": 0.6},
+          "keywords": ["海报", "盲盒", "手办", "零食", "合照"]
+        }
+      },
+      {
+        "id": "jiang_ci_office",
+        "name": "姜辞的47楼办公室",
+        "desc": "恒玺集团大厦47层，整层都是她的私人领地。落地窗外是整个滨海CBD的天际线。办公桌上永远有一杯没喝完的黑咖啡，她说「习惯」。那个习惯在你第一次来之前就有了。",
+        "visibility_default": "private",
+        "events_hint": "权力与孤独交织的私密空间，适合关键资本博弈和个人揭露。需好感度60+。",
+        "available_phases": ["上午", "中午", "下午", "傍晚", "夜晚"],
+        "scene_moods": ["权力", "冷清", "天际线"],
+        "narrative_profile": {
+          "event_affinity": {"tension_escalation": 0.9, "relationship_beat": 0.75},
+          "keywords": ["CBD", "天际线", "黑咖啡", "文件", "投票权"]
+        }
+      },
+      {
+        "id": "su_rose_garden",
+        "name": "苏婉清的玫瑰园",
+        "desc": "顾家别墅后花园，苏婉清亲手打理的白玫瑰园。她说这些玫瑰不卖给任何人——但你第一次来的时候，她摘了一朵给你，说「刚好开得最好」。那是园子里唯一一朵那天早上开的。",
+        "visibility_default": "private",
+        "events_hint": "隐藏攻略对象的核心场景，适合意外告白和权力反转。需好感度80+。",
+        "available_phases": ["清晨", "傍晚", "夜晚"],
+        "scene_moods": ["白玫瑰", "黄昏", "秘密"],
+        "narrative_profile": {
+          "event_affinity": {"tension_escalation": 0.95, "relationship_beat": 0.85},
+          "keywords": ["白玫瑰", "花园", "黄昏", "落叶", "剪刀"]
+        }
+      },
+      {
+        "id": "bai_ningxi_studio",
+        "name": "白凝溪的艺术工作室",
+        "desc": "白鹭集艺术馆顶层，一间面海的小工作室。画架上有半幅未完成的油画——画的是海湾的日落，色调暖得不像她平时的风格。窗台上有一排陶瓷杯，每个旁边都贴着名字——你的那个在最中间。",
+        "visibility_default": "private",
+        "events_hint": "文艺私密的专属空间，适合慢节奏深入和心意传达。需好感度45+。",
+        "available_phases": ["上午", "中午", "下午", "傍晚", "夜晚"],
+        "scene_moods": ["海光", "陶瓷", "暖调"],
+        "narrative_profile": {
+          "event_affinity": {"relationship_beat": 0.95, "world_texture": 0.6},
+          "keywords": ["画架", "海湾", "陶瓷杯", "暖光", "日落"]
+        }
+      },
+      {
+        "id": "male_lead_room",
+        "name": "你的出租屋",
+        "desc": "滨海大学附近的老小区，一间二十平米的单间。房东是个不管事的阿姨。房间里只有一张床、一张桌子、一个衣柜——和一个你从海边捡回来的贝壳，你说「只是觉得它长得还行」。那张桌子上放着留学申请表格，紧急联系人的格子是空的。",
+        "visibility_default": "private",
+        "events_hint": "玩家专属私密空间，适合独处思考和个人叙事。",
+        "available_phases": ["中午", "傍晚", "夜晚", "凌晨"],
+        "scene_moods": ["孤独", "寒酸", "计划"],
+        "narrative_profile": {
+          "event_affinity": {"world_texture": 0.9, "relationship_beat": 0.3},
+          "keywords": ["贝壳", "表格", "床", "窗外", "计划"]
         }
       }
     ],
@@ -1922,7 +2204,7 @@
           "knowledge": 6
         },
         "phases": [
-          "放学后",
+          "下午",
           "夜晚"
         ],
         "location": "图书馆",
@@ -1936,7 +2218,7 @@
           "knowledge": 5
         },
         "phases": [
-          "晚间自由"
+          "夜晚"
         ],
         "location": "study_abroad_office",
         "icon": "✈️",
@@ -1950,7 +2232,7 @@
           "wealth": 50000
         },
         "phases": [
-          "晚间自由"
+          "夜晚"
         ],
         "location": "hengxi_tower",
         "icon": "📈",
@@ -1959,7 +2241,7 @@
     ],
     "action_points": {
       "points_per_phase": {
-        "放学后": 1,
+        "下午": 1,
         "夜晚": 1
       },
       "action_types": [
@@ -1980,7 +2262,67 @@
       "actions": []
     }
   },
-  "dialogue": {},
+  "dialogue": {
+    "summary": "对话系统。七个角色的语气差异是核心。每个人说的样子都不同——顾清漓的嘴是防火墙、宋可欣的嘴是果冻、孟晚瓷的嘴是商业文书、顾清悦的嘴是没关的窗、姜辞的嘴是加了密的短信、白凝溪的嘴是温热的陶瓷杯、苏婉清的嘴是签过百万合同但偶尔忘了签名的支票。",
+    "engines": {
+      "max_context_messages": 20
+    },
+    "triggers": {
+      "message_from_char": [],
+      "event_aftermath": {
+        "enabled": true,
+        "trigger_distance": 2,
+        "max_triggers_per_event": 1
+      },
+      "chat_restrictions": {
+        "max_chats_per_day": 15
+      }
+    },
+    "flat_character_defaults": {
+      "random_line_pool_size": 8,
+      "chat_atmosphere": "现代都市豪门恋爱——克制但有暗涌。不说教不煽情。七种面孔七种语气，从冰点到沸点的距离是一个句子的事。"
+    },
+    "voice_styles": {
+      "gu_qing_li": {
+        "style": "冰川下的火",
+        "tone": "中音偏冷，简洁不拖尾音。翻白眼是标点符号。但说到「不太要紧的事」时语速会快半拍——然后自己察觉，又捡回冷。",
+        "example": "「咖啡？顺便带的——你不要想太多。」"
+      },
+      "song_ke_xin": {
+        "style": "温柔的方向标",
+        "tone": "中音，暖而柔，每句话都像是加了三分糖。但她说到自己时会突然降半调——那个半调是她唯一没包东西的自己。",
+        "example": "「啊这个好好看——哦没有啦，我就是路过顺便拍了一张，你觉得好看吗？」"
+      },
+      "meng_wan_ci": {
+        "style": "谈判桌上的试探",
+        "tone": "中音偏低，精准而不带感情——每个词都像经过法务审核。在你面前偶尔会出现一个没有通过审核的词——然后她自己愣半拍。",
+        "example": "「根据我方调研——算了。你喝什么。」"
+      },
+      "gu_qing_yue": {
+        "style": "停不下来的马达",
+        "tone": "偏高偏快，话永远比脑子先到。双马尾晃的频率等于她心跳的速度。安静的时候反而不正常——那种安静是她有东西没抢到。",
+        "example": "「嗨——不是我找你噢是我刚好经过——好吧我是找你——你别得意！」"
+      },
+      "jiang_ci": {
+        "style": "加密的短信",
+        "tone": "中音，冷而克制。对所有人不超过五字——对你是另一套密码：「充电」「吃了没」「还没睡」都不是原意。她发消息的手指比签任何合同的时候都重。",
+        "example": "「还没睡。」"
+      },
+      "su_wan_qing": {
+        "style": "支票上的停顿",
+        "tone": "中音偏低，威严而体面。语速匀速——但在说到女儿时会快半拍然后压回去。她不会说自己的事——但你说到咖啡时她会多听五秒钟。那五秒是她的年纪被减掉的数字。",
+        "example": "「……好。下周同一时间。」"
+      },
+      "bai_ning_xi": {
+        "style": "温热的陶瓷杯",
+        "tone": "中音，温暖而稳。从不急，从不抢。她可以把一整句话分成三部分说——中间的两段留白是给你的。她的语速是你心跳的速度。",
+        "example": "「刚好还剩一个杯子。」"
+      }
+    },
+    "memory": {
+      "chat_history": {}
+    }
+  },
   "game_items": {},
   "game_interaction": {},
   "rhythm_config": {

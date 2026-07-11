@@ -30,7 +30,8 @@ class UpdateService {
       final uri = Uri.parse(configUrl);
       final response = await http.get(uri).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final responseBody = utf8.decode(response.bodyBytes);
+        final json = jsonDecode(responseBody) as Map<String, dynamic>;
         _cachedInfo = UpdateInfo.fromJson(json);
         return _cachedInfo;
       }

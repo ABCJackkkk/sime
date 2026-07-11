@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -20,12 +21,19 @@ class _SimSettingsScreenState extends State<SimSettingsScreen> {
 
   Future<void> _pickBgImage(AppProvider app) async {
     try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.image);
+      final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
       if (result == null || result.files.isEmpty) return;
       Uint8List? bytes = result.files.first.bytes;
+      if (bytes == null) {
+        final path = result.files.first.path;
+        if (path != null && path.isNotEmpty) {
+          bytes = await File(path).readAsBytes();
+        }
+      }
       if (bytes == null) return;
+      final safeBytes = bytes;
       final cropped = await Navigator.of(context).push<Uint8List>(
-        CupertinoPageRoute(fullscreenDialog: true, builder: (_) => CropScreen(imageBytes: bytes, aspectRatio: 9/16)),
+        CupertinoPageRoute(fullscreenDialog: true, builder: (_) => CropScreen(imageBytes: safeBytes, aspectRatio: 9/16)),
       );
       if (cropped != null) {
         app.setSimBgType('image');

@@ -1,4 +1,4 @@
-$port = 8080
+$port = 8090
 $root = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) "build\web"
 
 $listener = New-Object System.Net.HttpListener

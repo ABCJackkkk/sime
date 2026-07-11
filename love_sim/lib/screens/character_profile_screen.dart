@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -37,13 +38,20 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
 
   Future<void> _pickAvatar() async {
     try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.image);
+      final result = await FilePicker.platform.pickFiles(type: FileType.image, withData: true);
       if (result == null || result.files.isEmpty) return;
       Uint8List? bytes = result.files.first.bytes;
+      if (bytes == null) {
+        final path = result.files.first.path;
+        if (path != null && path.isNotEmpty) {
+          bytes = await File(path).readAsBytes();
+        }
+      }
       if (bytes == null) return;
+      final safeBytes = bytes;
       if (!mounted) return;
       final cropped = await Navigator.of(context).push<Uint8List>(
-        CupertinoPageRoute(fullscreenDialog: true, builder: (_) => CropScreen(imageBytes: bytes, aspectRatio: 1.0)),
+        CupertinoPageRoute(fullscreenDialog: true, builder: (_) => CropScreen(imageBytes: safeBytes, aspectRatio: 1.0)),
       );
       if (cropped != null && mounted) {
         context.read<AppProvider>().setCharImageBytes(widget.characterId, cropped);
@@ -115,9 +123,9 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
         const SizedBox(height: 6),
         Text('点击更换头像', style: TextStyle(fontSize: 11, color: AppColors.textTertiary.withAlpha(160))),
         const SizedBox(height: 12),
-        Text(displayName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimaryDark)),
+        Text(displayName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimaryDark), overflow: TextOverflow.ellipsis, maxLines: 1),
         if (displayName != char.basic.name)
-          Text(char.basic.name, style: const TextStyle(fontSize: 14, color: AppColors.textTertiary)),
+          Text(char.basic.name, style: const TextStyle(fontSize: 14, color: AppColors.textTertiary), overflow: TextOverflow.ellipsis, maxLines: 1),
       ]),
     );
   }
@@ -204,9 +212,9 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
             const SizedBox(width: 10),
             const Text('角色简介', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
           ]),
-          if (char.summary.isNotEmpty) ...[
+          if (char.charIntro.isNotEmpty) ...[
             const SizedBox(height: 12),
-            Text(char.summary, style: TextStyle(fontSize: 14, color: AppColors.textSecondary.withAlpha(200), height: 1.6)),
+            Text(char.charIntro, style: TextStyle(fontSize: 14, color: AppColors.textSecondary.withAlpha(200), height: 1.6)),
           ],
           if (char.basic.distinctiveMarks.isNotEmpty) ...[
             const SizedBox(height: 14),

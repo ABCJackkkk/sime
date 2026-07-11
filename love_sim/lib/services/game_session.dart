@@ -16,6 +16,8 @@ import 'package:love_sim/services/tension_vector.dart';
 
 class GameSession {
   void Function()? onChanged;
+  void Function()? onChatCompleted;
+  void Function()? onGiftSent;
 
   GameScript? script;
   DeepSeekClient? deepSeekClient;
@@ -194,7 +196,7 @@ class GameSession {
   bool hasItem(String itemId) => _inventoryItemIds.contains(itemId);
 
   void _appendToNarrative(String text) {
-    _narrativeHistory += text;
+    _narrativeHistory += _cleanNarrative(text);
     _narrativeHistory = _narrativeHistory.trim();
     if (_narrativeCompressor != null && _narrativeCompressor!.needsCompression(_narrativeHistory)) {
       final result = _narrativeCompressor!.compressSegments(_narrativeSegments);
@@ -217,6 +219,10 @@ class GameSession {
   }
 
   void _notify() => onChanged?.call();
+
+  String _cleanNarrative(String s) {
+    return s.replaceAll(RegExp(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]'), '');
+  }
 
   // ─── Init ───
 
@@ -947,6 +953,7 @@ class GameSession {
       }
       _recordInteraction(charId);
       _notify();
+      onChatCompleted?.call();
     } catch (e) {
       _loadingChatIds.remove(charId);
       final reply = NarrativeValidator.fallbackNarrative('chat_reply', script!.fallbackNarratives, {
@@ -963,6 +970,7 @@ class GameSession {
       }
       modifyAffectionByChat(charId, -0.01);
       _notify();
+      onChatCompleted?.call();
     }
   }
 
@@ -982,6 +990,7 @@ class GameSession {
     final reply = ChatMessage(senderId: charId, senderName: senderName, content: '谢谢你送的${item.name}！我很喜欢～');
     _chatHistories[charId]!.add(reply);
     _notify();
+    onGiftSent?.call();
   }
 
   String _resolveDisplayName(String charId, String fallback, Map<String, String> remarkNames) {
