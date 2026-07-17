@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Sim - Aui 风格预览</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Noto+Serif+SC:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ==================== 主题变量系统 ==================== */
+/* 默认：暖沙色 */
+:root {
+  --bg-primary: #f7f5f2;
+  --bg-warm: #f0ece6;
+  --text-primary: #2c2c2c;
+  --text-secondary: #6b6b6b;
+  --text-muted: #9a9a9a;
+  --accent: #8b7355;
+  --border: #e0dcd6;
+  --hero-gradient-start: #d4c4b0;
+  --hero-gradient-mid1: #c9b8a3;
+  --hero-gradient-mid2: #b8a590;
+  --hero-gradient-mid3: #a8907b;
+  --hero-gradient-end: #9a8266;
+  --gallery-1: #c0b8a8;
+  --gallery-2: #a8907b;
+  --gallery-3: #d4c4b0;
+  --gallery-4: #8f7b5a;
+  --gallery-5: #b8a590;
+  --gallery-6: #6b5840;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+}
+/* 鼠尾草绿 */
+[data-theme="sage"] {
+  --bg-primary: #f4f6f3;
+  --bg-warm: #e8ede5;
+  --text-primary: #2c302c;
+  --text-secondary: #5a605a;
+  --text-muted: #8a8f8a;
+  --accent: #6b7d5e;
+  --border: #d8dcd5;
+  --hero-gradient-start: #c5d0bf;
+  --hero-gradient-mid1: #b0bfa8;
+  --hero-gradient-mid2: #9aab8e;
+  --hero-gradient-mid3: #7e8f72;
+  --hero-gradient-end: #5f704e;
+  --gallery-1: #a8b89f;
+  --gallery-2: #7e8f72;
+  --gallery-3: #c5d0bf;
+  --gallery-4: #5f704e;
+  --gallery-5: #9aab8e;
+  --gallery-6: #46533a;
+}
+/* 烟粉色 */
+[data-theme="rose"] {
+  --bg-primary: #f7f2f2;
+  --bg-warm: #f0e4e4;
+  --text-primary: #3a2c2c;
+  --text-secondary: #7a5e5e;
+  --text-muted: #a88a8a;
+  --accent: #a06876;
+  --border: #e0d0d0;
+  --hero-gradient-start: #d4b8c0;
+  --hero-gradient-mid1: #c9a3ae;
+  --hero-gradient-mid2: #b88694;
+  --hero-gradient-mid3: #a06876;
+  --hero-gradient-end: #8a4f5e;
+  --gallery-1: #b88694;
+  --gallery-2: #a06876;
+  --gallery-3: #d4b8c0;
+  --gallery-4: #8a4f5e;
+  --gallery-5: #c9a3ae;
+  --gallery-6: #6e3f4c;
+}
+/* 深岩灰 */
+[data-theme="slate"] {
+  --bg-primary: #f2f4f6;
+  --bg-warm: #e8ecf0;
+  --text-primary: #2c3440;
+  --text-secondary: #5a667a;
+  --text-muted: #8a94a8;
+  --accent: #5a667a;
+  --border: #d8dce0;
+  --hero-gradient-start: #b8c0c8;
+  --hero-gradient-mid1: #9aa4b0;
+  --hero-gradient-mid2: #7a8698;
+  --hero-gradient-mid3: #5a667a;
+  --hero-gradient-end: #404a5e;
+  --gallery-1: #9aa4b0;
+  --gallery-2: #5a667a;
+  --gallery-3: #b8c0c8;
+  --gallery-4: #404a5e;
+  --gallery-5: #7a8698;
+  --gallery-6: #2c3440;
+}
+/* 赤陶色 */
+[data-theme="terracotta"] {
+  --bg-primary: #f5f0eb;
+  --bg-warm: #eee4d8;
+  --text-primary: #3a2c20;
+  --text-secondary: #7a5a40;
+  --text-muted: #a88a68;
+  --accent: #b8684a;
+  --border: #d8c8b8;
+  --hero-gradient-start: #d4b098;
+  --hero-gradient-mid1: #c99872;
+  --hero-gradient-mid2: #b87a50;
+  --hero-gradient-mid3: #a06840;
+  --hero-gradient-end: #885628;
+  --gallery-1: #c99872;
+  --gallery-2: #a06840;
+  --gallery-3: #d4b098;
+  --gallery-4: #885628;
+  --gallery-5: #b87a50;
+  --gallery-6: #6e3f1a;
+}
+/* 午夜暗 */
+[data-theme="midnight"] {
+  --bg-primary: #1a1a1e;
+  --bg-warm: #222228;
+  --text-primary: #e8e8e0;
+  --text-secondary: #a8a8a0;
+  --text-muted: #707068;
+  --accent: #c9a864;
+  --border: #3a3a40;
+  --hero-gradient-start: #2a2a30;
+  --hero-gradient-mid1: #353540;
+  --hero-gradient-mid2: #454550;
+  --hero-gradient-mid3: #55555a;
+  --hero-gradient-end: #656560;
+  --gallery-1: #353540;
+  --gallery-2: #55555a;
+  --gallery-3: #2a2a30;
+  --gallery-4: #656560;
+  --gallery-5: #454550;
+  --gallery-6: #8a7a50;
+}
+
+/* ==================== 全局基础 ==================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Serif SC', 'Cormorant Garamond', serif;
+  font-weight: 300;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+  line-height: 1.8;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* 噪点纹理 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.5;
+}
+
+/* ==================== 导航栏 ==================== */
+.top-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 20px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  letter-spacing: 0.2em;
+  color: var(--text-primary);
+  font-weight: 300;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+}
+
+.nav-link {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.nav-link:hover { color: var(--accent); }
+
+/* ==================== 标题区 ==================== */
+.page-header {
+  padding: 120px 48px 40px;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 300;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  letter-spacing: 0.05em;
+}
+
+.page-desc {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 2;
+}
+
+/* ==================== 主题切换器 ==================== */
+.theme-switcher {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 200;
+}
+
+.theme-toggle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+.theme-panel {
+  position: absolute;
+  bottom: 72px;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  min-width: 240px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  display: none;
+}
+
+.theme-panel.show { display: block; }
+
+.panel-title {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.theme-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.theme-option:hover {
+  background: var(--bg-warm);
+}
+
+.theme-option.active {
+  border-color: var(--accent);
+  background: var(--bg-warm);
+}
+
+.theme-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.theme-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  letter-spacing: 0.05em;
+}
+
+/* ==================== 分隔线 ==================== */
+.section-divider {
+  max-width: 80px;
+  height: 1px;
+  background: var(--border);
+  margin: 0 auto;
+}
+
+/* ==================== 角色档案页 ==================== */
+.section-title {
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.character-section {
+  padding: 80px 48px;
+  background: var(--bg-warm);
+}
+
+.character-inner {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.character-hero {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.character-avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  margin: 0 auto 32px;
+  background: linear-gradient(135deg,
+    var(--hero-gradient-start) 0%,
+    var(--hero-gradient-mid1) 25%,
+    var(--hero-gradient-mid2) 50%,
+    var(--hero-gradient-mid3) 75%,
+    var(--hero-gradient-end) 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 56px;
+  color: var(--bg-primary);
+  font-weight: 300;
+}
+
+.character-avatar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.character-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 42px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.character-subtitle {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/* 好感度 */
+.affection-block {
+  text-align: center;
+  margin-bottom: 80px;
+}
+
+.affection-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 72px;
+  font-weight: 300;
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.affection-unit {
+  font-size: 14px;
+  color: var(--text-muted);
+  letter-spacing: 0.2em;
+  margin-bottom: 24px;
+}
+
+.affection-bar-track {
+  max-width: 400px;
+  margin: 0 auto;
+  height: 1px;
+  background: var(--border);
+  position: relative;
+}
+
+.affection-bar-fill {
+  height: 2px;
+  background: var(--accent);
+  width: 72%;
+  position: absolute;
+  top: -0.5px;
+  left: 0;
+}
+
+.affection-labels {
+  display: flex;
+  justify-content: space-between;
+  max-width: 400px;
+  margin: 12px auto 0;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* 信息区 */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 48px;
+  padding: 48px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+.info-item {
+  text-align: center;
+}
+
+.info-label {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.info-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+/* 简介 */
+.bio-block {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto 48px;
+}
+
+.bio-title {
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.bio-text {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 2.2;
+}
+
+/* 标签 */
+.character-tags {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+
+.tag {
+  padding: 8px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+  background: var(--bg-primary);
+}
+
+/* 按钮 */
+.cta-group {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 40px;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  font-family: inherit;
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.btn-primary:hover {
+  background: var(--accent);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.btn-outline:hover {
+  background: var(--bg-warm);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ==================== 聊天页 ==================== */
+.chat-section {
+  padding: 80px 0;
+  background: var(--bg-primary);
+}
+
+.chat-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.chat-header {
+  text-align: center;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+.chat-avatar-mini {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  background: linear-gradient(135deg,
+    var(--hero-gradient-start) 0%,
+    var(--hero-gradient-mid2) 100%);
+}
+
+.chat-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.chat-status {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* 消息列表 */
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+.msg-row {
+  display: flex;
+  gap: 12px;
+}
+
+.msg-row.player {
+  flex-direction: row-reverse;
+}
+
+.msg-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--bg-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--accent);
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.msg-avatar.player {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+.msg-bubble {
+  max-width: 70%;
+  padding: 16px 20px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+}
+
+.msg-bubble.npc {
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+}
+
+.msg-bubble.player {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.msg-time {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* 输入框 */
+.chat-input {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-warm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  align-items: center;
+}
+
+.chat-input input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-primary);
+  outline: none;
+  padding: 8px 12px;
+}
+
+.chat-input input::placeholder {
+  color: var(--text-muted);
+}
+
+.send-btn {
+  padding: 10px 20px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.3s ease;
+}
+
+.send-btn:hover {
+  background: var(--accent);
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ==================== 剧本列表 ==================== */
+.scripts-section {
+  padding: 80px 48px;
+  background: var(--bg-warm);
+}
+
+.scripts-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.script-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  margin-top: 48px;
+}
+
+.script-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.script-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+  border-color: var(--accent);
+}
+
+.script-image {
+  height: 180px;
+  background: linear-gradient(135deg,
+    var(--hero-gradient-start) 0%,
+    var(--hero-gradient-mid2) 50%,
+    var(--hero-gradient-end) 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 48px;
+  color: var(--bg-primary);
+  font-weight: 300;
+}
+
+.script-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.script-content {
+  padding: 28px;
+}
+
+.script-meta {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.script-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+}
+
+.script-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.script-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.script-stats {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+}
+
+.script-btn {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.script-btn:hover {
+  border-bottom: 1px solid var(--accent);
+}
+
+.script-btn.loaded {
+  color: var(--text-muted);
+}
+
+/* ==================== 联系人列表 ==================== */
+.contacts-section {
+  padding: 80px 0;
+  background: var(--bg-primary);
+}
+
+.contacts-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.contact-item:last-child { border-bottom: none; }
+
+.contact-item:hover {
+  background: var(--bg-warm);
+  margin: 0 -16px;
+  padding: 24px 16px;
+}
+
+.contact-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,
+    var(--hero-gradient-start) 0%,
+    var(--hero-gradient-end) 100%);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  color: var(--bg-primary);
+  position: relative;
+}
+
+.contact-avatar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.contact-avatar.unread::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg-primary);
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.contact-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  color: var(--text-primary);
+  font-weight: 400;
+}
+
+.contact-time {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.contact-msg {
+  font-size: 13px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-affection {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-left: 12px;
+  flex-shrink: 0;
+}
+
+/* ==================== 配色展示 ==================== */
+.palette-section {
+  padding: 80px 48px;
+  background: var(--bg-warm);
+}
+
+.palette-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  margin-top: 32px;
+}
+
+.palette-item {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16px;
+  position: relative;
+}
+
+.palette-color {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.8);
+  text-align: center;
+}
+
+.palette-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 8px;
+}
+
+.palette-values {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  overflow: hidden;
+}
+
+.palette-value {
+  padding: 12px 8px;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border);
+}
+
+.palette-value:last-child { border-right: none; }
+
+/* ==================== 页脚 ==================== */
+.page-footer {
+  padding: 60px 48px 40px;
+  text-align: center;
+  background: var(--bg-primary);
+  border-top: 1px solid var(--border);
+}
+
+.footer-brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  letter-spacing: 0.3em;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.footer-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+}
+
+/* ==================== 入场动画 ==================== */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ==================== 响应式 ==================== */
+@media (max-width: 768px) {
+  .top-nav { padding: 16px 24px; }
+  .nav-links { display: none; }
+  .page-header { padding: 100px 24px 32px; }
+  .page-title { font-size: 42px; }
+
+  .character-section { padding: 60px 24px; }
+  .info-grid { grid-template-columns: 1fr; gap: 32px; }
+  .character-name { font-size: 32px; }
+  .character-avatar { width: 100px; height: 100px; font-size: 42px; }
+  .affection-number { font-size: 56px; }
+
+  .chat-section { padding: 60px 0; }
+  .chat-inner { padding: 0 24px; }
+  .msg-bubble { max-width: 80%; padding: 12px 16px; font-size: 13px; }
+
+  .scripts-section { padding: 60px 24px; }
+  .script-grid { grid-template-columns: 1fr; gap: 24px; }
+
+  .contacts-section { padding: 60px 0; }
+  .contacts-inner { padding: 0 24px; }
+  .contact-name { font-size: 18px; }
+
+  .palette-section { padding: 60px 24px; }
+  .palette-grid, .palette-values { grid-template-columns: repeat(4, 1fr); }
+  .palette-item:nth-child(n+5), .palette-value:nth-child(n+5) {
+    border-top: 1px solid var(--border);
+  }
+
+  .theme-switcher { bottom: 20px; right: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 导航栏 ==================== -->
+<nav class="top-nav reveal">
+  <div class="nav-brand">LOVE · SIM</div>
+  <div class="nav-links">
+    <span class="nav-link" onclick="scrollToSection('character-section')">Character</span>
+    <span class="nav-link" onclick="scrollToSection('chat-section')">Chat</span>
+    <span class="nav-link" onclick="scrollToSection('scripts-section')">Scripts</span>
+    <span class="nav-link" onclick="scrollToSection('contacts-section')">Contacts</span>
+  </div>
+</nav>
+
+<!-- ==================== 标题区 ==================== -->
+<header class="page-header reveal">
+  <div class="section-label">AUI STYLE PREVIEW</div>
+  <h1 class="page-title">将恋爱游戏<br>融入 Ins 风视觉</h1>
+  <p class="page-desc">低饱和度大地色系 · 细体衬线排版 · 大量留白呼吸感 · 胶片噪点质感<br>点击右下角切换不同主题色，体验六套色彩语言在同一款 App 上的不同表达。</p>
+</header>
+
+<div class="section-divider"></div>
+
+<!-- ==================== 角色档案页 ==================== -->
+<section class="character-section" id="character-section">
+  <div class="character-inner reveal">
+    <div class="section-title">Character Profile</div>
+
+    <div class="character-hero">
+      <div class="character-avatar">夏</div>
+      <div class="character-name">林夏</div>
+      <div class="character-subtitle">First Meet · 17 Years Old</div>
+    </div>
+
+    <div class="affection-block">
+      <div class="affection-number">72.00</div>
+      <div class="affection-unit">AFFECTION</div>
+      <div class="affection-bar-track">
+        <div class="affection-bar-fill"></div>
+      </div>
+      <div class="affection-labels">
+        <span>Stranger</span>
+        <span>Familiar</span>
+        <span>Close</span>
+        <span>Intimate</span>
+        <span>Lover</span>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Age</div>
+        <div class="info-value">17</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Height</div>
+        <div class="info-value">163</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Gender</div>
+        <div class="info-value">Female</div>
+      </div>
+    </div>
+
+    <div class="bio-block">
+      <div class="bio-title">About</div>
+      <p class="bio-text">转校来的元气少女，总是在笑，眼神里藏着秘密。<br>喜欢在午后的图书室里一个人坐着，望着窗外发呆。<br>她说，那些被风吹动的树叶，藏着未被说出口的话。</p>
+    </div>
+
+    <div class="character-tags">
+      <span class="tag">#温柔</span>
+      <span class="tag">#神秘</span>
+      <span class="tag">#文学少女</span>
+      <span class="tag">#内向</span>
+      <span class="tag">#观察力强</span>
+    </div>
+
+    <div class="cta-group">
+      <button class="btn btn-primary">Start Conversation</button>
+      <button class="btn btn-outline">View More</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 聊天页 ==================== -->
+<section class="chat-section" id="chat-section">
+  <div class="chat-inner reveal">
+    <div class="section-title">Chat Interface</div>
+
+    <div class="chat-header">
+      <div class="chat-avatar-mini"></div>
+      <div class="chat-name">林夏</div>
+      <div class="chat-status">Online · Active now</div>
+    </div>
+
+    <div class="messages">
+      <div class="msg-row">
+        <div class="msg-avatar">夏</div>
+        <div>
+          <div class="msg-bubble npc">今天天气真好呢，风从窗户吹进来，带着一些树叶的味道。</div>
+          <div class="msg-time">14:32 PM</div>
+        </div>
+      </div>
+
+      <div class="msg-row player">
+        <div class="msg-avatar player">我</div>
+        <div>
+          <div class="msg-bubble player">要一起出去走走吗？</div>
+          <div class="msg-time" style="text-align: right;">14:33 PM</div>
+        </div>
+      </div>
+
+      <div class="msg-row">
+        <div class="msg-avatar">夏</div>
+        <div>
+          <div class="msg-bubble npc">好呀...<br><br>其实我也刚好想出去。<br><br>你知道那个老图书馆后面的小院子吗？我最近经常去那里。</div>
+          <div class="msg-time">14:35 PM</div>
+        </div>
+      </div>
+
+      <div class="msg-row player">
+        <div class="msg-avatar player">我</div>
+        <div>
+          <div class="msg-bubble player">那就在那里见。</div>
+          <div class="msg-time" style="text-align: right;">14:36 PM</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input">
+      <button class="icon-btn" title="礼物">♡</button>
+      <input type="text" placeholder="Type a message...">
+      <button class="send-btn">Send</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 剧本列表 ==================== -->
+<section class="scripts-section" id="scripts-section">
+  <div class="scripts-inner reveal">
+    <div class="section-title">Script Collection</div>
+
+    <div class="script-grid">
+      <div class="script-card">
+        <div class="script-image">春</div>
+        <div class="script-content">
+          <div class="script-meta">Campus · Chapter 01</div>
+          <div class="script-title">十七岁的坐标系</div>
+          <p class="script-desc">高一下到高考结束，两个转校生、两个青梅竹马——四个人，两年半，一个关于没说完的话和终将告别的故事。</p>
+          <div class="script-footer">
+            <span class="script-stats">4 CHARS · 1065 DAYS · 5 ENDINGS</span>
+            <span class="script-btn loaded">LOADED</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="script-card">
+        <div class="script-image" style="background: linear-gradient(135deg, var(--gallery-1) 0%, var(--gallery-3) 50%, var(--gallery-6) 100%);">夏</div>
+        <div class="script-content">
+          <div class="script-meta">Custom · Imported</div>
+          <div class="script-title">夏末的来信</div>
+          <p class="script-desc">一封来自十年前的信件，在一个夏天的午后被打开。记忆的碎片在时间的褶皱里，拼凑出一个被遗忘的夏天。</p>
+          <div class="script-footer">
+            <span class="script-stats">3 CHARS · 90 DAYS</span>
+            <span class="script-btn">LOAD →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="script-card">
+        <div class="script-image" style="background: linear-gradient(135deg, var(--gallery-2) 0%, var(--gallery-5) 50%, var(--gallery-4) 100%);">秋</div>
+        <div class="script-content">
+          <div class="script-meta">Drama · Chapter 03</div>
+          <div class="script-title">秋日咖啡馆</div>
+          <p class="script-desc">在街角那家没有招牌的咖啡馆里，她只在秋天出现。每次来，都会点一杯相同的咖啡，写一段相同的诗。</p>
+          <div class="script-footer">
+            <span class="script-stats">2 CHARS · 45 DAYS · 3 ENDINGS</span>
+            <span class="script-btn">LOAD →</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="script-card">
+        <div class="script-image" style="background: linear-gradient(135deg, var(--gallery-6) 0%, var(--gallery-2) 50%, var(--gallery-1) 100%);">冬</div>
+        <div class="script-content">
+          <div class="script-meta">Import · JSON</div>
+          <div class="script-title">冬季的坐标</div>
+          <p class="script-desc">雪覆盖了所有的路，却盖不住你在雪地里留下的脚印。一个关于如何在最冷的季节里，找到最温暖的人的故事。</p>
+          <div class="script-footer">
+            <span class="script-stats">CUSTOM SCRIPT</span>
+            <span class="script-btn">LOAD →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 联系人列表 ==================== -->
+<section class="contacts-section" id="contacts-section">
+  <div class="contacts-inner reveal">
+    <div class="section-title">Characters</div>
+
+    <div class="contact-item">
+      <div class="contact-avatar unread">林</div>
+      <div class="contact-info">
+        <div class="contact-name-row">
+          <div class="contact-name">林夏</div>
+          <div class="contact-time">JUST NOW</div>
+        </div>
+        <div class="contact-msg">好呀... 其实我也刚好想出去。</div>
+      </div>
+      <div class="contact-affection">72 · ♥</div>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-avatar unread">苏</div>
+      <div class="contact-info">
+        <div class="contact-name-row">
+          <div class="contact-name">苏晚</div>
+          <div class="contact-time">YESTERDAY</div>
+        </div>
+        <div class="contact-msg">如果明天不下雨，我们一起去海边吧。</div>
+      </div>
+      <div class="contact-affection">58 · ♡</div>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-avatar">顾</div>
+      <div class="contact-info">
+        <div class="contact-name-row">
+          <div class="contact-name">顾言</div>
+          <div class="contact-time">3 DAYS AGO</div>
+        </div>
+        <div class="contact-msg">你说的那本书，我找到了。</div>
+      </div>
+      <div class="contact-affection">45 · ♡</div>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-avatar">沈</div>
+      <div class="contact-info">
+        <div class="contact-name-row">
+          <div class="contact-name">沈轻语</div>
+          <div class="contact-time">1 WEEK AGO</div>
+        </div>
+        <div class="contact-msg">数学课代表又在看你呢。</div>
+      </div>
+      <div class="contact-affection">32 · ♡</div>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-avatar">陈</div>
+      <div class="contact-info">
+        <div class="contact-name-row">
+          <div class="contact-name">陈慕晴</div>
+          <div class="contact-time">2 WEEKS AGO</div>
+        </div>
+        <div class="contact-msg">谢谢你上次借我的伞。</div>
+      </div>
+      <div class="contact-affection">20 · ♡</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 配色板 ==================== -->
+<section class="palette-section">
+  <div class="palette-inner reveal">
+    <div class="section-title">Color Palette</div>
+
+    <div class="palette-grid">
+      <div class="palette-item" style="background: var(--bg-primary); border-right: 1px solid var(--border);">
+        <div class="palette-color" style="color: var(--text-secondary);">BG</div>
+      </div>
+      <div class="palette-item" style="background: var(--bg-warm); border-right: 1px solid var(--border);">
+        <div class="palette-color" style="color: var(--text-secondary);">WARM</div>
+      </div>
+      <div class="palette-item" style="background: var(--border); border-right: 1px solid var(--border);">
+        <div class="palette-color">LINE</div>
+      </div>
+      <div class="palette-item" style="background: var(--text-primary); border-right: 1px solid var(--border);">
+        <div class="palette-color">TEXT</div>
+      </div>
+      <div class="palette-item" style="background: var(--text-secondary); border-right: 1px solid var(--border);">
+        <div class="palette-color">MID</div>
+      </div>
+      <div class="palette-item" style="background: var(--text-muted); border-right: 1px solid var(--border);">
+        <div class="palette-color">MUTED</div>
+      </div>
+      <div class="palette-item" style="background: var(--accent);">
+        <div class="palette-color">ACCENT</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 页脚 ==================== -->
+<footer class="page-footer">
+  <div class="footer-brand">LOVE · SIM</div>
+  <div class="footer-text">AUI STYLE · 6 THEMES · INSPIRED BY MINIMALISM</div>
+</footer>
+
+<!-- ==================== 主题切换器 ==================== -->
+<div class="theme-switcher">
+  <button class="theme-toggle" onclick="toggleThemePanel()" title="切换主题">◐</button>
+  <div class="theme-panel" id="themePanel">
+    <div class="panel-title">Theme · 主题</div>
+    <div class="theme-option active" data-theme="">
+      <div class="theme-dot" style="background: linear-gradient(135deg, #d4c4b0, #8b7355);"></div>
+      <div class="theme-name">暖沙色 Warm Sand</div>
+    </div>
+    <div class="theme-option" data-theme="sage">
+      <div class="theme-dot" style="background: linear-gradient(135deg, #c5d0bf, #6b7d5e);"></div>
+      <div class="theme-name">鼠尾草绿 Sage</div>
+    </div>
+    <div class="theme-option" data-theme="rose">
+      <div class="theme-dot" style="background: linear-gradient(135deg, #d4b8c0, #a06876);"></div>
+      <div class="theme-name">烟粉色 Rose</div>
+    </div>
+    <div class="theme-option" data-theme="slate">
+      <div class="theme-dot" style="background: linear-gradient(135deg, #b8c0c8, #5a667a);"></div>
+      <div class="theme-name">深岩灰 Slate</div>
+    </div>
+    <div class="theme-option" data-theme="terracotta">
+      <div class="theme-dot" style="background: linear-gradient(135deg, #d4b098, #b8684a);"></div>
+      <div class="theme-name">赤陶色 Terracotta</div>
+    </div>
+    <div class="theme-option" data-theme="midnight">
+      <div class="theme-dot" style="background: linear-gradient(135deg, #353540, #c9a864);"></div>
+      <div class="theme-name">午夜暗 Midnight</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* 主题切换 */
+function toggleThemePanel() {
+  document.getElementById('themePanel').classList.toggle('show');
+}
+
+document.querySelectorAll('.theme-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    const theme = opt.dataset.theme;
+    if (theme === '') {
+      document.documentElement.removeAttribute('data-theme');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+    document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('active'));
+    opt.classList.add('active');
+    localStorage.setItem('sime-theme', theme);
+  });
+});
+
+/* 恢复主题 */
+const savedTheme = localStorage.getItem('sime-theme');
+if (savedTheme !== null) {
+  if (savedTheme === '') {
+    document.documentElement.removeAttribute('data-theme');
+  } else {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+  document.querySelectorAll('.theme-option').forEach(o => {
+    o.classList.toggle('active', o.dataset.theme === savedTheme);
+  });
+}
+
+/* 点击外部关闭 */
+document.addEventListener('click', (e) => {
+  const switcher = document.querySelector('.theme-switcher');
+  if (!switcher.contains(e.target)) {
+    document.getElementById('themePanel').classList.remove('show');
+  }
+});
+
+/* 滚动入场动画 */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(el => {
+  observer.observe(el);
+});
+
+/* 滚动到章节 */
+function scrollToSection(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,316 @@
+import 'dart:ui';
+import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+import 'package:sime/main.dart';
+import 'package:sime/providers/app_provider.dart';
+import 'package:sime/services/save_service.dart';
+import 'package:sime/widgets/typewriter_text.dart';
+
+class ChatScreen extends StatefulWidget {
+  final String characterId;
+  const ChatScreen({super.key, required this.characterId});
+
+  @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateMixin {
+  final TextEditingController _textController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(_scrollController.position.maxScrollExtent, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppProvider>().markCharRead(widget.characterId);
+      _scrollToBottom();
+    });
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return CupertinoPageScaffold(
+      backgroundColor: AppColors.background,
+      navigationBar: CupertinoNavigationBar(
+        backgroundColor: AppColors.background,
+        border: const Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
+        middle: Consumer<AppProvider>(
+          builder: (context, app, _) {
+            final char = app.getCharacter(widget.characterId);
+            final unread = app.hasUnread(widget.characterId);
+            final img = app.getCharImageBytes(widget.characterId);
+            final name = char?.basic.name ?? '聊天';
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final maxWidth = constraints.maxWidth;
+                final hasAvatar = img != null;
+                final nameMaxWidth = maxWidth - (hasAvatar ? 36.0 : 0.0) - (unread ? 14.0 : 0.0);
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (img != null) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.memory(img, width: 28, height: 28, fit: BoxFit.cover),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: nameMaxWidth > 0 ? nameMaxWidth : 100),
+                      child: Text(name, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 17), overflow: TextOverflow.ellipsis, maxLines: 1),
+                    ),
+                    if (unread) ...[
+                      const SizedBox(width: 6),
+                      Container(width: 8, height: 8, decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.error)),
+                    ],
+                  ],
+                );
+              },
+            );
+          },
+        ),
+      ),
+      child: SafeArea(
+        child: Consumer<AppProvider>(
+          builder: (context, app, _) {
+            final messages = app.getChatHistory(widget.characterId);
+            final isLoading = app.isChatLoading(widget.characterId);
+
+            return Column(
+              children: [
+                Expanded(
+                  child: messages.isEmpty && !isLoading
+                      ? Center(child: Text('开始对话吧', style: TextStyle(color: AppColors.textTertiary.withAlpha(180), fontSize: 15)))
+                      : ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.all(16),
+                          itemCount: messages.length + (isLoading ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index < messages.length) {
+                              final msg = messages[index];
+                              final isPlayer = msg.senderId == 'player';
+                              final isRead = isPlayer && app.isPlayerMessageRead(widget.characterId, index);
+                              // 用时间戳+内容作稳定 key，避免列表变化时 State 被销毁重建导致动画重播
+                              final animKey = ValueKey('bubble_${msg.timestamp.millisecondsSinceEpoch}_${msg.content.hashCode}');
+                              // 只有从未播放过动画的 AI 消息才播放；已播放过的直接显示全文
+                              final animate = !isPlayer && !msg.typewriterPlayed;
+                              if (animate) {
+                                msg.typewriterPlayed = true;
+                              }
+                              return _buildBubble(msg, isPlayer, isRead, app, animate: animate, animKey: animKey);
+                            }
+                            return _buildTypingIndicator();
+                          },
+                        ),
+                ),
+                _buildInputBar(app),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBubble(ChatMessage msg, bool isPlayer, bool isRead, AppProvider app, {bool animate = false, Key? animKey}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        key: animKey,
+        crossAxisAlignment: isPlayer ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: isPlayer ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (!isPlayer) ...[
+                Container(
+                  width: 36, height: 36,
+                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.accent.withAlpha(40)),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: app.getCharImageBytes(widget.characterId) != null
+                        ? Image.memory(app.getCharImageBytes(widget.characterId)!, width: 36, height: 36, fit: BoxFit.cover)
+                        : Center(child: Text(msg.senderName.isNotEmpty ? msg.senderName.characters.first : '?', style: const TextStyle(color: AppColors.accent, fontSize: 14, fontWeight: FontWeight.w600))),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Flexible(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(topLeft: const Radius.circular(18), topRight: const Radius.circular(18), bottomLeft: isPlayer ? const Radius.circular(18) : const Radius.circular(4), bottomRight: isPlayer ? const Radius.circular(4) : const Radius.circular(18)),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: isPlayer ? 4 : 12, sigmaY: isPlayer ? 4 : 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isPlayer ? AppColors.accent.withAlpha(40) : const Color(0x08FFFFFF),
+                        borderRadius: BorderRadius.only(topLeft: const Radius.circular(18), topRight: const Radius.circular(18), bottomLeft: isPlayer ? const Radius.circular(18) : const Radius.circular(4), bottomRight: isPlayer ? const Radius.circular(4) : const Radius.circular(18)),
+                        border: Border.all(color: isPlayer ? AppColors.accent.withAlpha(50) : AppColors.accent.withAlpha(20), width: 0.5),
+                      ),
+                      child: animate
+                          ? TypewriterText(
+                              text: msg.content,
+                              style: TextStyle(fontSize: 15, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.4),
+                              speed: const Duration(milliseconds: 18),
+                              enabled: true,
+                            )
+                          : Text(msg.content, style: TextStyle(fontSize: 15, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.4)),
+                    ),
+                  ),
+                ),
+              ),
+              if (isPlayer) ...[
+                const SizedBox(width: 8),
+                Container(width: 36, height: 36, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: AppColors.textTertiary.withAlpha(30)), child: const Icon(CupertinoIcons.person_fill, size: 16, color: AppColors.textTertiary)),
+              ],
+            ],
+          ),
+          if (isPlayer && isRead)
+            Padding(
+              padding: const EdgeInsets.only(top: 4, right: 44),
+              child: Text('已读', style: TextStyle(fontSize: 11, color: AppColors.textTertiary.withAlpha(160))),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInputBar(AppProvider app) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
+      decoration: const BoxDecoration(color: Color(0x0AFFFFFF), border: Border(top: BorderSide(color: AppColors.border, width: 0.5))),
+      child: Row(
+        children: [
+          Expanded(
+            child: CupertinoTextField(
+              controller: _textController,
+              placeholder: '输入消息...',
+              placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.border, width: 0.5)),
+              style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15),
+            ),
+          ),
+          const SizedBox(width: 8),
+          CupertinoButton(
+            onPressed: () {
+              final text = _textController.text.trim();
+              if (text.isEmpty) return;
+              app.sendMessage(widget.characterId, text);
+              _textController.clear();
+              _scrollToBottom();
+            },
+            padding: const EdgeInsets.all(10), minSize: 0,
+            borderRadius: BorderRadius.circular(20), color: AppColors.accent,
+            child: const Icon(CupertinoIcons.paperplane_fill, size: 18, color: CupertinoColors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypingIndicator() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          const SizedBox(width: 44),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(18), topRight: Radius.circular(18), bottomRight: Radius.circular(18)),
+              border: Border.all(color: AppColors.accent.withAlpha(25), width: 0.5),
+            ),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(18), topRight: Radius.circular(18), bottomRight: Radius.circular(18)),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: _BouncingDots(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BouncingDots extends StatefulWidget {
+  const _BouncingDots();
+
+  @override
+  State<_BouncingDots> createState() => _BouncingDotsState();
+}
+
+class _BouncingDotsState extends State<_BouncingDots> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+    _animations = List.generate(3, (i) {
+      return Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(
+          parent: _ctrl,
+          curve: Interval(i * 0.15, 0.5 + i * 0.2, curve: Curves.easeInOut),
+        ),
+      );
+    });
+    _ctrl.repeat();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 36,
+      height: 8,
+      child: AnimatedBuilder(
+        animation: _ctrl,
+        builder: (context, _) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(3, (i) {
+              final y = -6 * _animations[i].value;
+              return Transform.translate(
+                offset: Offset(0, y),
+                child: Container(
+                  width: 6, height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.accent.withAlpha(120),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              );
+            }),
+          );
+        },
+      ),
+    );
+  }
+}

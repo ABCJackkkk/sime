@@ -1,0 +1,712 @@
+{
+  "_comment": "========= Sime 剧本模板 =========",
+  "_comment2": "规则：所有数值/公式/映射来自JSON，Dart代码不硬编码任何剧本特定ID",
+  "meta": {
+    "id": "my_script_id",
+    "name": "我的剧本",
+    "version": "1.0.0",
+    "author": "",
+    "genre": "",
+    "tone": "",
+    "mode": "endings",
+    "summary": ""
+  },
+  "player": {
+    "background": "",
+    "current_state": ""
+  },
+  "world": {
+    "summary": "",
+    "setting": "",
+    "atmosphere": {
+      "time_sense": "",
+      "tone": "",
+      "interaction_quality": "",
+      "writing_style": {
+        "label": "电影感白描",
+        "rules": [
+          "短句为主，关键情绪处可用长句",
+          "动作驱动，不写心理判断（'她感到'类禁止）",
+          "感官细节优先于情绪解释"
+        ],
+        "do_example": "她把书摔在桌上。转身就走。走廊的脚步声越来越远，最后被上课铃盖住。",
+        "dont_example": "她感到一阵难为情，心里想着该怎么回应，脸颊微微泛红，这种复杂的情绪让她不知所措。"
+      }
+    },
+    "locations": [
+      {
+        "id": "location_id",
+        "name": "地点名",
+        "desc": "",
+        "trigger_tags": []
+      }
+    ],
+    "special_rules": {},
+    "memory": {
+      "current_time": {
+        "day": 1,
+        "season": "spring",
+        "weather": "晴",
+        "phase": "上午"
+      },
+      "location_changes": [],
+      "world_history": {},
+      "world_summary": ""
+    }
+  },
+  "characters": [
+    {
+      "full_character": true,
+      "summary": "",
+      "basic": {
+        "id": "char_id",
+        "name": "角色名",
+        "gender": "女",
+        "age": 16,
+        "height": "",
+        "initial_affection": 5
+      },
+      "background": {
+        "origin": "",
+        "history": "",
+        "current_situation": ""
+      },
+      "details": {
+        "goals": [],
+        "fears": [],
+        "secrets": [],
+        "values": [],
+        "self_perception": ""
+      },
+      "soul": {
+        "big_five": {
+          "openness": 0.5,
+          "extraversion": 0.5,
+          "agreeableness": 0.5,
+          "conscientiousness": 0.5,
+          "neuroticism": 0.5
+        }
+      },
+      "speech": {
+        "big_five_profile": {},
+        "phonetics": {},
+        "vocabulary": {},
+        "dual_mode": {
+          "to_stranger": {
+            "overview": "",
+            "example": ""
+          },
+          "to_close": {
+            "overview": "",
+            "example": ""
+          }
+        }
+      },
+      "humanity": {
+        "emotional_range": "",
+        "attachment_style": "",
+        "social_strategy": ""
+      },
+      "agent": {
+        "personality_overview": "",
+        "chat_personality": "",
+        "narrative_style": "",
+        "emotional_expression": "",
+        "conflict_strategy": "",
+        "special_behaviors": []
+      },
+      "appearance": {
+        "body": "",
+        "uniform": "",
+        "expression": "",
+        "details": []
+      },
+      "preferences": {
+        "likes": [],
+        "dislikes": [],
+        "hobbies": [],
+        "ideal_type": ""
+      },
+      "mood_triggers": {
+        "joy": [],
+        "annoy": [],
+        "shy": [],
+        "sad": [],
+        "angry": []
+      },
+      "gift_response": {
+        "positive": null,
+        "negative": ""
+      },
+      "boundary": {
+        "touch": "",
+        "privacy": ""
+      },
+      "evolution": {
+        "tiers": []
+      },
+      "relations": {
+        "flat": [],
+        "dimensional": []
+      },
+      "memory": {
+        "episodic_memory": []
+      },
+      "schedule": {
+        "weekday": [],
+        "weekend": []
+      },
+      "memory_tags": {
+        "_comment": "v2.8 角色记忆标签配置",
+        "default": ["日常"],
+        "affection_breakthrough": ["暧昧"],
+        "conflict": ["冲突"],
+        "triangular": ["吃醋", "第三方提及"]
+      },
+      "stats": [
+        {
+          "id": "stat_1",
+          "name": "属性1",
+          "value": 50,
+          "max": 100
+        }
+      ],
+      "grades": [
+        {
+          "id": "grade_1",
+          "name": "科目1",
+          "value": 100,
+          "max": 150
+        }
+      ],
+      "discovery_condition": "",
+      "coop": {
+        "arcana": "",
+        "starts_locked": false,
+        "rank_thresholds": {},
+        "rank_up_conditions": {},
+        "abilities": [],
+        "available_phases": [],
+        "available_locations": []
+      }
+    }
+  ],
+  "inter_character_relationships": {
+    "_comment": "角色间初始态度。引擎启动时读取，后续运行时由 InterCharRelationshipService 维护。只定义有特殊初始关系的角色对——未列出的组合默认为「无感·亲和力 0」。",
+    "initial_attitudes": [
+      {
+        "from": "char_id_a",
+        "to": "char_id_b",
+        "affinity": 0,
+        "label": "无感",
+        "history": "",
+        "is_secret_admirer": false
+      }
+    ]
+  },
+  "information_system": {
+    "_comment": "信息传播系统配置。控制校园流言的传播风格。加密风格在 information_propagation.dart 中消费。",
+    "encryption_styles": {
+      "honest": { "trust": 1.0, "desc": "如实转述，不加修饰" },
+      "gossip": { "trust": 0.5, "desc": "添油加醋，放大戏剧性" },
+      "joke": { "trust": 0.7, "desc": "用玩笑/阴阳怪气加密" },
+      "cold": { "trust": 0.8, "desc": "轻描淡写，故意压低重要性" },
+      "speculation": { "trust": 0.4, "desc": "把自己的揣测包装成事实" }
+    }
+  },
+  "items": {
+    "gifts": [
+      {
+        "id": "gift_id",
+        "name": "礼物名",
+        "description": ""
+      }
+    ],
+    "shop_items": []
+  },
+  "interaction": {
+    "season": "spring",
+    "phases": [
+      { "id": "lingchen", "name": "凌晨", "hour": "00-06", "mood": "万籁俱寂", "skippable": true },
+      { "id": "qingchen", "name": "清晨", "hour": "06-08", "mood": "日出晨起", "skippable": false },
+      { "id": "shangwu", "name": "上午", "hour": "08-11", "mood": "上午课程", "skippable": false },
+      { "id": "zhongwu", "name": "中午", "hour": "11-13", "mood": "午休午餐", "skippable": false },
+      { "id": "xiawu", "name": "下午", "hour": "13-17", "mood": "下午课程", "skippable": false },
+      { "id": "bangwan", "name": "傍晚", "hour": "17-19", "mood": "黄昏归家", "skippable": false },
+      { "id": "yewan", "name": "夜晚", "hour": "19-24", "mood": "晚间自由", "skippable": false }
+    ],
+    "advance_modes": {},
+    "seasons": [],
+    "weather_system": {
+      "probabilities": {}
+    },
+    "affection": {
+      "min": 1,
+      "max": 100,
+      "precision": 0.01,
+      "tiers": [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+      "boundary_events": {
+        "below_80": { "rule": "59.99/69.99等临界点触发临界好感事件，通过则跨区间" },
+        "at_80": { "rule": "79.99到80必须重要推进+长剧情事件突破" },
+        "above_80": { "80-89": "区间内自由增减，89.99触发临界事件。突破90需重要推进+剧情事件", "90-99": "区间内自由增减，99.99触发终极事件", "100": "终极事件——仅特殊人物可触发，主角终身唯一" }
+      },
+      "tier_breakthrough": {
+        "below_80": "区间内自由增减。到达临界点(59.99等)时停止累积，触发boundary_event。通过则跨入下一区间。",
+        "at_80": "必须通过重要推进+长剧情事件突破。日常推进不可触发。",
+        "above_80": "80-90区间内自由增减，89.99触发临界事件。突破90需重要推进+剧情事件。90-99区间内自由增减。"
+      },
+      "overflow_pool": "日常好感度积累到临界点时暂停累积，溢出值暂存。临界事件通过后释放。连续多次未通过临界事件时溢出值减半。",
+      "difficulty_curve": {
+        "gain_multiplier": {
+          "1-50": { "multiplier": 1.00, "feel": "快速建立好感，新手友好期" },
+          "50-60": { "multiplier": 0.80, "feel": "从陌生人到有好感，需要更多接触" },
+          "60-70": { "multiplier": 0.60, "feel": "好感建立放缓，开始需要走心" },
+          "70-80": { "multiplier": 0.40, "feel": "欣赏到喜欢之间，每一点都需要诚意" },
+          "80-90": { "multiplier": 0.20, "feel": "喜欢到爱，稀缺而珍贵" },
+          "90-99": { "multiplier": 0.05, "feel": "爱到极致，寸步难行但每步都是永恒" }
+        },
+        "decline_multiplier": {
+          "1-50": { "multiplier": 2.00, "feel": "本来就没感情，一点小事就可能崩" },
+          "50-60": { "multiplier": 1.50, "feel": "初识阶段，还经不起折腾" },
+          "60-70": { "multiplier": 1.00, "feel": "正常增减" },
+          "70-80": { "multiplier": 0.70, "feel": "已经有感情基础，小摩擦没那么致命" },
+          "80-90": { "multiplier": 0.30, "feel": "喜欢了就不会轻易放手" },
+          "90-99": { "multiplier": 0.05, "feel": "爱到深处，几乎不可撼动" }
+        }
+      },
+      "decline_rules": {
+        "1-79": "随便掉。任何来源都可以降低。好感度越低越容易继续掉。",
+        "80-89": "只能通过事件掉。聊天冷淡不再扣分。日常负面减半。",
+        "90-99": "只能通过剧情事件掉。仅plot/forced_choice类型可降低。",
+        "100": "不可掉。永恒唯一一旦达成即锁定。"
+      },
+      "tiers_desc": {
+        "1-10": "死敌 — 不共戴天，见面即杀意",
+        "10-20": "仇恨 — 深刻的敌意，主动加害",
+        "20-30": "憎恨 — 强烈的反感，避之不及",
+        "30-40": "厌恶 — 明显不喜欢，不愿接触",
+        "40-50": "轻微厌恶 — 有些不顺眼，保持距离",
+        "50-60": "陌生人 — 无感，点头之交",
+        "60-70": "有好感 — 愿意接触，不排斥",
+        "70-80": "欣赏 — 主动关注，乐意相处",
+        "80-90": "喜欢 — 明显亲近意愿，会吃醋",
+        "90-99": "爱 — 深度依恋与付出",
+        "100": "永恒唯一 — 阴阳合一，灵魂绑定。仅特殊人物终极事件触发，主角终身唯一"
+      },
+      "unique_bond": {
+        "rule": "好感度100具有唯一性——主角只能与一个角色达到100。四选一。",
+        "trigger": "仅终极事件可解锁",
+        "lock": "一旦有人达到100，其他角色最高锁定99.99"
+      },
+      "natural_drift": {
+        "per_day": 0.02,
+        "max_drift": 5,
+        "direction": "toward_middle",
+        "middle": 50
+      }
+    },
+    "relationship_stages": [
+      { "state": "none", "label": "死敌", "min": 0, "max": 10 },
+      { "state": "stranger", "label": "仇视", "min": 10, "max": 30 },
+      { "state": "acquaintance", "label": "厌恶", "min": 30, "max": 50 },
+      { "state": "friend", "label": "认识", "min": 50, "max": 70 },
+      { "state": "close_friend", "label": "好友", "min": 70, "max": 80 },
+      { "state": "crush", "label": "暧昧", "min": 80, "max": 90 },
+      { "state": "lover", "label": "恋人", "min": 90, "max": 100 },
+      { "state": "partner", "label": "唯一", "min": 100, "max": 100 }
+    ],
+    "breakthrough_rule": "好感度≥80进入'暧昧'。要变成'恋人'必须触发告白事件。",
+    "multi_lover": { "enabled": true },
+    "chat": {},
+    "messages": {},
+    "pace": "",
+    "context_management": {},
+    "memory": {},
+    "time_config": {
+      "total_days": 365,
+      "start_day": 1,
+      "end_day": 365,
+      "phases": [
+        {
+          "id": "zi",
+          "name": "子时",
+          "hour": "23-01",
+          "mood": "夜深人静",
+          "skippable": true
+        },
+        {
+          "id": "chou",
+          "name": "丑时",
+          "hour": "01-03",
+          "mood": "万籁俱寂",
+          "skippable": true
+        },
+        {
+          "id": "yin",
+          "name": "寅时",
+          "hour": "03-05",
+          "mood": "黎明之前",
+          "skippable": true
+        },
+        {
+          "id": "mao",
+          "name": "卯时",
+          "hour": "05-07",
+          "mood": "日出晨起",
+          "skippable": false
+        },
+        {
+          "id": "chen",
+          "name": "辰时",
+          "hour": "07-09",
+          "mood": "朝食上学",
+          "skippable": false
+        },
+        {
+          "id": "si",
+          "name": "巳时",
+          "hour": "09-11",
+          "mood": "上午课程",
+          "skippable": false
+        },
+        {
+          "id": "wu",
+          "name": "午时",
+          "hour": "11-13",
+          "mood": "午休午餐",
+          "skippable": false
+        },
+        {
+          "id": "wei",
+          "name": "未时",
+          "hour": "13-15",
+          "mood": "下午课程",
+          "skippable": false
+        },
+        {
+          "id": "shen",
+          "name": "申时",
+          "hour": "15-17",
+          "mood": "放学社团",
+          "skippable": false
+        },
+        {
+          "id": "you",
+          "name": "酉时",
+          "hour": "17-19",
+          "mood": "黄昏归家",
+          "skippable": false
+        },
+        {
+          "id": "xu",
+          "name": "戌时",
+          "hour": "19-21",
+          "mood": "晚间自由",
+          "skippable": false
+        },
+        {
+          "id": "hai",
+          "name": "亥时",
+          "hour": "21-23",
+          "mood": "就寝之前",
+          "skippable": false
+        }
+      ]
+    }
+  },
+  "events": {
+    "_comment": "v2.9: scene_locations 是场景交互的数据源。进入模拟 → 工具箱 → 场景页签，每个地点显示日程引擎实时查到的在场角色，点击卡片进入全屏场景交互页。",
+    "scene_locations": [
+      {
+        "id": "library",
+        "name": "图书馆",
+        "desc": "老旧的红砖建筑，书架之间弥漫着旧书和灰尘的味道。",
+        "visibility_default": "public",
+        "events_hint": "安静的知识堡垒。适合偶遇、学习交流、借书时的擦肩而过。",
+        "available_phases": ["上午", "下午", "夜晚"],
+        "scene_moods": ["静谧", "专注", "旧书的味道"],
+        "narrative_profile": {
+          "event_affinity": {"relationship_beat": 0.8, "world_texture": 0.6},
+          "keywords": ["书架", "旧书", "阳光", "灰尘", "翻书声"]
+        }
+      },
+      {
+        "id": "rooftop",
+        "name": "天台",
+        "desc": "教学楼最高处。风很大，空旷的混凝土平台上只有几根晾衣绳。",
+        "visibility_default": "private",
+        "events_hint": "极少有人来的角落。适合独处、谈心、情绪爆发。",
+        "available_phases": ["中午", "傍晚", "夜晚"],
+        "scene_moods": ["自由", "空旷", "风吹"],
+        "narrative_profile": {
+          "event_affinity": {"tension_escalation": 0.9, "relationship_beat": 0.9},
+          "keywords": ["天空", "风", "远处", "安静", "夕阳"]
+        }
+      },
+      {
+        "id": "playground",
+        "name": "操场",
+        "desc": "一圈暗红色的跑道围着草坪。放学后永远有人在跑步或打球。",
+        "visibility_default": "public",
+        "events_hint": "青春活力的集中地。适合运动、观赛、散步聊天。",
+        "available_phases": ["上午", "下午", "傍晚"],
+        "scene_moods": ["活力", "汗水", "加油声"],
+        "narrative_profile": {
+          "event_affinity": {"ensemble_scene": 0.7, "world_texture": 0.5},
+          "keywords": ["跑道", "篮球", "汗水", "哨声", "散步"]
+        }
+      }
+    ],
+    "_comment2": "v2.9: scene_events 暂未激活，保留字段",
+    "scene_events": []
+  },
+  "plot": {
+    "acts": [
+      {
+        "id": "act_1",
+        "name": "第一幕",
+        "day_start": 1,
+        "day_end": 90,
+        "tension_start": 0,
+        "tension_end": 40
+      }
+    ]
+  },
+  "game_events": {
+    "event_pools": {
+      "daily": [],
+      "social": [],
+      "conflict": [],
+      "romantic": []
+    },
+    "beat_map": []
+  },
+  "data_layer": {
+    "player_profile": {
+      "name": "",
+      "gender": "",
+      "avatar_desc": "",
+      "personality": "",
+      "appearance": "",
+      "background_hint": ""
+    },
+    "stats": [
+      {
+        "id": "stat_1",
+        "name": "属性1",
+        "category": "talent",
+        "min": 0,
+        "max": 100,
+        "initial": 50
+      }
+    ],
+    "grades": [
+      {
+        "id": "grade_1",
+        "name": "科目1",
+        "min": 0,
+        "max": 150,
+        "initial": 100
+      }
+    ],
+    "grade_formulas": {
+      "grade_1": {
+        "base_weight": 0.7,
+        "variance": 10,
+        "stat_bonuses": {}
+      }
+    },
+    "natural_growth_rate": 0.02,
+    "ranking": {
+      "total_students": 750,
+      "events": [
+        {
+          "id": "exam_1",
+          "name": "考试",
+          "interval_days": 30,
+          "affects": [
+            "grade_1"
+          ]
+        }
+      ]
+    },
+    "memory": {
+      "stat_values": {},
+      "grade_values": {},
+      "grade_history": [],
+      "last_ranking_day": 0
+    },
+    "social_stats": [
+      {
+        "id": "knowledge",
+        "name": "知识",
+        "min": 0,
+        "max": 100,
+        "initial": 0
+      },
+      {
+        "id": "courage",
+        "name": "勇气",
+        "min": 0,
+        "max": 100,
+        "initial": 0
+      },
+      {
+        "id": "charm",
+        "name": "魅力",
+        "min": 0,
+        "max": 100,
+        "initial": 20
+      },
+      {
+        "id": "kindness",
+        "name": "体贴",
+        "min": 0,
+        "max": 100,
+        "initial": 10
+      },
+      {
+        "id": "proficiency",
+        "name": "灵巧",
+        "min": 0,
+        "max": 100,
+        "initial": 0
+      }
+    ],
+    "training_actions": [
+      {
+        "id": "study",
+        "name": "读书学习",
+        "stat_gains": {
+          "knowledge": 6
+        },
+        "phases": [
+          "放学后",
+          "夜晚"
+        ],
+        "location": "图书馆",
+        "icon": "📖",
+        "description": "安静地读书学习"
+      }
+    ],
+    "action_points": {
+      "points_per_phase": {
+        "放学后": 1,
+        "夜晚": 1
+      },
+      "action_types": [
+        "推进Coop",
+        "锻炼属性",
+        "打工",
+        "购物",
+        "自由行动",
+        "休息"
+      ]
+    },
+    "ranking_narrative": {
+      "review_period_days": 14,
+      "review_trigger_day": 8,
+      "release_reactions": true
+    },
+    "training": {
+      "actions": []
+    }
+  },
+  "dialogue": {},
+  "game_items": {},
+  "game_interaction": {},
+  "rhythm_config": {
+    "_comment": "v2.8 节奏调度配置",
+    "narrative_shape_weights": {
+      "dialogue_heavy": 0.3,
+      "montage": 0.2,
+      "reveal": 0.15,
+      "tension_escalation": 0.2,
+      "quiet": 0.1,
+      "action_reaction": 0.05
+    },
+    "info_spread_trigger": {
+      "min_depth": 3,
+      "sensitive_keywords": ["分数", "排名", "好感", "绯闻", "秘密"],
+      "high_affection_threshold": 60
+    }
+  },
+  "memory_config": {
+    "_comment": "v2.8 记忆系统配置",
+    "tags": ["考试", "暧昧", "吃醋", "共同经历", "第三方提及", "冲突", "日常", "核心记忆"],
+    "tag_match_boost": 2.0
+  },
+  "action_rules": {
+    "_comment": "玩家自定义行动的合法性校验规则。输出格式要求 v2.8：场景描写放（）里，对话单独成行，不要替玩家写意图。",
+    "narrative_format_hint": "场景放在（括号）里，每个角色对白占一行。可以写玩家动作的后果（如'你的脚步踩在落叶上沙沙响'），但不要写'你决定…'。篇幅由情境决定，宁短不凑。",
+    "boundary_checks": [
+      {
+        "_comment": "物理亲密行为需要好感度 >= min_affection",
+        "keywords": [
+          "抱",
+          "亲",
+          "吻",
+          "牵手",
+          "摸",
+          "碰",
+          "睡"
+        ],
+        "min_affection": 70,
+        "rejection_narrative": "{char_name}往后退了一步，眼神冷了下来。\"……不要这样。\"",
+        "affection_penalty": -5
+      },
+      {
+        "_comment": "表白相关需要好感度 >= min_affection",
+        "keywords": [
+          "表白",
+          "喜欢",
+          "爱",
+          "在一起",
+          "交往"
+        ],
+        "min_affection": 65,
+        "rejection_narrative": "{char_name}愣了一下，随即移开了视线。\"……现在说这个，太早了。\"",
+        "affection_penalty": -3
+      },
+      {
+        "_comment": "约请需要好感度 >= min_affection",
+        "keywords": [
+          "约会",
+          "单独",
+          "陪",
+          "出去"
+        ],
+        "min_affection": 55,
+        "rejection_narrative": "{char_name}犹豫了一下，摇了摇头。\"……改天吧。\"",
+        "affection_penalty": -1
+      }
+    ],
+    "topic_taboo_penalty": -3,
+    "topic_taboo_rejection": "{char_name}的表情僵了一下，没有接话。"
+  },
+  "fallback_narratives": {
+    "_comment": "AI生成失败时的兜底叙事模板，v2.8格式：场景描写在（）里，对话单独成行。支持 {char_name}/{location}/{weather}/{phase}/{season} 占位符",
+    "_pool_names": "daily/sweet_minor/sweet_major/plot/boundary/reversal/custom_action/scene_event/chat_reply",
+    "daily": [
+      "（{weather}的{phase}，{location}里一切如常。）\n\n{char_name}在做自己的事。",
+      "（{location}里的{phase}。）\n\n{char_name}从你身边经过，{weather}的风吹起了她的发梢。"
+    ],
+    "sweet_minor": [
+      "（{weather}的光线落下来。）\n\n{char_name}朝你笑了一下。\n\n那笑容很短。",
+      "（{location}的{phase}。）\n\n{char_name}递给你一瓶水。\n\n\"顺手拿的。\"\n\n但你知道不是。"
+    ],
+    "plot": [
+      "（{weather}的{phase}，{location}里气氛不太寻常。）\n\n{char_name}的表情比平时严肃了几分。",
+      "（{location}，窗边。）\n\n{char_name}站在那里，像是在等什么人。\n\n{weather}的光线在地板上拉出长长的影子。"
+    ],
+    "custom_action": [
+      "（{location}里，{weather}的光线照进来。）\n\n{char_name}看了你一眼，没说什么。"
+    ],
+    "scene_event": [
+      "（{location}。）\n\n{char_name}在做自己的事。\n\n{weather}的光线透过窗户洒进来。"
+    ],
+    "chat_reply": [
+      "\"嗯。\"\n\n{char_name}简单地应了一声，低头看了看手机。"
+    ]
+  }
+}
