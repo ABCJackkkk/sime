@@ -1,4 +1,4 @@
-﻿import 'dart:typed_data';
+import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';

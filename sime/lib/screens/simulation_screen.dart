@@ -65,15 +65,18 @@ class SimulationScreen extends StatelessWidget {
 
   Widget _buildWorldView(AppProvider app, BuildContext context) {
     final simBg = app.simBgImageBytes;
-    return Container(
-      key: const ValueKey('world'),
-      decoration: simBg != null
-          ? BoxDecoration(image: DecorationImage(image: MemoryImage(simBg), fit: BoxFit.cover))
-          : BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [app.simBgStartColor, app.simBgEndColor])),
-      child: Column(children: [
-        _buildWorldTopBar(app, context),
-        const Expanded(child: WorldScreen()),
-      ]),
+    return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.transparent,
+      child: Container(
+        key: const ValueKey('world'),
+        decoration: simBg != null
+            ? BoxDecoration(image: DecorationImage(image: MemoryImage(simBg), fit: BoxFit.cover))
+            : BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [app.simBgStartColor, app.simBgEndColor])),
+        child: Column(children: [
+          _buildWorldTopBar(app, context),
+          const Expanded(child: WorldScreen()),
+        ]),
+      ),
     );
   }
 

@@ -18,8 +18,6 @@ class WorldScreen extends StatefulWidget {
 
 class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
-  final TextEditingController _customActionCtrl = TextEditingController();
-  bool _showCustomAction = false;
   bool _showHistory = false;
   // 记录已播放过打字动画的最新段内容，避免重建后重播
   String _lastAnimatedSegment = '';
@@ -50,7 +48,6 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
   @override
   void dispose() {
     _scrollController.dispose();
-    _customActionCtrl.dispose();
     super.dispose();
   }
 
@@ -67,17 +64,13 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
         }
         return SafeArea(
           top: false,
-          child: AnimatedPadding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            duration: const Duration(milliseconds: 200),
-            child: Column(children: [
-              Expanded(child: _showHistory ? _buildHistoryList(app) : _buildNarrativeArea(app)),
-              if (app.pendingChoices.isNotEmpty)
-                ChoiceSlidePanel(child: _buildChoicePanel(app)),
-              if (app.pendingInvitation.isNotEmpty) _buildInvitationBanner(app),
-              _buildActionBar(app),
-            ]),
-          ),
+          child: Column(children: [
+            Expanded(child: _showHistory ? _buildHistoryList(app) : _buildNarrativeArea(app)),
+            if (app.pendingChoices.isNotEmpty)
+              ChoiceSlidePanel(child: _buildChoicePanel(app)),
+            if (app.pendingInvitation.isNotEmpty) _buildInvitationBanner(app),
+            _buildActionBar(app),
+          ]),
         );
       },
     );
@@ -281,12 +274,18 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
     final locId = inv.values.first;
     app.getCharacter(charId);
     final name = app.getCharDisplayName(charId);
+    final charImg = app.getCharImageBytes(charId);
     final loc = (app.script?.events?.sceneLocations ?? []).firstWhere((l) => l.id == locId, orElse: () => SceneLocation(name: '某个地方'));
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
       decoration: BoxDecoration(color: AppColors.accent.withAlpha(12), border: const Border(top: BorderSide(color: AppColors.accent, width: 0.5))),
       child: Row(children: [
-        Container(width: 36, height: 36, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])), child: Center(child: Text(name.isNotEmpty ? name.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 16, fontWeight: FontWeight.w700)))),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: charImg != null
+              ? Image.memory(charImg, width: 36, height: 36, fit: BoxFit.cover)
+              : Container(width: 36, height: 36, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])), child: Center(child: Text(name.isNotEmpty ? name.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 16, fontWeight: FontWeight.w700)))),
+        ),
         const SizedBox(width: 10),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('$name 邀请你去${loc.name}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
@@ -350,22 +349,6 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
             ),
           ),
         ])),
-        // 自定义行动输入
-        if (_showCustomAction)
-          Padding(padding: const EdgeInsets.only(bottom: 6), child: Row(children: [
-            Expanded(child: CupertinoTextField(
-              controller: _customActionCtrl, placeholder: '输入你想做的事…', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
-              style: TextStyle(color: AppColors.textPrimary(context), fontSize: 14),
-            )),
-            const SizedBox(width: 8),
-            CupertinoButton(
-              onPressed: app.isLoading ? null : () { final t = _customActionCtrl.text.trim(); if (t.isEmpty) return; _customActionCtrl.clear(); app.customAction(t).then((_) => _scrollToBottom()); },
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9), minSize: 0, borderRadius: BorderRadius.circular(10), color: const Color(0xFF32D74B),
-              child: const Text('执行', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: CupertinoColors.white)),
-            ),
-          ])),
         // 行动栏
         Row(children: [
           Expanded(flex: 3, child: GestureDetector(
@@ -405,10 +388,10 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
           )),
           const SizedBox(width: 4),
           CupertinoButton(
-            onPressed: () => setState(() { _showCustomAction = !_showCustomAction; _customActionCtrl.clear(); }),
+            onPressed: app.isLoading ? null : () => _showCustomActionDialog(context, app),
             padding: const EdgeInsets.all(6), minSize: 0, borderRadius: BorderRadius.circular(8),
-            child: Container(width: 30, height: 30, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: _showCustomAction ? const Color(0xFF32D74B).withAlpha(25) : const Color(0x08FFFFFF), border: Border.all(color: _showCustomAction ? const Color(0xFF32D74B).withAlpha(60) : AppColors.border, width: 0.5)),
-              child: Icon(CupertinoIcons.text_cursor, size: 15, color: _showCustomAction ? const Color(0xFF32D74B) : AppColors.textTertiary),
+            child: Container(width: 30, height: 30, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0x08FFFFFF), border: Border.all(color: AppColors.border, width: 0.5)),
+              child: const Icon(CupertinoIcons.text_cursor, size: 15, color: AppColors.textTertiary),
             ),
           ),
         ]),
@@ -419,10 +402,16 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
               final id = c.basic.id; final n = app.getCharDisplayName(id);
               final loc = we?.getCharacterLocations()[id] ?? '';
               final locName = loc.isNotEmpty ? (script?.world.locations.firstWhere((l) => l['id'] == loc, orElse: () => {'name': ''})['name'] ?? '') : '';
+              final charImg = app.getCharImageBytes(id);
               return GestureDetector(
                 onTap: () { app.markCharRead(id); Navigator.of(context).push(CupertinoPageRoute(builder: (_) => ChatScreen(characterId: id))); },
                 child: Container(margin: const EdgeInsets.only(right: 8), padding: const EdgeInsets.symmetric(horizontal: 8), decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0x08FFFFFF)), child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Container(width: 22, height: 22, decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])), child: Center(child: Text(n.isNotEmpty ? n.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 11, fontWeight: FontWeight.w700)))),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: charImg != null
+                        ? Image.memory(charImg, width: 22, height: 22, fit: BoxFit.cover)
+                        : Container(width: 22, height: 22, decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])), child: Center(child: Text(n.isNotEmpty ? n.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 11, fontWeight: FontWeight.w700)))),
+                  ),
                   const SizedBox(width: 4),
                   Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(n, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 10, fontWeight: FontWeight.w500)),
@@ -437,6 +426,49 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
     );
   }
 
+  void _showCustomActionDialog(BuildContext context, AppProvider app) {
+    final ctrl = TextEditingController();
+    showCupertinoModalPopup(
+      context: context,
+      builder: (ctx) => CupertinoPageScaffold(
+        backgroundColor: CupertinoColors.transparent,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Padding(padding: const EdgeInsets.all(16), child: Row(children: [
+                const Text('自定义行动', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)),
+                const Spacer(),
+                CupertinoButton(padding: EdgeInsets.zero, minSize: 0, onPressed: () => Navigator.pop(ctx), child: const Text('关闭', style: TextStyle(color: AppColors.accent))),
+              ])),
+              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: CupertinoTextField(
+                controller: ctrl, placeholder: '输入你想做的事…', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14), autofocus: true,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                decoration: BoxDecoration(color: const Color(0x0DFFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
+                style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15),
+                maxLines: 4, minLines: 1,
+              )),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: CupertinoButton(
+                    onPressed: () { final t = ctrl.text.trim(); if (t.isEmpty) return; Navigator.pop(ctx); app.customAction(t).then((_) => _scrollToBottom()); },
+                    padding: const EdgeInsets.symmetric(vertical: 12), minSize: 0, borderRadius: BorderRadius.circular(10), color: const Color(0xFF32D74B),
+                    child: const Text('执行', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: CupertinoColors.white)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showLocationPicker(BuildContext context, AppProvider app) {
     final locations = app.script?.world.locations ?? [];
     showCupertinoModalPopup(context: context, builder: (ctx) => StatefulBuilder(
@@ -447,10 +479,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
       bool loadingPreview = false;
       final actionCtrl = TextEditingController();
 
-      return AnimatedPadding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-      duration: const Duration(milliseconds: 200),
-      child: Container(
+      return Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.7),
       decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -532,7 +561,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
             ),
           ])),
         ],
-      ])));
+      ]));
     }));
   }
 
@@ -633,10 +662,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
     final controller = TextEditingController();
     String selectedChar = '';
     showCupertinoModalPopup(context: context, builder: (ctx) => StatefulBuilder(
-      builder: (ctx, setModalState) => AnimatedPadding(
-      padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-      duration: const Duration(milliseconds: 200),
-      child: Container(
+      builder: (ctx, setModalState) => Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.6),
       decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -682,7 +708,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
           const SizedBox(height: 8),
         ],
       ]),
-    ))));
+    )));
   }
 
 }

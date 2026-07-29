@@ -85,12 +85,60 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
   Future<void> _onFreeAction() async {
     final text = _inputCtrl.text.trim();
     if (text.isEmpty || _isLoading) return;
+    _inputCtrl.clear();
+    await _submitFreeAction(text);
+  }
+
+  void _showFreeInputDialog(BuildContext context) {
+    final ctrl = TextEditingController();
+    showCupertinoModalPopup(
+      context: context,
+      builder: (ctx) => CupertinoPageScaffold(
+        backgroundColor: CupertinoColors.transparent,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Padding(padding: const EdgeInsets.all(16), child: Row(children: [
+                const Text('自己写', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)),
+                const Spacer(),
+                CupertinoButton(padding: EdgeInsets.zero, minSize: 0, onPressed: () => Navigator.pop(ctx), child: const Text('关闭', style: TextStyle(color: AppColors.accent))),
+              ])),
+              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: CupertinoTextField(
+                controller: ctrl, placeholder: '写你想说的话或行动...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14), autofocus: true,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                decoration: BoxDecoration(color: const Color(0x0DFFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
+                style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15),
+                maxLines: 5, minLines: 1,
+                textInputAction: TextInputAction.send,
+                onSubmitted: (v) { final t = v.trim(); if (t.isEmpty) return; Navigator.pop(ctx); _submitFreeAction(t); },
+              )),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: CupertinoButton(
+                    onPressed: () { final t = ctrl.text.trim(); if (t.isEmpty) return; Navigator.pop(ctx); _submitFreeAction(t); },
+                    padding: const EdgeInsets.symmetric(vertical: 12), minSize: 0, borderRadius: BorderRadius.circular(10), color: AppColors.accent,
+                    child: const Text('执行', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: CupertinoColors.white)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submitFreeAction(String text) async {
     setState(() {
       _narrativeEntries.add(_NarrativeEntry(text, true));
       _isLoading = true;
       _choices = [];
-      _showFreeInput = false;
-      _inputCtrl.clear();
     });
     _scrollToBottom();
 
@@ -124,23 +172,23 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppProvider>(
-      builder: (context, app, _) {
-        final loc = widget.location;
-        final visibilityHint = loc.visibilityDefault == 'private' ? '私密' : '公共';
-        final locationIcon = _locationIcon(loc.id, loc.visibilityDefault);
+    return CupertinoPageScaffold(
+      backgroundColor: CupertinoColors.transparent,
+      resizeToAvoidBottomInset: false,
+      child: Consumer<AppProvider>(
+        builder: (context, app, _) {
+          final loc = widget.location;
+          final visibilityHint = loc.visibilityDefault == 'private' ? '私密' : '公共';
+          final locationIcon = _locationIcon(loc.id, loc.visibilityDefault);
 
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter, end: Alignment.bottomCenter,
-              colors: [app.simBgStartColor, app.simBgEndColor],
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                colors: [app.simBgStartColor, app.simBgEndColor],
+              ),
             ),
-          ),
-          child: SafeArea(
-            child: AnimatedPadding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-              duration: const Duration(milliseconds: 200),
+            child: SafeArea(
               child: Column(children: [
                 _buildTopBar(loc.name, visibilityHint, locationIcon, app),
                 Expanded(
@@ -151,9 +199,9 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
                 _buildActionBar(),
               ]),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -290,7 +338,7 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
         if (_choices.isNotEmpty && !_showFreeInput) ...[
           const SizedBox(height: 8),
           GestureDetector(
-            onTap: () => setState(() => _showFreeInput = true),
+            onTap: () => _showFreeInputDialog(context),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -301,7 +349,7 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
             ),
           ),
         ],
-        if (_showFreeInput || _choices.isEmpty) _buildFreeInput(),
+        if (_choices.isEmpty) _buildFreeInput(),
       ]),
     );
   }

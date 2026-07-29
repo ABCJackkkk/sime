@@ -63,7 +63,9 @@ extension GlassBox on Widget {
 }
 
 class AppColors {
-  static Color background = const Color(0xFF0A0A0C);
+  static const Color background = Color(0xFF0A0A0C);
+  static const Color card = Color(0xFF0A0A0C);
+  static const Color cardElevated = Color(0xFF0A0A0C);
   static const surface = Color(0x0AFFFFFF);
   static const surfaceElevated = Color(0x0FFFFFFF);
   static const accent = Color(0xFF7B8CDE);

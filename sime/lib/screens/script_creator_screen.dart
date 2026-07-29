@@ -1,9 +1,10 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:sime/providers/app_provider.dart';
 import 'package:sime/services/script_loader.dart';
 import 'package:sime/models/script.dart';
+import 'package:sime/screens/settings_screen.dart';
 
 /// 剧本创作器：分阶段生成 + 每步预览/重生成 + 角色编辑 + 试聊
 class ScriptCreatorScreen extends StatefulWidget {
@@ -52,6 +53,27 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
     return parts.join('\n\n');
   }
 
+  /// 检查 API Key 是否已配置，未配置则弹窗提示并跳转设置页
+  Future<bool> _ensureApiKey() async {
+    final app = context.read<AppProvider>();
+    if (app.deepSeekClient != null) return true;
+    final go = await showCupertinoDialog<bool>(
+      context: context,
+      builder: (_) => CupertinoAlertDialog(
+        title: const Text('未配置 API Key'),
+        content: const Text('创作剧本需要先配置 DeepSeek API Key。\n是否前往设置页配置？'),
+        actions: [
+          CupertinoDialogAction(child: const Text('取消'), onPressed: () => Navigator.pop(context, false)),
+          CupertinoDialogAction(isDefaultAction: true, child: const Text('去设置'), onPressed: () => Navigator.pop(context, true)),
+        ],
+      ),
+    );
+    if (go == true && mounted) {
+      Navigator.of(context).push(CupertinoPageRoute(builder: (_) => const SettingsScreen()));
+    }
+    return false;
+  }
+
   // ─── 阶段1：生成世界观 ───
   Future<void> _generateWorld() async {
     if (_buildDescription().isEmpty) {
@@ -65,6 +87,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
       );
       return;
     }
+    if (!await _ensureApiKey()) return;
     setState(() { _phase = _Phase.genWorld; _error = null; });
     try {
       final app = context.read<AppProvider>();
@@ -82,6 +105,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
 
   // ─── 阶段2：生成角色 ───
   Future<void> _generateCharacters() async {
+    if (!await _ensureApiKey()) return;
     setState(() { _phase = _Phase.genChars; _error = null; });
     try {
       final app = context.read<AppProvider>();
@@ -98,6 +122,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
 
   // ─── 阶段3：生成事件 ───
   Future<void> _generateEvents() async {
+    if (!await _ensureApiKey()) return;
     setState(() { _phase = _Phase.genEvents; _error = null; });
     try {
       final app = context.read<AppProvider>();
@@ -578,6 +603,14 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
     final scrollCtrl = ScrollController();
     StateSetter? dialogSetState;
     final app = context.read<AppProvider>();
+    if (app.deepSeekClient == null) {
+      showCupertinoDialog(context: context, builder: (_) => CupertinoAlertDialog(
+        title: const Text('未配置 API Key'),
+        content: const Text('试聊需要先配置 DeepSeek API Key。'),
+        actions: [CupertinoDialogAction(child: const Text('好'), onPressed: () => Navigator.pop(context))],
+      ));
+      return;
+    }
     final playerName = app.userSettings.name.isEmpty ? '主角' : app.userSettings.name;
     final worldSummary = _meta['summary']?.toString() ?? '';
 
