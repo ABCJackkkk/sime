@@ -46,7 +46,7 @@ class SimProfileScreen extends StatelessWidget {
               onTap: () => _editPlayerCard(context, app),
               child: Container(
                 width: 60, height: 60,
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)]), boxShadow: [BoxShadow(color: AppColors.accent.withAlpha(40), blurRadius: 16)]),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF000000)]), boxShadow: [BoxShadow(color: AppColors.accent.withAlpha(40), blurRadius: 16)]),
                 child: Center(child: Text(app.userName.isNotEmpty ? app.userName.characters.first : '我', style: const TextStyle(color: CupertinoColors.white, fontSize: 26, fontWeight: FontWeight.w700))),
               ),
             ),
@@ -54,7 +54,7 @@ class SimProfileScreen extends StatelessWidget {
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  Text(app.userName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimaryDark)),
+                  Text(app.userName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => _editPlayerCard(context, app),
@@ -72,7 +72,7 @@ class SimProfileScreen extends StatelessWidget {
           ]),
           if (app.userBio.isNotEmpty) ...[
             const SizedBox(height: 10),
-            Container(width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(10)), child: Text(app.userBio, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5))),
+            Container(width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0x05000000), borderRadius: BorderRadius.circular(10)), child: Text(app.userBio, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.5))),
           ],
           if (app.userAppearance.isNotEmpty || app.userPersonality.isNotEmpty) ...[
             const SizedBox(height: 10),
@@ -89,7 +89,7 @@ class SimProfileScreen extends StatelessWidget {
   Widget _infoCard(String label, String value) {
     return Container(
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: const Color(0x05000000), borderRadius: BorderRadius.circular(10)),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textTertiary)),
         const SizedBox(height: 4),
@@ -117,7 +117,7 @@ class SimProfileScreen extends StatelessWidget {
             Row(children: [
               CupertinoButton(child: const Text('取消', style: TextStyle(color: AppColors.textTertiary)), onPressed: () => Navigator.pop(context)),
               const Spacer(),
-              const Text('编辑角色卡', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+              const Text('编辑角色卡', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
               const Spacer(),
               CupertinoButton(child: const Text('保存', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w600)), onPressed: () {
                 app.setUserName(nameCtrl.text.trim());
@@ -167,8 +167,8 @@ class SimProfileScreen extends StatelessWidget {
         placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14),
         maxLines: maxLines,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
-        style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 14),
+        decoration: BoxDecoration(color: const Color(0x05000000), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
       ),
     ]);
   }
@@ -197,7 +197,7 @@ class SimProfileScreen extends StatelessWidget {
         Row(children: [
           Container(width: 28, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: AppColors.accent.withAlpha(25)), child: const Icon(CupertinoIcons.chart_bar_alt_fill, size: 14, color: AppColors.accent)),
           const SizedBox(width: 10),
-          const Text('属性', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+          const Text('属性', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         ]),
         const SizedBox(height: 14),
         ...dl.stats.map((s) => _buildStatRow(app.playerStats[s.id] ?? s.initial, s.name, s.max)),
@@ -213,7 +213,7 @@ class SimProfileScreen extends StatelessWidget {
         Row(children: [
           Text(name, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
           const Spacer(),
-          Text(value.toStringAsFixed(0), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+          Text(value.toStringAsFixed(0), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         ]),
         const SizedBox(height: 4),
         Container(
@@ -222,7 +222,7 @@ class SimProfileScreen extends StatelessWidget {
           child: FractionallySizedBox(
             alignment: Alignment.centerLeft,
             widthFactor: pct,
-            child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(2), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)]))),
+            child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(2), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF000000)]))),
           ),
         ),
       ]),
@@ -236,7 +236,7 @@ class SimProfileScreen extends StatelessWidget {
         Row(children: [
           Container(width: 28, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: AppColors.warning.withAlpha(25)), child: const Icon(CupertinoIcons.book_fill, size: 14, color: AppColors.warning)),
           const SizedBox(width: 10),
-          const Text('成绩', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+          const Text('成绩', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         ]),
         const SizedBox(height: 14),
         ...dl.grades.map((g) {
@@ -248,7 +248,7 @@ class SimProfileScreen extends StatelessWidget {
               Row(children: [
                 Text(g.name, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 const Spacer(),
-                Text(val.toStringAsFixed(0), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+                Text(val.toStringAsFixed(0), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
               ]),
               const SizedBox(height: 4),
               Container(
@@ -276,7 +276,7 @@ class SimProfileScreen extends StatelessWidget {
         Row(children: [
           Container(width: 28, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: AppColors.success.withAlpha(25)), child: const Icon(CupertinoIcons.star_fill, size: 14, color: AppColors.success)),
           const SizedBox(width: 10),
-          const Text('排名', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+          const Text('排名', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           const Spacer(),
           Text('共${dl.ranking.totalStudents}人', style: const TextStyle(fontSize: 11, color: AppColors.textTertiary)),
         ]),
@@ -305,7 +305,7 @@ class SimProfileScreen extends StatelessWidget {
       child: Row(children: [
         Container(width: 22, height: 22, decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: AppColors.accent.withAlpha(30)), child: Center(child: Text(latest.playerRank.toString(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: AppColors.accent)))),
         const SizedBox(width: 10),
-        const Text('你', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+        const Text('你', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         const Spacer(),
         Text(latest.playerTotalScore.toStringAsFixed(0), style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
         const SizedBox(width: 8),
@@ -371,7 +371,7 @@ class SimProfileScreen extends StatelessWidget {
         Row(children: [
           Container(width: 28, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: AppColors.error.withAlpha(25)), child: const Icon(CupertinoIcons.heart_fill, size: 14, color: AppColors.error)),
           const SizedBox(width: 10),
-          const Text('好感度', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+          const Text('好感度', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         ]),
         const SizedBox(height: 14),
         if (chars.isEmpty)
@@ -393,10 +393,10 @@ class SimProfileScreen extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(children: [
         Row(children: [
-          Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])), child: Center(child: Text(name.isNotEmpty ? name.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 14, fontWeight: FontWeight.w600)))),
+          Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF000000)])), child: Center(child: Text(name.isNotEmpty ? name.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 14, fontWeight: FontWeight.w600)))),
           const SizedBox(width: 10),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(name, style: const TextStyle(fontSize: 14, color: AppColors.textPrimaryDark)),
+            Text(name, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
             if (stateLabel.isNotEmpty) Text(stateLabel, style: const TextStyle(fontSize: 10, color: AppColors.textTertiary)),
           ])),
           Text(affection.toStringAsFixed(2), style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: color)),
@@ -418,7 +418,7 @@ class SimProfileScreen extends StatelessWidget {
   Color _affectionColor(double val) {
     if (val < 20) return AppColors.error;
     if (val < 40) return const Color(0xFFFF9800);
-    if (val < 60) return const Color(0xFF64D2FF);
+    if (val < 60) return const Color(0xFF000000);
     if (val < 80) return AppColors.accent;
     return const Color(0xFF9C27B0);
   }

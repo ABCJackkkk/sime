@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
@@ -59,7 +59,7 @@ class _SceneScreenState extends State<SceneScreen> {
       child: Row(children: [
         const Icon(CupertinoIcons.location, size: 16, color: AppColors.accent),
         const SizedBox(width: 8),
-        const Text('场景', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+        const Text('场景', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         const Spacer(),
         Text('第${app.currentDay}天 ${app.currentPhase}', style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
       ]),
@@ -70,7 +70,7 @@ class _SceneScreenState extends State<SceneScreen> {
     final chars = app.worldEngine?.getCharactersAtLocation(loc.id) ?? [];
     final currentPhase = app.currentPhase;
     final isAvailable = loc.availablePhases.isEmpty || loc.availablePhases.contains(currentPhase);
-    final cardColor = const Color(0x08FFFFFF);
+    final cardColor = const Color(0xFFFFFFFF);
     final borderC = isAvailable ? AppColors.border : AppColors.border.withAlpha(80);
 
     return GestureDetector(
@@ -97,7 +97,7 @@ class _SceneScreenState extends State<SceneScreen> {
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Expanded(child: Text(loc.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: isAvailable ? AppColors.textPrimaryDark : AppColors.textTertiary), overflow: TextOverflow.ellipsis, maxLines: 1)),
+              Expanded(child: Text(loc.name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: isAvailable ? AppColors.textPrimary : AppColors.textTertiary), overflow: TextOverflow.ellipsis, maxLines: 1)),
               if (!isAvailable) ...[
                 const SizedBox(width: 6),
                 Text('（${currentPhase}不可达）', style: const TextStyle(fontSize: 10, color: AppColors.textTertiary)),
@@ -148,7 +148,7 @@ class _SceneScreenState extends State<SceneScreen> {
           child: Row(children: [
             Container(
               width: 36, height: 36,
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF000000)])),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: charImg != null
@@ -157,7 +157,7 @@ class _SceneScreenState extends State<SceneScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            Expanded(child: Text(name, style: const TextStyle(fontSize: 14, color: AppColors.textPrimaryDark))),
+            Expanded(child: Text(name, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary))),
             Text('♥ ${affection.toStringAsFixed(1)}', style: TextStyle(fontSize: 12, color: _affectionColor(affection))),
             const SizedBox(width: 8),
             const Icon(CupertinoIcons.chevron_right, size: 14, color: AppColors.textTertiary),
@@ -178,7 +178,7 @@ class _SceneScreenState extends State<SceneScreen> {
   Color _affectionColor(double val) {
     if (val < 20) return AppColors.error;
     if (val < 40) return const Color(0xFFFF9800);
-    if (val < 60) return const Color(0xFF64D2FF);
+    if (val < 60) return const Color(0xFF000000);
     if (val < 80) return AppColors.accent;
     return const Color(0xFF9C27B0);
   }

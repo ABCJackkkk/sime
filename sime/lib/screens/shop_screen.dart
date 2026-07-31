@@ -78,7 +78,7 @@ class ShopScreen extends StatelessWidget {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimaryDark,
+              color: AppColors.textPrimary,
             ),
           ),
           const Spacer(),
@@ -108,7 +108,7 @@ class ShopScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0x08FFFFFF),
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: owned ? AppColors.success.withAlpha(40) : AppColors.border,
@@ -145,7 +145,7 @@ class ShopScreen extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimaryDark,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 4),

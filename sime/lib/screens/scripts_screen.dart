@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'dart:io' show File;
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
@@ -77,7 +77,7 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 12),
-                  Text('剧本管理', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context), letterSpacing: -0.5)),
+                  Text('剧本管理', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.5)),
                   const SizedBox(height: 6),
                   Text('加载 .json 格式剧本包', style: TextStyle(fontSize: 14, color: AppColors.textSecondary.withAlpha(200))),
                   const SizedBox(height: 28),
@@ -103,7 +103,7 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
         Row(children: [
           Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.warning.withAlpha(25)), child: const Icon(CupertinoIcons.person_fill, size: 16, color: AppColors.warning)),
           const SizedBox(width: 10),
-          Text('主角设定', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))),
+          Text('主角设定', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           const Spacer(),
           Text('会写入模拟上下文', style: TextStyle(fontSize: 11, color: AppColors.textTertiary.withAlpha(180))),
         ]),
@@ -113,7 +113,7 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
         Row(children: [
           const SizedBox(width: 56, child: Text('性别', style: TextStyle(fontSize: 14, color: AppColors.textSecondary))),
           const SizedBox(width: 10),
-          Expanded(child: CupertinoSegmentedControl<String>(selectedColor: AppColors.accent, unselectedColor: const Color(0x0AFFFFFF), borderColor: AppColors.border, pressedColor: AppColors.accent.withAlpha(60), groupValue: app.userGender, onValueChanged: (v) => app.setUserGender(v), children: const {'男': Text('男', style: TextStyle(fontSize: 13)), '女': Text('女', style: TextStyle(fontSize: 13))})),
+          Expanded(child: CupertinoSegmentedControl<String>(selectedColor: AppColors.accent, unselectedColor: const Color(0x05000000), borderColor: AppColors.border, pressedColor: AppColors.accent.withAlpha(60), groupValue: app.userGender, onValueChanged: (v) => app.setUserGender(v), children: const {'男': Text('男', style: TextStyle(fontSize: 13)), '女': Text('女', style: TextStyle(fontSize: 13))})),
         ]),
         const SizedBox(height: 10),
         _fieldRow('身高', _heightCtrl, '如: 175cm', (v) => app.setUserHeight(v)),
@@ -127,7 +127,7 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
     return Row(children: [
       SizedBox(width: 56, child: Text(label, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary))),
       const SizedBox(width: 10),
-      Expanded(child: SizedBox(height: 40, child: CupertinoTextField(controller: ctrl, placeholder: hint, placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13), padding: const EdgeInsets.symmetric(horizontal: 12), decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary(context), fontSize: 14), onChanged: onChange))),
+      Expanded(child: SizedBox(height: 40, child: CupertinoTextField(controller: ctrl, placeholder: hint, placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13), padding: const EdgeInsets.symmetric(horizontal: 12), decoration: BoxDecoration(color: const Color(0x05000000), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary, fontSize: 14), onChanged: onChange))),
     ]);
   }
 
@@ -137,11 +137,11 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
         Row(children: [
           Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: app.hasScript ? AppColors.success.withAlpha(30) : AppColors.textTertiary.withAlpha(30)), child: Icon(app.hasScript ? CupertinoIcons.book_fill : CupertinoIcons.book, size: 16, color: app.hasScript ? AppColors.success : AppColors.textTertiary)),
           const SizedBox(width: 10),
-          Text('当前剧本', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))),
+          Text('当前剧本', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         ]),
         const SizedBox(height: 16),
         if (app.hasScript && app.script != null) ...[
-          Text(app.script!.meta.name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context))),
+          Text(app.script!.meta.name, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
           const SizedBox(height: 6),
           Text('${app.script!.meta.genre} · ${app.script!.meta.author}', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
           const SizedBox(height: 4),
@@ -158,7 +158,7 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
         Row(children: [
           Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.accent.withAlpha(30)), child: const Icon(CupertinoIcons.square_arrow_down_fill, size: 16, color: AppColors.accent)),
           const SizedBox(width: 10),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('导入剧本', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))), const Text('从本地文件加载 .json 剧本', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('导入剧本', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)), const Text('从本地文件加载 .json 剧本', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
         ]),
         const SizedBox(height: 16),
         CupertinoButton(
@@ -182,7 +182,7 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
         Row(children: [
           Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.accent.withAlpha(30)), child: const Icon(CupertinoIcons.square_stack_3d_up_fill, size: 16, color: AppColors.accent)),
           const SizedBox(width: 10),
-          Expanded(child: Text('剧本库', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)))),
+          Expanded(child: Text('剧本库', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
           CupertinoButton(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             onPressed: () => Navigator.of(context).push(CupertinoPageRoute(builder: (_) => const ScriptCreatorScreen())),
@@ -233,13 +233,13 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
   Widget _buildImportedScriptCard({required AppProvider app, required int index, required String name, required bool isActive, required bool isLoading}) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: isActive ? AppColors.accent.withAlpha(15) : const Color(0x08FFFFFF), border: Border.all(color: isActive ? AppColors.accent.withAlpha(60) : AppColors.border, width: 0.5)),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: isActive ? AppColors.accent.withAlpha(15) : const Color(0x05000000), border: Border.all(color: isActive ? AppColors.accent.withAlpha(60) : AppColors.border, width: 0.5)),
       child: Row(children: [
         Container(width: 36, height: 36, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.accent.withAlpha(25)), child: const Icon(CupertinoIcons.doc_text, size: 18, color: AppColors.accent)),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Expanded(child: Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)), overflow: TextOverflow.ellipsis, maxLines: 1)),
+            Expanded(child: Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis, maxLines: 1)),
             const SizedBox(width: 4),
             if (isActive) Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: AppColors.success.withAlpha(25)), child: const Text('已加载', style: TextStyle(fontSize: 10, color: AppColors.success, fontWeight: FontWeight.w600))),
           ]),
@@ -276,13 +276,13 @@ class _ScriptsScreenState extends State<ScriptsScreen> {
       onTap: isLoading ? null : onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: isActive ? AppColors.accent.withAlpha(15) : const Color(0x08FFFFFF), border: Border.all(color: isActive ? AppColors.accent.withAlpha(60) : AppColors.border, width: 0.5)),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: isActive ? AppColors.accent.withAlpha(15) : const Color(0x05000000), border: Border.all(color: isActive ? AppColors.accent.withAlpha(60) : AppColors.border, width: 0.5)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Container(width: 44, height: 44, decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.accent, Color(0xFF64D2FF)])), child: const Icon(CupertinoIcons.heart, size: 22, color: CupertinoColors.white)),
+            Container(width: 44, height: 44, decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [AppColors.accent, Color(0xFF000000)])), child: const Icon(CupertinoIcons.heart, size: 22, color: CupertinoColors.white)),
             const SizedBox(width: 14),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(children: [Expanded(child: Text(name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)), overflow: TextOverflow.ellipsis, maxLines: 1)), const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: AppColors.accent.withAlpha(30)), child: Text(genre, style: const TextStyle(fontSize: 10, color: AppColors.accent, fontWeight: FontWeight.w600)))]),
+              Row(children: [Expanded(child: Text(name, style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis, maxLines: 1)), const SizedBox(width: 8), Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: AppColors.accent.withAlpha(30)), child: Text(genre, style: const TextStyle(fontSize: 10, color: AppColors.accent, fontWeight: FontWeight.w600)))]),
               const SizedBox(height: 4),
               Text('$characters 个可攻略角色 · $days 天剧情 · $endings 个结局', style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
             ])),

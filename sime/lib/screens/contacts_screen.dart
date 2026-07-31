@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -111,7 +111,7 @@ class ContactsScreen extends StatelessWidget {
                                         children: [
                                           Expanded(
                                             child: Text(displayName,
-                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textPrimaryDark),
+                                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textPrimary),
                                               overflow: TextOverflow.ellipsis, maxLines: 1,
                                             ),
                                           ),
@@ -124,7 +124,7 @@ class ContactsScreen extends StatelessWidget {
                                       const SizedBox(height: 4),
                                       Text(
                                         lastMsg.isNotEmpty ? lastMsg : char.charIntro,
-                                        style: TextStyle(fontSize: 13, color: hasUnread ? AppColors.textPrimaryDark.withAlpha(200) : AppColors.textTertiary, height: 1.3),
+                                        style: TextStyle(fontSize: 13, color: hasUnread ? AppColors.textPrimary.withAlpha(200) : AppColors.textTertiary, height: 1.3),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -175,7 +175,7 @@ class ContactsScreen extends StatelessWidget {
         });
         return Container(
         constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.65),
-        decoration: const BoxDecoration(color: Color(0xFF1A1A1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        decoration: const BoxDecoration(color: Color(0xFFFFFFFF), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -197,7 +197,7 @@ class ContactsScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                Text('与 $displayName 的对话记录', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+                Text('与 $displayName 的对话记录', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                 const Spacer(),
                 CupertinoButton(
                   padding: const EdgeInsets.all(8), minSize: 0,
@@ -215,7 +215,7 @@ class ContactsScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 4),
-            const Divider(color: AppColors.border, height: 1),
+            const Divider(color: Color(0x08000000), height: 1),
             if (messages.isEmpty)
               const Expanded(child: Center(child: Text('暂无对话记录', style: TextStyle(fontSize: 14, color: AppColors.textTertiary))))
             else
@@ -245,7 +245,7 @@ class ContactsScreen extends StatelessWidget {
                             constraints: BoxConstraints(maxWidth: MediaQuery.of(ctx).size.width * 0.7),
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             decoration: BoxDecoration(
-                              color: isPlayer ? AppColors.accent.withAlpha(30) : const Color(0x0AFFFFFF),
+                              color: isPlayer ? AppColors.accent.withAlpha(30) : const Color(0x08000000),
                               borderRadius: BorderRadius.only(
                                 topLeft: const Radius.circular(12), topRight: const Radius.circular(12),
                                 bottomLeft: isPlayer ? const Radius.circular(12) : const Radius.circular(4),
@@ -253,7 +253,7 @@ class ContactsScreen extends StatelessWidget {
                               ),
                               border: Border.all(color: isPlayer ? AppColors.accent.withAlpha(50) : AppColors.border, width: 0.5),
                             ),
-                            child: Text(msg.content, style: TextStyle(fontSize: 14, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.4)),
+                            child: Text(msg.content, style: TextStyle(fontSize: 14, color: isPlayer ? AppColors.accent : AppColors.textPrimary, height: 1.4)),
                           ),
                         ],
                       ),

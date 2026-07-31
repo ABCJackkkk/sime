@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
 import 'package:sime/main.dart';
@@ -98,19 +98,19 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            decoration: const BoxDecoration(color: Color(0xFFFFFFFF), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
             padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Padding(padding: const EdgeInsets.all(16), child: Row(children: [
-                const Text('自己写', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)),
+                const Text('自己写', style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)),
                 const Spacer(),
                 CupertinoButton(padding: EdgeInsets.zero, minSize: 0, onPressed: () => Navigator.pop(ctx), child: const Text('关闭', style: TextStyle(color: AppColors.accent))),
               ])),
               Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: CupertinoTextField(
                 controller: ctrl, placeholder: '写你想说的话或行动...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14), autofocus: true,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-                decoration: BoxDecoration(color: const Color(0x0DFFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
-                style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15),
+                decoration: BoxDecoration(color: const Color(0x0D000000), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
+                style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
                 maxLines: 5, minLines: 1,
                 textInputAction: TextInputAction.send,
                 onSubmitted: (v) { final t = v.trim(); if (t.isEmpty) return; Navigator.pop(ctx); _submitFreeAction(t); },
@@ -209,7 +209,7 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0x08FFFFFF),
+        color: const Color(0x05000000),
         border: Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
       ),
       child: Row(children: [
@@ -221,7 +221,7 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
         const SizedBox(width: 8),
         Icon(icon, size: 18, color: AppColors.accent),
         const SizedBox(width: 8),
-        Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+        Text(name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -277,7 +277,7 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: const Color(0x0AFFFFFF),
+        color: const Color(0x08000000),
         border: Border.all(color: AppColors.border, width: 0.5),
       ),
       child: Wrap(
@@ -293,7 +293,7 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
               color: AppColors.accent.withAlpha(15),
             ),
             child: Text('$name  ♥ ${affection.toStringAsFixed(1)}',
-              style: const TextStyle(fontSize: 12, color: AppColors.textPrimaryDark)),
+              style: const TextStyle(fontSize: 12, color: AppColors.textPrimary)),
           );
         }).toList(),
       ),
@@ -314,7 +314,7 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
                 borderRadius: BorderRadius.circular(14),
                 color: AppColors.accent.withAlpha(25),
               ),
-              child: Text(entry.text, style: const TextStyle(fontSize: 14, color: AppColors.textPrimaryDark, height: 1.6)),
+              child: Text(entry.text, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, height: 1.6)),
             ),
           ),
         ]),
@@ -322,7 +322,12 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
     }
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
-      child: Text(entry.text, style: const TextStyle(fontSize: 14, color: AppColors.textPrimaryDark, height: 1.8)),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: const Color(0xFFFFFFFF),
+      ),
+      child: Text(entry.text, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, height: 1.8)),
     );
   }
 
@@ -368,7 +373,7 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
           onPressed: _isLoading ? null : () => _onChoice(index),
           child: Row(children: [
             Expanded(
-              child: Text(text, style: const TextStyle(fontSize: 14, color: AppColors.textPrimaryDark)),
+              child: Text(text, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
             ),
           ]),
         ),
@@ -383,12 +388,12 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: const Color(0x0AFFFFFF),
+            color: const Color(0x08000000),
             border: Border.all(color: AppColors.border, width: 0.5),
           ),
           child: CupertinoTextField(
             controller: _inputCtrl,
-            style: const TextStyle(fontSize: 14, color: AppColors.textPrimaryDark),
+            style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
             placeholder: '写你想说的话或行动...',
             placeholderStyle: const TextStyle(fontSize: 14, color: AppColors.textTertiary),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),

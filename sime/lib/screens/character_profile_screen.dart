@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -75,7 +75,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
           navigationBar: CupertinoNavigationBar(
             backgroundColor: AppColors.background,
             border: const Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
-            middle: Text(char.basic.name, style: const TextStyle(color: AppColors.textPrimaryDark)),
+            middle: Text(char.basic.name, style: const TextStyle(color: AppColors.textPrimary)),
           ),
           child: SafeArea(
             child: SingleChildScrollView(
@@ -101,7 +101,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
     final recentEvent = app.segmentEventTypes.isNotEmpty ? app.segmentEventTypes.last : null;
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFF1A1A2E), Color(0xFF0A0A0C)])),
+      decoration: const BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [Color(0xFFFFFFFF), AppColors.background])),
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
       child: Column(children: [
         GestureDetector(
@@ -123,7 +123,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
         const SizedBox(height: 6),
         Text('点击更换头像', style: TextStyle(fontSize: 11, color: AppColors.textTertiary.withAlpha(160))),
         const SizedBox(height: 12),
-        Text(displayName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimaryDark), overflow: TextOverflow.ellipsis, maxLines: 1),
+        Text(displayName, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis, maxLines: 1),
         if (displayName != char.basic.name)
           Text(char.basic.name, style: const TextStyle(fontSize: 14, color: AppColors.textTertiary), overflow: TextOverflow.ellipsis, maxLines: 1),
       ]),
@@ -137,7 +137,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
         child: Row(children: [
           const Icon(CupertinoIcons.heart_fill, size: 18, color: AppColors.error),
           const SizedBox(width: 10),
-          const Text('好感度', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimaryDark)),
+          const Text('好感度', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
           const Spacer(),
           Text('${affection.toStringAsFixed(2)}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.accent, fontFamily: 'SF Mono')),
           const SizedBox(width: 4),
@@ -163,7 +163,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
               placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14),
               padding: EdgeInsets.zero,
               decoration: const BoxDecoration(),
-              style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15),
+              style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
               onChanged: (v) => context.read<AppProvider>().setCharRemarkName(widget.characterId, v),
             ),
           ),
@@ -180,7 +180,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
           Row(children: [
             Container(width: 28, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: AppColors.accent.withAlpha(30)), child: const Icon(CupertinoIcons.person, size: 14, color: AppColors.accent)),
             const SizedBox(width: 10),
-            const Text('基础信息', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+            const Text('基础信息', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           ]),
           const SizedBox(height: 14),
           _infoRow('姓名', char.basic.name),
@@ -197,7 +197,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(children: [
         SizedBox(width: 50, child: Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textTertiary))),
-        Expanded(child: Text(value, style: const TextStyle(fontSize: 14, color: AppColors.textPrimaryDark))),
+        Expanded(child: Text(value, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary))),
       ]),
     );
   }
@@ -210,7 +210,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
           Row(children: [
             Container(width: 28, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: AppColors.accent.withAlpha(30)), child: const Icon(CupertinoIcons.text_justify, size: 14, color: AppColors.accent)),
             const SizedBox(width: 10),
-            const Text('角色简介', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+            const Text('角色简介', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           ]),
           if (char.charIntro.isNotEmpty) ...[
             const SizedBox(height: 12),
@@ -245,7 +245,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
           Row(children: [
             Container(width: 28, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: AppColors.accent.withAlpha(30)), child: const Icon(CupertinoIcons.chat_bubble_2, size: 14, color: AppColors.accent)),
             const SizedBox(width: 10),
-            const Text('历史对话', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+            const Text('历史对话', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
             const Spacer(),
             Text('${messages.length}条', style: const TextStyle(fontSize: 12, color: AppColors.textTertiary)),
           ]),
@@ -259,8 +259,8 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
                 ? GestureDetector(onTap: () { _searchCtrl.clear(); setState(() => _searchKeyword = ''); }, child: const Padding(padding: EdgeInsets.only(right: 12), child: Icon(CupertinoIcons.clear_circled_solid, size: 15, color: AppColors.textTertiary)))
                 : null,
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
-            style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13),
+            decoration: BoxDecoration(color: const Color(0x08000000), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
             onChanged: (v) => setState(() => _searchKeyword = v),
           ),
           if (keyword.isNotEmpty) ...[
@@ -339,7 +339,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: isPlayer ? AppColors.accent.withAlpha(25) : const Color(0x0AFFFFFF),
+                          color: isPlayer ? AppColors.accent.withAlpha(25) : const Color(0x08000000),
                           borderRadius: BorderRadius.only(
                             topLeft: const Radius.circular(8), topRight: const Radius.circular(8),
                             bottomLeft: isPlayer ? const Radius.circular(8) : const Radius.circular(3),
@@ -349,7 +349,7 @@ class _CharacterProfileScreenState extends State<CharacterProfileScreen> {
                         ),
                         child: Text.rich(
                           TextSpan(children: lines),
-                          style: TextStyle(fontSize: 12, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.5),
+                          style: TextStyle(fontSize: 12, color: isPlayer ? AppColors.accent : AppColors.textPrimary, height: 1.5),
                         ),
                       ),
                     ],

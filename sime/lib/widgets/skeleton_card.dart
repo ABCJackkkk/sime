@@ -43,14 +43,14 @@ class _SkeletonCardState extends State<SkeletonCard> with SingleTickerProviderSt
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(widget.borderRadius),
             border: Border.all(color: AppColors.border, width: 0.5),
-            color: const Color(0x08FFFFFF),
+            color: const Color(0x08000000),
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Container(width: 36, height: 10, decoration: BoxDecoration(color: Color.fromARGB(a, 255, 255, 255), borderRadius: BorderRadius.circular(4))),
+            Container(width: 36, height: 10, decoration: BoxDecoration(color: Color.fromARGB(a, 0, 0, 0), borderRadius: BorderRadius.circular(4))),
             const SizedBox(height: 12),
             Container(width: double.infinity, height: 10, decoration: BoxDecoration(color: Color.fromARGB(a + 2, 255, 255, 255), borderRadius: BorderRadius.circular(4))),
             const SizedBox(height: 8),
-            Container(width: double.infinity, height: 10, decoration: BoxDecoration(color: Color.fromARGB(a, 255, 255, 255), borderRadius: BorderRadius.circular(4))),
+            Container(width: double.infinity, height: 10, decoration: BoxDecoration(color: Color.fromARGB(a, 0, 0, 0), borderRadius: BorderRadius.circular(4))),
             const SizedBox(height: 8),
             Align(alignment: Alignment.centerRight, child: Container(width: 80, height: 10, decoration: BoxDecoration(color: Color.fromARGB(a - 2, 255, 255, 255), borderRadius: BorderRadius.circular(4)))),
           ]),

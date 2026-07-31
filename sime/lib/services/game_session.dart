@@ -1,4 +1,4 @@
-import 'dart:math';
+﻿import 'dart:math';
 import 'package:sime/models/script.dart';
 import 'package:sime/services/deepseek_client.dart';
 import 'package:sime/services/world_engine.dart';

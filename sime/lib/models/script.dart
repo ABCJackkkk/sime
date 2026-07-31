@@ -1,4 +1,4 @@
-class ScriptMeta {
+﻿class ScriptMeta {
   final String id;
   final String name;
   final String version;

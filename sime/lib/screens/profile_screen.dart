@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+﻿import 'dart:typed_data';
 import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -76,7 +76,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.all(20),
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 const SizedBox(height: 12),
-                Text('我的', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context), letterSpacing: -0.5)),
+                Text('我的', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.5)),
                 const SizedBox(height: 6),
                 Text('设置你的身份信息', style: TextStyle(fontSize: 14, color: AppColors.textSecondary.withAlpha(200))),
                 const SizedBox(height: 28),
@@ -110,7 +110,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 6),
         Text('点击更换头像', style: TextStyle(fontSize: 11, color: AppColors.textTertiary.withAlpha(160))),
         const SizedBox(height: 12),
-        Text(app.userName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context))),
+        Text(app.userName, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
       ]),
     );
   }
@@ -129,18 +129,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Row(children: [
           const SizedBox(width: 50, child: Text('性别', style: TextStyle(fontSize: 14, color: AppColors.textSecondary))),
           const SizedBox(width: 12),
-          Expanded(child: CupertinoSegmentedControl<String>(selectedColor: AppColors.accent, unselectedColor: const Color(0x0AFFFFFF), borderColor: AppColors.border, pressedColor: AppColors.accent.withAlpha(60), groupValue: app.userGender, onValueChanged: (v) => app.setUserGender(v), children: const {'男': Text('男', style: TextStyle(fontSize: 13)), '女': Text('女', style: TextStyle(fontSize: 13)), '其他': Text('其他', style: TextStyle(fontSize: 13))})),
+          Expanded(child: CupertinoSegmentedControl<String>(selectedColor: AppColors.accent, unselectedColor: const Color(0x08000000), borderColor: AppColors.border, pressedColor: AppColors.accent.withAlpha(60), groupValue: app.userGender, onValueChanged: (v) => app.setUserGender(v), children: const {'男': Text('男', style: TextStyle(fontSize: 13)), '女': Text('女', style: TextStyle(fontSize: 13)), '其他': Text('其他', style: TextStyle(fontSize: 13))})),
         ]),
         const SizedBox(height: 16),
         _buildSectionHeader(CupertinoIcons.person_2_fill, '角色形象', const Color(0xFFFF9500)),
         const SizedBox(height: 12),
-        SizedBox(height: 70, child: CupertinoTextField(controller: _appearanceController, placeholder: '描述你的外貌特征: 身高、发型、穿着风格...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13), padding: const EdgeInsets.all(14), maxLines: 2, decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary(context), fontSize: 14), onChanged: (v) => app.setUserAppearance(v))),
+        SizedBox(height: 70, child: CupertinoTextField(controller: _appearanceController, placeholder: '描述你的外貌特征: 身高、发型、穿着风格...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13), padding: const EdgeInsets.all(14), maxLines: 2, decoration: BoxDecoration(color: const Color(0x08000000), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary, fontSize: 14), onChanged: (v) => app.setUserAppearance(v))),
         const SizedBox(height: 12),
-        SizedBox(height: 70, child: CupertinoTextField(controller: _personalityController, placeholder: '描述你的性格特点: 沉默寡言、开朗外向...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13), padding: const EdgeInsets.all(14), maxLines: 2, decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary(context), fontSize: 14), onChanged: (v) => app.setUserPersonality(v))),
+        SizedBox(height: 70, child: CupertinoTextField(controller: _personalityController, placeholder: '描述你的性格特点: 沉默寡言、开朗外向...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13), padding: const EdgeInsets.all(14), maxLines: 2, decoration: BoxDecoration(color: const Color(0x08000000), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary, fontSize: 14), onChanged: (v) => app.setUserPersonality(v))),
         const SizedBox(height: 20),
-        _buildSectionHeader(CupertinoIcons.text_justify, '个人简介', const Color(0xFF64D2FF)),
+        _buildSectionHeader(CupertinoIcons.text_justify, '个人简介', const Color(0xFF000000)),
         const SizedBox(height: 12),
-        SizedBox(height: 80, child: CupertinoTextField(controller: _bioController, placeholder: '介绍一下自己...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14), padding: const EdgeInsets.all(14), maxLines: 3, decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary(context), fontSize: 14), onChanged: (v) => app.setUserBio(v))),
+        SizedBox(height: 80, child: CupertinoTextField(controller: _bioController, placeholder: '介绍一下自己...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14), padding: const EdgeInsets.all(14), maxLines: 3, decoration: BoxDecoration(color: const Color(0x08000000), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary, fontSize: 14), onChanged: (v) => app.setUserBio(v))),
       ]),
     );
   }
@@ -149,7 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Row(children: [
       Container(width: 28, height: 28, decoration: BoxDecoration(borderRadius: BorderRadius.circular(7), color: color.withAlpha(30)), child: Icon(icon, size: 14, color: color)),
       const SizedBox(width: 10),
-      Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+      Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
     ]);
   }
 
@@ -157,7 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Row(children: [
       SizedBox(width: 50, child: Text(label, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary))),
       const SizedBox(width: 12),
-      Expanded(child: SizedBox(height: 40, child: CupertinoTextField(controller: ctrl, placeholder: hint, placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13), padding: const EdgeInsets.symmetric(horizontal: 12), decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary(context), fontSize: 14), onChanged: onChange))),
+      Expanded(child: SizedBox(height: 40, child: CupertinoTextField(controller: ctrl, placeholder: hint, placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13), padding: const EdgeInsets.symmetric(horizontal: 12), decoration: BoxDecoration(color: const Color(0x08000000), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)), style: TextStyle(color: AppColors.textPrimary, fontSize: 14), onChanged: onChange))),
     ]);
   }
 }

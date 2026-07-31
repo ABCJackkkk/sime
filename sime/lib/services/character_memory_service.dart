@@ -1,4 +1,4 @@
-class EpisodicEntry {
+﻿class EpisodicEntry {
   final int day;
   final String summary;
   final double affectionAtTime;

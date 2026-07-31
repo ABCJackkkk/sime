@@ -74,11 +74,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 12),
-                  Text('设置', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context), letterSpacing: -0.5)),
+                  Text('设置', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, color: AppColors.textPrimary, letterSpacing: -0.5)),
                   const SizedBox(height: 28),
                   _buildApiSection(app),
-                  const SizedBox(height: 16),
-                  _buildGlobalBgSection(app),
                   const SizedBox(height: 16),
                   _buildUpdateSection(app),
                   const SizedBox(height: 16),
@@ -102,65 +100,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.accent.withAlpha(30)), child: const Icon(CupertinoIcons.lock_fill, size: 16, color: AppColors.accent)),
               const SizedBox(width: 10),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('DeepSeek API', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))), Text('连接 AI 引擎', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('DeepSeek API', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)), Text('连接 AI 引擎', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
               Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: app.apiKey.isNotEmpty ? AppColors.success : AppColors.textTertiary, boxShadow: app.apiKey.isNotEmpty ? [BoxShadow(color: AppColors.success.withAlpha(80), blurRadius: 6)] : null)),
             ],
           ),
           const SizedBox(height: 16),
-          SizedBox(height: 44, child: CupertinoTextField(controller: _apiKeyController, placeholder: 'sk-...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14), padding: const EdgeInsets.symmetric(horizontal: 14), decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 14, fontFamily: 'SF Mono'), obscureText: true, onChanged: (value) { app.setApiKey(value.trim()); _saveApiKey(value.trim()); })),
+          SizedBox(height: 44, child: CupertinoTextField(controller: _apiKeyController, placeholder: 'sk-...', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14), padding: const EdgeInsets.symmetric(horizontal: 14), decoration: BoxDecoration(color: const Color(0x05000000), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontFamily: 'SF Mono'), obscureText: true, onChanged: (value) { app.setApiKey(value.trim()); _saveApiKey(value.trim()); })),
           const SizedBox(height: 10),
-          SizedBox(height: 44, child: CupertinoTextField(controller: _corsProxyController, placeholder: 'CORS 代理 URL（Web 端必填，如 https://corsproxy.io/?）', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 12), padding: const EdgeInsets.symmetric(horizontal: 14), decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontFamily: 'SF Mono'), onChanged: (value) { app.setCorsProxy(value.trim()); _saveCorsProxy(value.trim()); })),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGlobalBgSection(AppProvider app) {
-    final bgPresets = {
-      'default': const ['0A0A0C', '0D0D15'],
-      'midnight': const ['0C0C1D', '1A1A2E'],
-      'sunset': const ['2D132C', '1B1B3A'],
-      'forest': const ['0F2027', '203A43'],
-      'ocean': const ['0F2027', '2C5364'],
-      'mono': const ['000000', '000000'],
-      'light': const ['E8E8ED', 'F2F2F7'],
-    };
-    final bgNames = {'default': '默认暗色', 'midnight': '午夜蓝', 'sunset': '暮光紫', 'forest': '深林绿', 'ocean': '海洋蓝', 'mono': '纯黑', 'light': '浅灰'};
-
-    return GlassContainer(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.warning.withAlpha(25)), child: const Icon(CupertinoIcons.photo_fill_on_rectangle_fill, size: 16, color: AppColors.warning)),
-              const SizedBox(width: 10),
-              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('全局背景', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))), Text('影响主界面', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Wrap(spacing: 12, runSpacing: 12,
-            children: bgPresets.entries.map((e) {
-              final selected = app.globalBgType == e.key;
-              final start = Color(int.parse('0xFF${e.value[0]}'));
-              final end = Color(int.parse('0xFF${e.value[1]}'));
-              return GestureDetector(
-                onTap: () { app.setGlobalBgType(e.key); app.setGlobalBgColor1(e.value[0]); app.setGlobalBgColor2(e.value[1]); },
-                child: Column(
-                  children: [
-                    Container(
-                      width: 56, height: 56,
-                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [start, end]), border: selected ? Border.all(color: AppColors.accent, width: 2.5) : Border.all(color: AppColors.border, width: 0.5), boxShadow: selected ? [BoxShadow(color: AppColors.accent.withAlpha(50), blurRadius: 8)] : null),
-                      child: selected ? const Icon(CupertinoIcons.checkmark_alt, color: CupertinoColors.white, size: 20) : null,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(bgNames[e.key] ?? e.key, style: TextStyle(fontSize: 11, color: selected ? AppColors.accent : AppColors.textTertiary, fontWeight: selected ? FontWeight.w600 : FontWeight.w400)),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
+          SizedBox(height: 44, child: CupertinoTextField(controller: _corsProxyController, placeholder: 'CORS 代理 URL（Web 端必填，如 https://corsproxy.io/?）', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 12), padding: const EdgeInsets.symmetric(horizontal: 14), decoration: BoxDecoration(color: const Color(0x05000000), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)), style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontFamily: 'SF Mono'), onChanged: (value) { app.setCorsProxy(value.trim()); _saveCorsProxy(value.trim()); })),
         ],
       ),
     );
@@ -176,7 +123,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0xFF30D158).withAlpha(30)), child: const Icon(CupertinoIcons.down_arrow, size: 16, color: Color(0xFF30D158))),
               const SizedBox(width: 10),
-              const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('自动更新', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)), Text('配置更新服务器地址', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
+              const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('自动更新', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.textPrimary)), Text('配置更新服务器地址', style: TextStyle(fontSize: 12, color: AppColors.textSecondary))])),
             ],
           ),
           const SizedBox(height: 16),
@@ -185,8 +132,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             placeholder: '更新配置 JSON 地址（如 Gitee/GitHub Raw 链接）',
             placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 12),
             padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(color: const Color(0x0AFFFFFF), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)),
-            style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontFamily: 'SF Mono'),
+            decoration: BoxDecoration(color: const Color(0x05000000), borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border, width: 0.5)),
+            style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontFamily: 'SF Mono'),
             onChanged: (value) { app.setUpdateConfigUrl(value.trim()); },
           )),
           const SizedBox(height: 10),
@@ -317,7 +264,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary(context))),
+                Text(title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: AppColors.textPrimary)),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   Text(subtitle, style: TextStyle(fontSize: 12, color: subtitleColor ?? AppColors.textSecondary)),

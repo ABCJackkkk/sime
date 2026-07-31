@@ -1,4 +1,4 @@
-class UpdateInfo {
+﻿class UpdateInfo {
   final String latestVersion;
   final int latestBuildNumber;
   final String downloadUrl;

@@ -1,4 +1,4 @@
-class TensionVector {
+﻿class TensionVector {
   double relational;
   double narrative;
   double emotional;

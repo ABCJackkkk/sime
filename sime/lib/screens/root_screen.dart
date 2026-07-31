@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:sime/main.dart';
 import 'package:sime/providers/app_provider.dart';
@@ -119,7 +119,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     return CupertinoTabBar(
       activeColor: AppColors.accent,
       inactiveColor: AppColors.textTertiary,
-      backgroundColor: const Color(0xFF0A0A0C),
+      backgroundColor: AppColors.background,
       currentIndex: app.currentTabIndex,
       onTap: (index) => app.setTab(index),
       items: const [
@@ -231,9 +231,9 @@ class _SimSlotsScreenState extends State<SimSlotsScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
       child: Row(children: [
-        Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])), child: const Icon(CupertinoIcons.play_fill, size: 16, color: CupertinoColors.white)),
+        Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF000000)])), child: const Icon(CupertinoIcons.play_fill, size: 16, color: CupertinoColors.white)),
         const SizedBox(width: 10),
-        Text('存档', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary(context))),
+        Text('存档', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
         const Spacer(),
         CupertinoButton(
           onPressed: app.hasScript ? () => _newGame(app) : null,
@@ -254,9 +254,9 @@ class _SimSlotsScreenState extends State<SimSlotsScreen> {
   Widget _buildEmptyState(BuildContext context, AppProvider app) {
     return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Container(width: 80, height: 80, decoration: BoxDecoration(borderRadius: BorderRadius.circular(22), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)]), boxShadow: [BoxShadow(color: AppColors.accent.withAlpha(60), blurRadius: 24, offset: const Offset(0, 10))]), child: const Icon(CupertinoIcons.square_stack_3d_up_fill, size: 36, color: CupertinoColors.white)),
+        Container(width: 80, height: 80, decoration: BoxDecoration(borderRadius: BorderRadius.circular(22), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF000000)]), boxShadow: [BoxShadow(color: AppColors.accent.withAlpha(60), blurRadius: 24, offset: const Offset(0, 10))]), child: const Icon(CupertinoIcons.square_stack_3d_up_fill, size: 36, color: CupertinoColors.white)),
         const SizedBox(height: 24),
-        Text('还没有存档', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context))),
+        Text('还没有存档', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
         const SizedBox(height: 8),
         Text(app.hasScript ? '点击右上角「新游戏」开始' : '请先在「剧本」页加载剧本', style: TextStyle(fontSize: 14, color: AppColors.textSecondary)),
         const SizedBox(height: 28),
@@ -301,7 +301,7 @@ class _SimSlotsScreenState extends State<SimSlotsScreen> {
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        color: isActive ? AppColors.accent.withAlpha(20) : const Color(0x0AFFFFFF),
+        color: isActive ? AppColors.accent.withAlpha(20) : const Color(0x05000000),
         border: Border.all(color: isActive ? AppColors.accent.withAlpha(80) : AppColors.border, width: isActive ? 1.0 : 0.5),
       ),
       child: Column(children: [
@@ -311,11 +311,11 @@ class _SimSlotsScreenState extends State<SimSlotsScreen> {
           minSize: 0,
           borderRadius: BorderRadius.circular(14),
           child: Row(children: [
-            Container(width: 44, height: 44, decoration: BoxDecoration(borderRadius: BorderRadius.circular(11), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])), child: const Icon(CupertinoIcons.book_fill, size: 20, color: CupertinoColors.white)),
+            Container(width: 44, height: 44, decoration: BoxDecoration(borderRadius: BorderRadius.circular(11), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF000000)])), child: const Icon(CupertinoIcons.book_fill, size: 20, color: CupertinoColors.white)),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
-                Flexible(child: Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)), overflow: TextOverflow.ellipsis, maxLines: 1)),
+                Flexible(child: Text(name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary), overflow: TextOverflow.ellipsis, maxLines: 1)),
                 if (isActive) ...[
                   const SizedBox(width: 8),
                   Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: AppColors.accent.withAlpha(40)), child: const Text('进行中', style: TextStyle(fontSize: 9, color: AppColors.accent, fontWeight: FontWeight.w600))),

@@ -71,7 +71,7 @@ class SimulationScreen extends StatelessWidget {
         key: const ValueKey('world'),
         decoration: simBg != null
             ? BoxDecoration(image: DecorationImage(image: MemoryImage(simBg), fit: BoxFit.cover))
-            : BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [app.simBgStartColor, app.simBgEndColor])),
+            : const BoxDecoration(color: AppColors.background),
         child: Column(children: [
           _buildWorldTopBar(app, context),
           const Expanded(child: WorldScreen()),
@@ -86,14 +86,14 @@ class SimulationScreen extends StatelessWidget {
       key: const ValueKey('tools'),
       decoration: simBg != null
           ? BoxDecoration(image: DecorationImage(image: MemoryImage(simBg), fit: BoxFit.cover))
-          : BoxDecoration(gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [app.simBgStartColor, app.simBgEndColor])),
+          : const BoxDecoration(color: AppColors.background),
       child: SafeArea(
         bottom: false,
         child: CupertinoTabScaffold(
           tabBar: CupertinoTabBar(
             activeColor: AppColors.accent,
             inactiveColor: AppColors.textTertiary,
-            backgroundColor: CupertinoColors.black.withAlpha(30),
+            backgroundColor: Color(0x08000000),
             currentIndex: app.simTabIndex,
             onTap: (index) => app.setSimTab(index),
             items: const [
@@ -131,14 +131,14 @@ class SimulationScreen extends StatelessWidget {
     final special = we?.currentSpecialDay;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      color: const Color(0x08FFFFFF),
+      color: const Color(0x05000000),
       child: SafeArea(
         bottom: false,
         child: Row(children: [
           const SizedBox(width: 4),
           Text('第${weekNum}周', style: const TextStyle(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.w600)),
           const SizedBox(width: 4),
-          Text('第${day}天', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text('第${day}天', style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600)),
           const SizedBox(width: 4),
           Text(weekday, style: const TextStyle(color: AppColors.textSecondary, fontSize: 10)),
           if (isWeekend) ...[const SizedBox(width: 4), const Text('休', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 10, fontWeight: FontWeight.w600))],
@@ -179,7 +179,7 @@ class SimulationScreen extends StatelessWidget {
   Widget _buildToolsTopBar(AppProvider app, BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      color: const Color(0x08FFFFFF),
+      color: const Color(0x05000000),
       child: SafeArea(
         bottom: false,
         child: Row(children: [
@@ -194,7 +194,7 @@ class SimulationScreen extends StatelessWidget {
             ]),
           ),
           const Spacer(),
-          Text('第${app.currentDay}天', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 12, fontWeight: FontWeight.w600)),
+          Text('第${app.currentDay}天', style: const TextStyle(color: AppColors.textPrimary, fontSize: 12, fontWeight: FontWeight.w600)),
           const Spacer(),
           GestureDetector(
             onTap: () => _showExitDialog(context, app),

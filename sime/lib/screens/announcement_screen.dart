@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:sime/main.dart';
 import 'package:sime/providers/app_provider.dart';
@@ -54,8 +54,8 @@ class _AnnouncementScreenState extends State<AnnouncementScreen> {
     return CupertinoPageScaffold(
       backgroundColor: CupertinoTheme.of(context).scaffoldBackgroundColor,
       navigationBar: CupertinoNavigationBar(
-        middle: Text(_title ?? '公告', style: const TextStyle(color: AppColors.textPrimaryDark)),
-        backgroundColor: const Color(0x0AFFFFFF),
+        middle: Text(_title ?? '公告', style: const TextStyle(color: AppColors.textPrimary)),
+        backgroundColor: const Color(0x05000000),
         previousPageTitle: '设置',
       ),
       child: SafeArea(
@@ -81,11 +81,11 @@ class _AnnouncementScreenState extends State<AnnouncementScreen> {
                       padding: const EdgeInsets.all(20),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         if (_title != null && _title != '公告') ...[
-                          Text(_title!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimaryDark)),
+                          Text(_title!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                           const SizedBox(height: 12),
                         ],
                         if (_content != null)
-                          Text(_content!, style: const TextStyle(fontSize: 14, height: 1.8, color: AppColors.textPrimaryDark)),
+                          Text(_content!, style: const TextStyle(fontSize: 14, height: 1.8, color: AppColors.textPrimary)),
                       ]),
                     ),
                   ),

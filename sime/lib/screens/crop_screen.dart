@@ -1,4 +1,4 @@
-﻿import 'dart:typed_data';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -68,7 +68,7 @@ class _CropScreenState extends State<CropScreen> {
 
   Widget _buildContent(Size screenSize, Size cropSize) {
     return Container(
-      color: CupertinoColors.black,
+      color: AppColors.background,
       child: SafeArea(
         child: Column(children: [
           Container(
@@ -81,7 +81,7 @@ class _CropScreenState extends State<CropScreen> {
                 child: const Text('取消', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
               ),
               const Spacer(),
-              const Text('裁剪图片', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)),
+              const Text('裁剪图片', style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)),
               const Spacer(),
               CupertinoButton(
                 onPressed: () async {
@@ -129,7 +129,7 @@ class _CropScreenState extends State<CropScreen> {
                             child: Container(
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: CupertinoColors.white.withAlpha(140), width: 2),
+                                border: Border.all(color: AppColors.border, width: 2),
                               ),
                             ),
                           ),
@@ -144,7 +144,7 @@ class _CropScreenState extends State<CropScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              color: const Color(0x15FFFFFF),
+              color: AppColors.surface,
             ),
             child: const Text('拖动/缩放图片，使主体在框内', style: TextStyle(color: AppColors.textTertiary, fontSize: 13)),
           ),

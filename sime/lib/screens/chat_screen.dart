@@ -1,4 +1,4 @@
-import 'dart:ui';
+﻿import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:sime/main.dart';
@@ -48,7 +48,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
       backgroundColor: AppColors.background,
       navigationBar: CupertinoNavigationBar(
         backgroundColor: AppColors.background,
-        border: const Border(bottom: BorderSide(color: AppColors.border, width: 0.5)),
+        border: const Border(bottom: BorderSide(color: AppColors.border, width: 3.0)),
         middle: Consumer<AppProvider>(
           builder: (context, app, _) {
             final char = app.getCharacter(widget.characterId);
@@ -72,7 +72,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                     ],
                     ConstrainedBox(
                       constraints: BoxConstraints(maxWidth: nameMaxWidth > 0 ? nameMaxWidth : 100),
-                      child: Text(name, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 17), overflow: TextOverflow.ellipsis, maxLines: 1),
+                      child: Text(name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 17), overflow: TextOverflow.ellipsis, maxLines: 1),
                     ),
                     if (unread) ...[
                       const SizedBox(width: 6),
@@ -159,18 +159,18 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: isPlayer ? AppColors.accent.withAlpha(40) : const Color(0x08FFFFFF),
+                        color: isPlayer ? AppColors.highlight : const Color(0xFFFFFFFF),
                         borderRadius: BorderRadius.only(topLeft: const Radius.circular(18), topRight: const Radius.circular(18), bottomLeft: isPlayer ? const Radius.circular(18) : const Radius.circular(4), bottomRight: isPlayer ? const Radius.circular(4) : const Radius.circular(18)),
-                        border: Border.all(color: isPlayer ? AppColors.accent.withAlpha(50) : AppColors.accent.withAlpha(20), width: 0.5),
+                        border: Border.all(color: AppColors.border, width: 2.0),
                       ),
                       child: animate
                           ? TypewriterText(
                               text: msg.content,
-                              style: TextStyle(fontSize: 15, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.4),
+                              style: TextStyle(fontSize: 15, color: isPlayer ? AppColors.accent : AppColors.textPrimary, height: 1.4),
                               speed: const Duration(milliseconds: 18),
                               enabled: true,
                             )
-                          : Text(msg.content, style: TextStyle(fontSize: 15, color: isPlayer ? AppColors.accent : AppColors.textPrimaryDark, height: 1.4)),
+                          : Text(msg.content, style: TextStyle(fontSize: 15, color: isPlayer ? AppColors.accent : AppColors.textPrimary, height: 1.4)),
                     ),
                   ),
                 ),
@@ -194,7 +194,7 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
   Widget _buildInputBar(AppProvider app) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
-      decoration: const BoxDecoration(color: Color(0x0AFFFFFF), border: Border(top: BorderSide(color: AppColors.border, width: 0.5))),
+      decoration: const BoxDecoration(color: Color(0xFFFFFFFF), border: Border(top: BorderSide(color: AppColors.border, width: 2.0))),
       child: Row(
         children: [
           Expanded(
@@ -203,8 +203,8 @@ class _ChatScreenState extends State<ChatScreen> with SingleTickerProviderStateM
               placeholder: '输入消息...',
               placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.border, width: 0.5)),
-              style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15),
+              decoration: BoxDecoration(color: const Color(0xFFFFFFFF), borderRadius: BorderRadius.circular(20), border: Border.all(color: AppColors.border, width: 2.0)),
+              style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
             ),
           ),
           const SizedBox(width: 8),

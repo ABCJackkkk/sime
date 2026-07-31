@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:sime/main.dart';
 
 class AffectionBar extends StatelessWidget {
@@ -19,7 +19,7 @@ class AffectionBar extends StatelessWidget {
               height: 6,
               child: Stack(
                 children: [
-                  Container(color: AppColors.textTertiary.withAlpha(40)),
+                  Container(color: const Color(0xFFE8E8E8)),
                   FractionallySizedBox(widthFactor: ratio, child: Container(decoration: BoxDecoration(gradient: LinearGradient(colors: [_barColor(clamped), _barColor(clamped).withAlpha(180)])))),
                 ],
               ),

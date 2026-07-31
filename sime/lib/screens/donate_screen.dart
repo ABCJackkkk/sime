@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:sime/main.dart';
 
 class DonateScreen extends StatelessWidget {
@@ -9,8 +9,8 @@ class DonateScreen extends StatelessWidget {
     return CupertinoPageScaffold(
       backgroundColor: CupertinoTheme.of(context).scaffoldBackgroundColor,
       navigationBar: const CupertinoNavigationBar(
-        middle: Text('支持开发者', style: TextStyle(color: AppColors.textPrimaryDark)),
-        backgroundColor: Color(0x0AFFFFFF),
+        middle: Text('支持开发者', style: TextStyle(color: AppColors.textPrimary)),
+        backgroundColor: Color(0x0A000000),
         previousPageTitle: '设置',
       ),
       child: SafeArea(
@@ -18,7 +18,7 @@ class DonateScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(children: [
             const SizedBox(height: 16),
-            const Text('感谢你的支持 ❤️', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimaryDark)),
+            const Text('感谢你的支持 ❤️', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
             const SizedBox(height: 8),
             const Text(
               '你的每一份支持都是我持续更新的动力',

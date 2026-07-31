@@ -1,6 +1,7 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+import 'package:sime/main.dart';
 import 'package:sime/providers/app_provider.dart';
 import 'package:sime/services/script_loader.dart';
 import 'package:sime/models/script.dart';
@@ -238,7 +239,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
       children: [
         const Text('创作剧本', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
-        const Text('分三步生成：世界观 → 角色 → 事件。每步可预览和重生成。', style: TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel)),
+        const Text('分三步生成：世界观 → 角色 → 事件。每步可预览和重生成。', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
         const SizedBox(height: 20),
         _buildInputField('1. 故事设定', '体裁、风格、基调、时间跨度', _storyCtrl, 4),
         _buildInputField('2. 主角', '性格、背景、处境', _protagonistCtrl, 3),
@@ -246,7 +247,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
         _buildInputField('4. 世界观与场景', '地点、气氛、时间跨度', _worldCtrl, 4),
         const SizedBox(height: 16),
         if (_error != null) ...[
-          Text(_error!, style: const TextStyle(color: CupertinoColors.destructiveRed, fontSize: 13)),
+          Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13)),
           const SizedBox(height: 12),
         ],
         CupertinoButton.filled(
@@ -286,10 +287,10 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
           children: [
             const CupertinoActivityIndicator(radius: 18),
             const SizedBox(height: 24),
-            Text(_loadingText(), style: const TextStyle(fontSize: 16, color: CupertinoColors.secondaryLabel)),
+            Text(_loadingText(), style: const TextStyle(fontSize: 16, color: AppColors.textSecondary)),
             if (_error != null) ...[
               const SizedBox(height: 16),
-              Text(_error!, style: const TextStyle(color: CupertinoColors.destructiveRed, fontSize: 13), textAlign: TextAlign.center),
+              Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13), textAlign: TextAlign.center),
               const SizedBox(height: 12),
               CupertinoButton(child: const Text('返回'), onPressed: _resetToInput),
             ],
@@ -322,8 +323,8 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(color: CupertinoColors.destructiveRed.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-            child: Text(_error!, style: const TextStyle(color: CupertinoColors.destructiveRed, fontSize: 13)),
+            decoration: BoxDecoration(color: AppColors.error.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+            child: Text(_error!, style: const TextStyle(color: AppColors.error, fontSize: 13)),
           ),
         ],
         _buildPreviewCard(
@@ -340,7 +341,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
           spacing: 6, runSpacing: 6,
           children: phases.map((p) => Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(color: CupertinoColors.systemGrey6, borderRadius: BorderRadius.circular(6)),
+            decoration: BoxDecoration(color: Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(6)),
             child: Text(p['name']?.toString() ?? '', style: const TextStyle(fontSize: 12)),
           )).toList(),
         ),
@@ -350,7 +351,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
           spacing: 6, runSpacing: 6,
           children: stages.map((s) => Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(color: CupertinoColors.activeBlue.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+            decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
             child: Text('${s['label']} ${s['min']}-${s['max']}', style: const TextStyle(fontSize: 11)),
           )).toList(),
         ),
@@ -394,7 +395,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: CupertinoColors.systemGrey6, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(12)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -402,17 +403,17 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
               children: [
                 Text(basic['name']?.toString() ?? '?', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 8),
-                Text('${basic['gender'] ?? ''} · ${basic['age'] ?? ''}岁', style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel)),
+                Text('${basic['gender'] ?? ''} · ${basic['age'] ?? ''}岁', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                 const Spacer(),
-                const Icon(CupertinoIcons.chevron_right, size: 14, color: CupertinoColors.tertiaryLabel),
+                const Icon(CupertinoIcons.chevron_right, size: 14, color: AppColors.textTertiary),
               ],
             ),
             const SizedBox(height: 6),
             Text('核心：${soul['core'] ?? ''}', style: const TextStyle(fontSize: 13)),
             const SizedBox(height: 4),
-            Text('欲望：${soul['desire'] ?? ''}', style: const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel)),
+            Text('欲望：${soul['desire'] ?? ''}', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
             const SizedBox(height: 4),
-            Text('对亲近者：「${toClose['example'] ?? ''}」', style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel, fontStyle: FontStyle.italic)),
+            Text('对亲近者：「${toClose['example'] ?? ''}」', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontStyle: FontStyle.italic)),
           ],
         ),
       ),
@@ -475,7 +476,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
               _buildEditField('对亲近者·概述', toCloseOverviewCtrl),
               _buildEditField('对亲近者·例句', toCloseExampleCtrl, hint: '例：你饿了吗'),
               const SizedBox(height: 20),
-              const Text('这些字段直接影响 AI 对话生成质量。其他字段（外貌/日程等）保持 AI 生成结果。', style: TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel)),
+              const Text('这些字段直接影响 AI 对话生成质量。其他字段（外貌/日程等）保持 AI 生成结果。', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
             ],
           ),
         ),
@@ -536,7 +537,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
               const SizedBox(height: 12),
               Text(_meta['name']?.toString() ?? '新剧本', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
-              Text('角色 ${_characters.length} 人 · 事件 ${_countEvents()} 个', style: const TextStyle(fontSize: 13, color: CupertinoColors.secondaryLabel)),
+              Text('角色 ${_characters.length} 人 · 事件 ${_countEvents()} 个', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
             ],
           ),
         ),
@@ -555,7 +556,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
         ),
         const SizedBox(height: 8),
         CupertinoButton(
-          child: const Text('不满意，全部重来', style: TextStyle(color: CupertinoColors.destructiveRed)),
+          child: const Text('不满意，全部重来', style: TextStyle(color: AppColors.error)),
           onPressed: _resetToInput,
         ),
       ],
@@ -571,7 +572,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(color: CupertinoColors.systemGrey6, borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(color: Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(12)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -579,15 +580,15 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
               children: [
                 Text(basic['name']?.toString() ?? '?', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                 const SizedBox(width: 8),
-                Text('${basic['gender'] ?? ''} · 初始好感 ${basic['initial_affection'] ?? 50}', style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel)),
+                Text('${basic['gender'] ?? ''} · 初始好感 ${basic['initial_affection'] ?? 50}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                 const Spacer(),
-                const Icon(CupertinoIcons.chat_bubble, size: 14, color: CupertinoColors.activeBlue),
+                const Icon(CupertinoIcons.chat_bubble, size: 14, color: AppColors.accent),
                 const SizedBox(width: 4),
-                const Text('试聊', style: TextStyle(fontSize: 12, color: CupertinoColors.activeBlue)),
+                const Text('试聊', style: TextStyle(fontSize: 12, color: AppColors.accent)),
               ],
             ),
             const SizedBox(height: 6),
-            Text('外貌：${appearance['body'] ?? ''} ${appearance['hair'] ?? ''} ${appearance['eyes'] ?? ''}', style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel), maxLines: 2, overflow: TextOverflow.ellipsis),
+            Text('外貌：${appearance['body'] ?? ''} ${appearance['hair'] ?? ''} ${appearance['eyes'] ?? ''}', style: const TextStyle(fontSize: 12, color: AppColors.textSecondary), maxLines: 2, overflow: TextOverflow.ellipsis),
             const SizedBox(height: 4),
             Text('核心：${soul['core'] ?? ''}', style: const TextStyle(fontSize: 13)),
           ],
@@ -677,10 +678,10 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             constraints: BoxConstraints(maxWidth: MediaQuery.of(ctx).size.width * 0.75),
                             decoration: BoxDecoration(
-                              color: isUser ? CupertinoColors.activeBlue : CupertinoColors.systemGrey5,
+                              color: isUser ? AppColors.accent : Color(0xFFE0E0E0),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text(m['content'] ?? '', style: TextStyle(fontSize: 14, color: isUser ? CupertinoColors.white : CupertinoColors.black)),
+                            child: Text(m['content'] ?? '', style: TextStyle(fontSize: 14, color: isUser ? AppColors.card : AppColors.textPrimary)),
                           ),
                         );
                       },
@@ -688,7 +689,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
                   ),
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: const BoxDecoration(border: Border(top: BorderSide(color: CupertinoColors.systemGrey5))),
+                    decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFFE0E0E0)))),
                     child: Row(
                       children: [
                         Expanded(
@@ -720,13 +721,13 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
   Widget _buildPreviewCard({required String title, required String subtitle, required String body}) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: CupertinoColors.systemGrey6, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(fontSize: 12, color: CupertinoColors.secondaryLabel)),
+          Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
           const SizedBox(height: 8),
           Text(body, style: const TextStyle(fontSize: 13, height: 1.4)),
         ],
@@ -737,7 +738,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
   Widget _buildSectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
-      child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: CupertinoColors.secondaryLabel)),
+      child: Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
     );
   }
 
@@ -750,7 +751,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
           Container(
             margin: const EdgeInsets.only(top: 2),
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(color: CupertinoColors.activeBlue.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+            decoration: BoxDecoration(color: AppColors.accent.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
             child: Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
           ),
           const SizedBox(width: 8),
@@ -779,7 +780,7 @@ class _ScriptCreatorScreenState extends State<ScriptCreatorScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: CupertinoColors.secondaryLabel)),
+          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
           const SizedBox(height: 4),
           CupertinoTextField(
             controller: ctrl,

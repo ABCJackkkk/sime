@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+﻿import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:sime/main.dart';
 import 'package:sime/models/script.dart';
@@ -187,7 +187,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isLatest ? glowColor.withAlpha(10) : const Color(0x08FFFFFF),
+        color: isLatest ? glowColor.withAlpha(10) : const Color(0x05000000),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: isLatest && !isKeyEvent ? AppColors.accent.withAlpha(60) : AppColors.border, width: 0.5),
       ),
@@ -208,12 +208,12 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
           TypewriterText(
             key: ValueKey('tw_$index'),
             text: cleanSegment,
-            style: TextStyle(fontSize: 14, height: 2.2, color: AppColors.textPrimaryDark, letterSpacing: 0.3),
+            style: TextStyle(fontSize: 14, height: 2.2, color: AppColors.textPrimary, letterSpacing: 0.3),
             speed: const Duration(milliseconds: 18),
             enabled: true,
           )
         else
-          Text(cleanSegment, style: TextStyle(fontSize: 14, height: 2.2, color: AppColors.textPrimaryDark.withAlpha(200), letterSpacing: 0.3)),
+          Text(cleanSegment, style: TextStyle(fontSize: 14, height: 2.2, color: AppColors.textPrimary.withAlpha(200), letterSpacing: 0.3)),
       ]),
     );
 
@@ -229,7 +229,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
     if (choices.isEmpty) return const SizedBox.shrink();
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-      decoration: const BoxDecoration(color: Color(0x0AFFFFFF), border: Border(top: BorderSide(color: AppColors.accent, width: 0.5))),
+      decoration: const BoxDecoration(color: Color(0x08000000), border: Border(top: BorderSide(color: AppColors.accent, width: 0.5))),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
@@ -248,7 +248,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
               onPressed: () => app.pickChoice(i).then((_) => _scrollToBottom()),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               borderRadius: BorderRadius.circular(12),
-              color: const Color(0x0FFFFFFF),
+              color: const Color(0x0F000000),
               child: Row(children: [
                 Container(
                   width: 22, height: 22,
@@ -256,7 +256,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
                   child: Center(child: Text('ABC'[i], style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.accent))),
                 ),
                 const SizedBox(width: 10),
-                Expanded(child: Text(text, style: const TextStyle(fontSize: 14, color: AppColors.textPrimaryDark, height: 1.4))),
+                Expanded(child: Text(text, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary, height: 1.4))),
                 const SizedBox(width: 6),
                 const Icon(CupertinoIcons.chevron_right, size: 14, color: AppColors.textTertiary),
               ]),
@@ -284,11 +284,11 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
           borderRadius: BorderRadius.circular(10),
           child: charImg != null
               ? Image.memory(charImg, width: 36, height: 36, fit: BoxFit.cover)
-              : Container(width: 36, height: 36, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])), child: Center(child: Text(name.isNotEmpty ? name.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 16, fontWeight: FontWeight.w700)))),
+              : Container(width: 36, height: 36, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF000000)])), child: Center(child: Text(name.isNotEmpty ? name.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 16, fontWeight: FontWeight.w700)))),
         ),
         const SizedBox(width: 10),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('$name 邀请你去${loc.name}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimaryDark)),
+          Text('$name 邀请你去${loc.name}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
           const SizedBox(height: 2),
           Text('点击头像前往 →', style: TextStyle(fontSize: 11, color: AppColors.textTertiary.withAlpha(200))),
         ])),
@@ -303,7 +303,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF5B6FCE)])),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF333333)])),
             child: const Text('赴约', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: CupertinoColors.white)),
           ),
         ),
@@ -327,13 +327,13 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
 
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
-      decoration: const BoxDecoration(color: Color(0x0AFFFFFF), border: Border(top: BorderSide(color: AppColors.border, width: 0.5))),
+      decoration: const BoxDecoration(color: Color(0x08000000), border: Border(top: BorderSide(color: AppColors.border, width: 0.5))),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         // 时间状态栏
         Padding(padding: const EdgeInsets.only(bottom: 6), child: Row(children: [
           Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3), decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: AppColors.accent.withAlpha(20)), child: Text(weekday, style: const TextStyle(color: AppColors.accent, fontSize: 11, fontWeight: FontWeight.w600))),
           const SizedBox(width: 6),
-          Expanded(child: Text(phase, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis, maxLines: 1)),
+          Expanded(child: Text(phase, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis, maxLines: 1)),
           if (isWeekend) ...[const SizedBox(width: 4), Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2), decoration: BoxDecoration(borderRadius: BorderRadius.circular(4), color: const Color(0xFFFFD60A).withAlpha(25)), child: const Text('休', style: TextStyle(color: Color(0xFFFFD60A), fontSize: 10, fontWeight: FontWeight.w600)))],
           const SizedBox(width: 6),
           Text(weather, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
@@ -355,8 +355,8 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
             onTap: app.isLoading ? null : () => _showLocationPicker(context, app),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: app.isLoading ? const Color(0x03FFFFFF) : const Color(0x08FFFFFF), border: Border.all(color: app.isLoading ? AppColors.border.withAlpha(60) : AppColors.border, width: 0.5)),
-              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(CupertinoIcons.location, size: 14, color: app.isLoading ? AppColors.textTertiary : AppColors.accent), const SizedBox(width: 4), Text('去别处', style: TextStyle(color: app.isLoading ? AppColors.textTertiary : AppColors.textPrimaryDark, fontSize: 12))]),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: app.isLoading ? const Color(0x03000000) : const Color(0x05000000), border: Border.all(color: app.isLoading ? AppColors.border.withAlpha(60) : AppColors.border, width: 0.5)),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(CupertinoIcons.location, size: 14, color: app.isLoading ? AppColors.textTertiary : AppColors.accent), const SizedBox(width: 4), Text('去别处', style: TextStyle(color: app.isLoading ? AppColors.textTertiary : AppColors.textPrimary, fontSize: 12))]),
             ),
           )),
           const SizedBox(width: 4),
@@ -364,8 +364,8 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
             onTap: app.isLoading ? null : () => _showTrainingPicker(context, app),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: app.isLoading ? const Color(0x03FFFFFF) : const Color(0x08FFFFFF), border: Border.all(color: app.isLoading ? AppColors.border.withAlpha(60) : AppColors.border, width: 0.5)),
-              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(CupertinoIcons.flame, size: 14, color: app.isLoading ? AppColors.textTertiary : AppColors.warning), const SizedBox(width: 4), Text('锻炼', style: TextStyle(color: app.isLoading ? AppColors.textTertiary : AppColors.textPrimaryDark, fontSize: 12))]),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: app.isLoading ? const Color(0x03000000) : const Color(0x05000000), border: Border.all(color: app.isLoading ? AppColors.border.withAlpha(60) : AppColors.border, width: 0.5)),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(CupertinoIcons.flame, size: 14, color: app.isLoading ? AppColors.textTertiary : AppColors.warning), const SizedBox(width: 4), Text('锻炼', style: TextStyle(color: app.isLoading ? AppColors.textTertiary : AppColors.textPrimary, fontSize: 12))]),
             ),
           )),
           const SizedBox(width: 4),
@@ -373,8 +373,8 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
             onTap: app.isLoading ? null : () => _showCharPicker(context, app),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: app.isLoading ? const Color(0x03FFFFFF) : const Color(0x08FFFFFF), border: Border.all(color: app.isLoading ? AppColors.border.withAlpha(60) : AppColors.border, width: 0.5)),
-              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(CupertinoIcons.person_2, size: 14, color: app.isLoading ? AppColors.textTertiary : AppColors.accent), const SizedBox(width: 4), Text('互动', style: TextStyle(color: app.isLoading ? AppColors.textTertiary : AppColors.textPrimaryDark, fontSize: 12))]),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: app.isLoading ? const Color(0x03000000) : const Color(0x05000000), border: Border.all(color: app.isLoading ? AppColors.border.withAlpha(60) : AppColors.border, width: 0.5)),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(CupertinoIcons.person_2, size: 14, color: app.isLoading ? AppColors.textTertiary : AppColors.accent), const SizedBox(width: 4), Text('互动', style: TextStyle(color: app.isLoading ? AppColors.textTertiary : AppColors.textPrimary, fontSize: 12))]),
             ),
           )),
           const SizedBox(width: 4),
@@ -382,7 +382,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
             onTap: app.isLoading ? null : () => app.passPhase().then((_) => _scrollToBottom()),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: app.isLoading ? null : const LinearGradient(colors: [AppColors.accent, Color(0xFF5B6FCE)]), color: app.isLoading ? const Color(0x08FFFFFF) : null, boxShadow: app.isLoading ? null : [BoxShadow(color: AppColors.accent.withAlpha(40), blurRadius: 8, offset: const Offset(0, 3))]),
+              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: app.isLoading ? null : const LinearGradient(colors: [AppColors.accent, Color(0xFF333333)]), color: app.isLoading ? const Color(0x05000000) : null, boxShadow: app.isLoading ? null : [BoxShadow(color: AppColors.accent.withAlpha(40), blurRadius: 8, offset: const Offset(0, 3))]),
               child: Center(child: app.isLoading ? const CupertinoActivityIndicator() : const Text('度过', style: TextStyle(color: CupertinoColors.white, fontSize: 12, fontWeight: FontWeight.w600))),
             ),
           )),
@@ -390,7 +390,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
           CupertinoButton(
             onPressed: app.isLoading ? null : () => _showCustomActionDialog(context, app),
             padding: const EdgeInsets.all(6), minSize: 0, borderRadius: BorderRadius.circular(8),
-            child: Container(width: 30, height: 30, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0x08FFFFFF), border: Border.all(color: AppColors.border, width: 0.5)),
+            child: Container(width: 30, height: 30, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0x05000000), border: Border.all(color: AppColors.border, width: 0.5)),
               child: const Icon(CupertinoIcons.text_cursor, size: 15, color: AppColors.textTertiary),
             ),
           ),
@@ -405,16 +405,16 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
               final charImg = app.getCharImageBytes(id);
               return GestureDetector(
                 onTap: () { app.markCharRead(id); Navigator.of(context).push(CupertinoPageRoute(builder: (_) => ChatScreen(characterId: id))); },
-                child: Container(margin: const EdgeInsets.only(right: 8), padding: const EdgeInsets.symmetric(horizontal: 8), decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0x08FFFFFF)), child: Row(mainAxisSize: MainAxisSize.min, children: [
+                child: Container(margin: const EdgeInsets.only(right: 8), padding: const EdgeInsets.symmetric(horizontal: 8), decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: const Color(0x05000000)), child: Row(mainAxisSize: MainAxisSize.min, children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(6),
                     child: charImg != null
                         ? Image.memory(charImg, width: 22, height: 22, fit: BoxFit.cover)
-                        : Container(width: 22, height: 22, decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF64D2FF)])), child: Center(child: Text(n.isNotEmpty ? n.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 11, fontWeight: FontWeight.w700)))),
+                        : Container(width: 22, height: 22, decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), gradient: const LinearGradient(colors: [AppColors.accent, Color(0xFF000000)])), child: Center(child: Text(n.isNotEmpty ? n.characters.first : '?', style: const TextStyle(color: CupertinoColors.white, fontSize: 11, fontWeight: FontWeight.w700)))),
                   ),
                   const SizedBox(width: 4),
                   Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(n, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 10, fontWeight: FontWeight.w500)),
+                    Text(n, style: const TextStyle(color: AppColors.textPrimary, fontSize: 10, fontWeight: FontWeight.w500)),
                     if (locName.isNotEmpty) Text(locName, style: const TextStyle(color: AppColors.textTertiary, fontSize: 8)),
                   ]),
                 ])),
@@ -435,19 +435,19 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+            decoration: const BoxDecoration(color: Color(0xFFFFFFFF), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
             padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               Padding(padding: const EdgeInsets.all(16), child: Row(children: [
-                const Text('自定义行动', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)),
+                const Text('自定义行动', style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)),
                 const Spacer(),
                 CupertinoButton(padding: EdgeInsets.zero, minSize: 0, onPressed: () => Navigator.pop(ctx), child: const Text('关闭', style: TextStyle(color: AppColors.accent))),
               ])),
               Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: CupertinoTextField(
                 controller: ctrl, placeholder: '输入你想做的事…', placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 14), autofocus: true,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-                decoration: BoxDecoration(color: const Color(0x0DFFFFFF), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
-                style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15),
+                decoration: BoxDecoration(color: const Color(0x0D000000), borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.border, width: 0.5)),
+                style: const TextStyle(color: AppColors.textPrimary, fontSize: 15),
                 maxLines: 4, minLines: 1,
               )),
               Padding(
@@ -481,10 +481,10 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
 
       return Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.7),
-      decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      decoration: const BoxDecoration(color: Color(0xFFFFFFFF), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Padding(padding: const EdgeInsets.all(16), child: Row(children: [
-          Text(selectedLoc == null ? '去哪里？' : '做什么？', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)),
+          Text(selectedLoc == null ? '去哪里？' : '做什么？', style: const TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)),
           const Spacer(),
           CupertinoButton(padding: EdgeInsets.zero, minSize: 0, onPressed: () => Navigator.pop(ctx), child: const Text('关闭', style: TextStyle(color: AppColors.accent))),
         ])),
@@ -509,7 +509,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
                 const Icon(CupertinoIcons.location, size: 18, color: AppColors.accent),
                 const SizedBox(width: 10),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(loc['name'] ?? '', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15)),
+                  Text(loc['name'] ?? '', style: const TextStyle(color: AppColors.textPrimary, fontSize: 15)),
                   if (charsHere.isNotEmpty) Text(charsHere.map((c) => c.basic.name).join('、') + ' 在此', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                 ])),
                 const Icon(CupertinoIcons.chevron_right, size: 16, color: AppColors.textTertiary),
@@ -523,8 +523,8 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
             else ...[
               Container(
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: const Color(0x0AFFFFFF)),
-                child: Text(sceneNarrative.isNotEmpty ? sceneNarrative : '...', style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 14, height: 1.6)),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), color: const Color(0x08000000)),
+                child: Text(sceneNarrative.isNotEmpty ? sceneNarrative : '...', style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, height: 1.6)),
               ),
               if (sceneChars.isNotEmpty) ...[
                 const SizedBox(height: 12),
@@ -550,8 +550,8 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
               placeholder: '想做什么？（锻炼/找人/观察…）',
               placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(10)),
-              style: TextStyle(color: AppColors.textPrimary(context), fontSize: 14),
+              decoration: BoxDecoration(color: const Color(0x05000000), borderRadius: BorderRadius.circular(10)),
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
             )),
             const SizedBox(width: 8),
             CupertinoButton(
@@ -569,9 +569,9 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
     final trainings = app.getAvailableTraining();
     showCupertinoModalPopup(context: context, builder: (ctx) => Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.5),
-      decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      decoration: const BoxDecoration(color: Color(0xFFFFFFFF), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Padding(padding: const EdgeInsets.all(16), child: Row(children: [const Text('锻炼什么？', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)), const Spacer(), CupertinoButton(padding: EdgeInsets.zero, minSize: 0, onPressed: () => Navigator.pop(ctx), child: const Text('取消', style: TextStyle(color: AppColors.accent)))])),
+        Padding(padding: const EdgeInsets.all(16), child: Row(children: [const Text('锻炼什么？', style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)), const Spacer(), CupertinoButton(padding: EdgeInsets.zero, minSize: 0, onPressed: () => Navigator.pop(ctx), child: const Text('取消', style: TextStyle(color: AppColors.accent)))])),
         if (trainings.isEmpty)
           const Padding(padding: EdgeInsets.all(32), child: Center(child: Text('当前时段没有可用的锻炼', style: TextStyle(color: AppColors.textTertiary))))
         else
@@ -591,7 +591,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
                 Container(width: 32, height: 32, decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: AppColors.warning.withAlpha(25)), child: const Icon(CupertinoIcons.flame, size: 16, color: AppColors.warning)),
                 const SizedBox(width: 10),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(name, style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15)),
+                  Text(name, style: const TextStyle(color: AppColors.textPrimary, fontSize: 15)),
                   if (labels.isNotEmpty) Text(labels.join(' '), style: const TextStyle(color: AppColors.accent, fontSize: 11)),
                 ])),
                 const Icon(CupertinoIcons.chevron_right, size: 16, color: AppColors.textTertiary),
@@ -610,10 +610,10 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
 
     showCupertinoModalPopup(context: context, builder: (ctx) => Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.7),
-      decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      decoration: const BoxDecoration(color: Color(0xFFFFFFFF), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Padding(padding: const EdgeInsets.all(16), child: Row(children: [
-          const Text('日历', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)),
+          const Text('日历', style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)),
           const Spacer(),
           Text('第$today天 / 共$totalDays天', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
           const SizedBox(width: 8),
@@ -635,7 +635,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
             final special = app.worldEngine?.calendar.getSpecialDay(day);
             final isSpecial = special != null;
             final isExamDay = day % 30 == 0;
-            Color bg = isToday ? AppColors.accent : (isPast ? const Color(0x05FFFFFF) : const Color(0x0AFFFFFF));
+            Color bg = isToday ? AppColors.accent : (isPast ? const Color(0x05000000) : const Color(0x08000000));
             if (isSpecial) bg = const Color(0xFFFFD60A).withAlpha(30);
             return GestureDetector(
               onTap: isPast ? null : () {
@@ -645,7 +645,7 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
                 app.skipDays(skip).then((_) => _scrollToBottom());
               },
               child: Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(8), color: bg, border: isToday ? Border.all(color: AppColors.accent, width: 1.5) : null), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                Text('$day', style: TextStyle(color: isPast ? AppColors.textTertiary.withAlpha(80) : (isToday ? CupertinoColors.white : (isWeekend ? AppColors.error.withAlpha(180) : AppColors.textPrimaryDark)), fontSize: isToday ? 14 : 12, fontWeight: isToday ? FontWeight.w700 : FontWeight.w400)),
+                Text('$day', style: TextStyle(color: isPast ? AppColors.textTertiary.withAlpha(80) : (isToday ? CupertinoColors.white : (isWeekend ? AppColors.error.withAlpha(180) : AppColors.textPrimary)), fontSize: isToday ? 14 : 12, fontWeight: isToday ? FontWeight.w700 : FontWeight.w400)),
                 if (isSpecial) Text(special['name']?.toString() ?? '', style: const TextStyle(color: Color(0xFFFFD60A), fontSize: 7), maxLines: 1, overflow: TextOverflow.ellipsis),
                 if (isExamDay && !isSpecial) const Text('考试', style: TextStyle(color: AppColors.warning, fontSize: 7)),
               ])),
@@ -664,9 +664,9 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
     showCupertinoModalPopup(context: context, builder: (ctx) => StatefulBuilder(
       builder: (ctx, setModalState) => Container(
       constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.6),
-      decoration: const BoxDecoration(color: Color(0xFF1C1C1E), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      decoration: const BoxDecoration(color: Color(0xFFFFFFFF), borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Padding(padding: const EdgeInsets.all(16), child: Row(children: [const Text('找谁？', style: TextStyle(color: AppColors.textPrimaryDark, fontSize: 17, fontWeight: FontWeight.w600)), const Spacer(), CupertinoButton(padding: EdgeInsets.zero, minSize: 0, onPressed: () => Navigator.pop(ctx), child: const Text('取消', style: TextStyle(color: AppColors.accent)))])),
+        Padding(padding: const EdgeInsets.all(16), child: Row(children: [const Text('找谁？', style: TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w600)), const Spacer(), CupertinoButton(padding: EdgeInsets.zero, minSize: 0, onPressed: () => Navigator.pop(ctx), child: const Text('取消', style: TextStyle(color: AppColors.accent)))])),
         Expanded(child: ListView.builder(itemCount: chars.length, itemBuilder: (_, i) {
           final ch = chars[i];
           final charLocName = (() { final lid = locs[ch.basic.id] ?? ''; return app.script?.world.locations.firstWhere((l) => l['id'] == lid, orElse: () => {'name': ''})['name'] ?? ''; })();
@@ -676,10 +676,10 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
             onPressed: () => setModalState(() { selectedChar = ch.basic.id; }),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(children: [
-              Container(width: 40, height: 40, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: LinearGradient(colors: isSelected ? [AppColors.accent, const Color(0xFF64D2FF)] : [AppColors.textTertiary.withAlpha(80), AppColors.textTertiary.withAlpha(40)])), child: Center(child: Text(ch.basic.name.characters.first, style: const TextStyle(color: CupertinoColors.white, fontSize: 16, fontWeight: FontWeight.w700)))),
+              Container(width: 40, height: 40, decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), gradient: LinearGradient(colors: isSelected ? [AppColors.accent, const Color(0xFF000000)] : [AppColors.textTertiary.withAlpha(80), AppColors.textTertiary.withAlpha(40)])), child: Center(child: Text(ch.basic.name.characters.first, style: const TextStyle(color: CupertinoColors.white, fontSize: 16, fontWeight: FontWeight.w700)))),
               const SizedBox(width: 12),
               Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(ch.basic.name, style: TextStyle(color: isSelected ? AppColors.accent : AppColors.textPrimaryDark, fontSize: 15, fontWeight: FontWeight.w600)),
+                Text(ch.basic.name, style: TextStyle(color: isSelected ? AppColors.accent : AppColors.textPrimary, fontSize: 15, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text(charLocName.isNotEmpty ? charLocName : '位置未知', style: const TextStyle(color: AppColors.textSecondary, fontSize: 11)),
                 Text('好感 ' + aff, style: const TextStyle(color: AppColors.textTertiary, fontSize: 10)),
@@ -695,8 +695,8 @@ class _WorldScreenState extends State<WorldScreen> with AutomaticKeepAliveClient
               placeholder: '你想做什么？（问好/聊天/帮忙…）',
               placeholderStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 13),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(color: const Color(0x08FFFFFF), borderRadius: BorderRadius.circular(10)),
-              style: TextStyle(color: AppColors.textPrimary(context), fontSize: 14),
+              decoration: BoxDecoration(color: const Color(0x05000000), borderRadius: BorderRadius.circular(10)),
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 14),
             )),
             const SizedBox(width: 8),
             CupertinoButton(
