@@ -1,4 +1,4 @@
-﻿import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
 import 'package:sime/main.dart';
@@ -182,11 +182,8 @@ class _SceneInteractionScreenState extends State<SceneInteractionScreen> {
           final locationIcon = _locationIcon(loc.id, loc.visibilityDefault);
 
           return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                colors: [app.simBgStartColor, app.simBgEndColor],
-              ),
+            decoration: const BoxDecoration(
+              color: AppColors.background,
             ),
             child: SafeArea(
               child: Column(children: [
