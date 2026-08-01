@@ -1,4 +1,4 @@
-﻿import 'dart:ui';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
@@ -7,6 +7,9 @@ import 'package:sime/screens/root_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 调优图片缓存：角色头像/背景图较多，增大缓存避免频繁解码
+  PaintingBinding.instance.imageCache.maximumSize = 200;
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 200 * 1024 * 1024; // 200MB
   final provider = AppProvider();
   await provider.init();
   runApp(

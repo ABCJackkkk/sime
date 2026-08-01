@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -15,6 +15,7 @@ class DeepSeekClient {
   static const _baseDelayMs = 1000;
 
   final Random _rng = Random();
+  final http.Client _httpClient = http.Client();
 
   static const _focusWeights = {
     'characterMoment':   {'speech': 35, 'relationship': 15, 'characterArc': 30, 'plot': 5,  'world': 15},
@@ -79,7 +80,7 @@ class DeepSeekClient {
     while (true) {
       attempt++;
       try {
-        final response = await http.post(
+        final response = await _httpClient.post(
           Uri.parse(_resolveUrl()),
           headers: {
             'Authorization': 'Bearer $apiKey',
@@ -157,9 +158,8 @@ class DeepSeekClient {
       'stream': true,
     });
 
-    final client = http.Client();
     try {
-      final streamedResponse = await client.send(request);
+      final streamedResponse = await _httpClient.send(request);
       final stream = streamedResponse.stream
           .transform(utf8.decoder)
           .transform(const LineSplitter());
@@ -182,7 +182,7 @@ class DeepSeekClient {
         }
       }
     } finally {
-      client.close();
+      // 持久化 client 不关闭，复用 TCP 连接
     }
   }
 
@@ -222,6 +222,8 @@ class DeepSeekClient {
     Map<String, double> affectionStates = const {},
   }) {
     final buf = StringBuffer();
+
+    // ── 静态前缀（同剧本不变，命中 DeepSeek context cache）──
     buf.writeln('你是一个恋爱模拟游戏的叙事引擎。你需要根据详细设定生成生动、有画面感、大胆真实的剧情叙事。越细致越鲜活，越出格越精彩。');
     buf.writeln();
     buf.writeln('【世界观】');
@@ -254,11 +256,36 @@ class DeepSeekClient {
     buf.writeln('【故事】基调${script.meta.tone} / 类型${script.meta.genre} / ${script.meta.summary}');
     buf.writeln();
 
+    buf.writeln('【深度角色档案】（严格按以下设定扮演，不得偏离。注意：以下为角色完整档案，但角色当前对玩家的态度由【在场角色及当前状态】或上下文中的实时好感度决定——好感低于15=憎恶/回避，低于30=冷淡疏远，请勿按档案中的友好阶段描写。）');
+    for (final c in script.characters.where((c) => c.fullCharacter)) {
+      _writeCharProfile(buf, c);
+    }
+    buf.writeln();
+
+    buf.writeln('【叙事格式规则】');
+    buf.writeln('1. 用中文。可以描写世界/角色的行为与对话——只写世界/NPC的动作、神态、对话');
+    buf.writeln('2. 不要替玩家描写玩家的意图与决定——玩家的选择已在剧情记录中，不要重复也不要擅自描写玩家在想什么');
+    buf.writeln('3. 可以描写"你的"动作的后果（如"你的脚步声在走廊里回响"），但不要写"你决定走过去"这种替玩家做决定的句子');
+    buf.writeln('4. 场景描写放在（）里，对话单独成行，动作与对话分行呈现，不要混成大段散文');
+    buf.writeln('5. 动作与细节优先于台词和解释——写"她把脸转开了"别写"她感到难为情"');
+    buf.writeln('6. 篇幅由情境决定。简短反应可以只有2-3行，复杂冲突/情绪转折可以写较长。宁短不凑，不强行写字数');
+    buf.writeln('7. 角色行为严格遵守其soul/agent/speech/evolution设定');
+    buf.writeln('8. 日常推进=当前时段片段，重要推进=整天发展');
+    buf.writeln('9. 参考之前剧情保持连贯');
+    buf.writeln('10. 允许描写角色间的暧昧张力、肢体接触、感官细节（气息、温度、触感、距离），允许直白露骨的亲密互动，越细致越鲜活');
+    buf.writeln('11. 场景切换：当剧情自然需要转移地点时（如角色提议去某处、或情节推动需要换场景），在叙事末尾单独一行输出 [SCENE_SHIFT: location_id] 标记。location_id必须是剧本中已定义的地点id。玩家会收到确认弹窗，同意后切换场景继续叙事。不要强行切换——只在剧情自然需要时使用');
+    buf.writeln();
+    buf.writeln('【输出要求（最高优先级）】');
+    buf.writeln('只输出叙事正文。不要输出JSON、代码、角色数据、系统提示、格式说明、元信息。如果无事可写，输出"一切如常。"四个字即可。');
+    buf.writeln('以纯文学小说笔法写作，注重氛围、感官与情绪张力。');
+
+    // ── 动态后缀（每次请求变化，放在静态前缀之后）──
     final plot = script.plot;
     if (plot != null) {
       final currentActId = plot.memory.currentAct;
 
       final tension = plot.narrativeTension.actualLevel;
+      buf.writeln();
       buf.writeln('【剧情方向】');
       buf.writeln(_buildPlotDirectionHint(plot, currentActId, tension));
 
@@ -315,12 +342,6 @@ class DeepSeekClient {
       buf.writeln();
     }
 
-    buf.writeln('【深度角色档案】（严格按以下设定扮演，不得偏离。注意：以下为角色完整档案，但角色当前对玩家的态度由【在场角色及当前状态】或上下文中的实时好感度决定——好感低于15=憎恶/回避，低于30=冷淡疏远，请勿按档案中的友好阶段描写。）');
-    for (final c in script.characters.where((c) => c.fullCharacter)) {
-      _writeCharProfile(buf, c);
-    }
-    buf.writeln();
-
     // 好感阶段软约束：告诉AI每个角色当前的好感阶段及应有的态度
     if (affectionStates.isNotEmpty) {
       buf.writeln('【当前好感阶段约束 — 严格遵守】');
@@ -340,28 +361,12 @@ class DeepSeekClient {
       buf.writeln(memoryContext);
     }
 
-    buf.writeln('【叙事格式规则】');
-    buf.writeln('1. 用中文。可以描写世界/角色的行为与对话——只写世界/NPC的动作、神态、对话');
-    buf.writeln('2. 不要替玩家描写玩家的意图与决定——玩家的选择已在剧情记录中，不要重复也不要擅自描写玩家在想什么');
-    buf.writeln('3. 可以描写"你的"动作的后果（如"你的脚步声在走廊里回响"），但不要写"你决定走过去"这种替玩家做决定的句子');
-    buf.writeln('4. 场景描写放在（）里，对话单独成行，动作与对话分行呈现，不要混成大段散文');
-    buf.writeln('5. 动作与细节优先于台词和解释——写"她把脸转开了"别写"她感到难为情"');
-    buf.writeln('6. 篇幅由情境决定。简短反应可以只有2-3行，复杂冲突/情绪转折可以写较长。宁短不凑，不强行写字数');
-    buf.writeln('7. 角色行为严格遵守其soul/agent/speech/evolution设定');
-    buf.writeln('8. 日常推进=当前时段片段，重要推进=整天发展');
-    buf.writeln('9. 参考之前剧情保持连贯');
-    buf.writeln('10. 允许描写角色间的暧昧张力、肢体接触、感官细节（气息、温度、触感、距离），允许直白露骨的亲密互动，越细致越鲜活');
-    buf.writeln('11. 场景切换：当剧情自然需要转移地点时（如角色提议去某处、或情节推动需要换场景），在叙事末尾单独一行输出 [SCENE_SHIFT: location_id] 标记。location_id必须是剧本中已定义的地点id。玩家会收到确认弹窗，同意后切换场景继续叙事。不要强行切换——只在剧情自然需要时使用');
     if (narrativeHistory.isNotEmpty) {
       final recent = narrativeHistory.length > 800 ? narrativeHistory.substring(narrativeHistory.length - 800) : narrativeHistory;
       buf.writeln();
       buf.writeln('【最近剧情】');
       buf.writeln(recent);
     }
-    buf.writeln();
-    buf.writeln('【输出要求（最高优先级）】');
-    buf.writeln('只输出叙事正文。不要输出JSON、代码、角色数据、系统提示、格式说明、元信息。如果无事可写，输出"一切如常。"四个字即可。');
-    buf.writeln('以纯文学小说笔法写作，注重氛围、感官与情绪张力。');
     return buf.toString();
   }
 

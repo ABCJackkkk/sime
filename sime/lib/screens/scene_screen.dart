@@ -1,4 +1,4 @@
-﻿import 'dart:typed_data';
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:provider/provider.dart';
@@ -24,7 +24,7 @@ class _SceneScreenState extends State<SceneScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.transparent,
+      color: AppColors.background,
       child: Consumer<AppProvider>(
         builder: (context, app, _) {
           final script = app.script;
